@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="sl" class="h-full bg-stone-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>O' Sole Mio – Vprašalnik o Blagovni Znamki in Vsebinah</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Playfair Display for Mediterranean feel & Inter for readability -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Playfair Display for Mediterranean feel & Inter for readability -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            med: {
+              terracotta: '#c85a32',
+              terracottaDark: '#a3411e',
+              sun: '#f59e0b',
+              olive: '#475e3e',
+              oliveDark: '#35472e',
+              warmCream: '#fbf9f4',
+              sand: '#f3efe6',
+              stone: '#38332e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom subtle scrollbar & transitions */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f3efe6;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #d6ccbe;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #c85a32;
+    }
+    .custom-ring:focus-within {
+      ring-width: 2px;
+      --tw-ring-color: #c85a32;
+      border-color: #c85a32;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #1c1917 !important;
+      }
+      .print-shadow-none {
+        box-shadow: none !important;
+        border: 1px solid #e7e5e4 !important;
+      }
+      textarea, input {
+        border-color: #d6d3d1 !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-full font-sans text-stone-800 antialiased flex flex-col bg-stone-50 selection:bg-amber-100 selection:text-amber-900">
+
+  <!-- TOP HEADER / NAV -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 transition-all shadow-xs no-print">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-med-terracotta flex items-center justify-center text-white shadow-sm shrink-0">
+          <i data-lucide="sun" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="font-serif font-bold text-lg sm:text-xl text-stone-900 leading-tight">O’ Sole Mio</h1>
+          <p class="text-xs font-medium text-stone-500">Delikatesa & Kulinarični Studio • Strateški Vprašalnik</p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button onclick="openResetModal()" type="button" class="px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-colors border border-stone-200">
+          Počisti
+        </button>
+
+        <button onclick="window.print()" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-med-terracotta hover:bg-med-terracottaDark rounded-xl shadow-xs transition-all active:scale-95">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Natisni / Shrani PDF</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress Indicator Bar -->
+    <div class="w-full bg-stone-100 h-1">
+      <div id="progressBar" class="bg-gradient-to-r from-amber-500 via-med-terracotta to-med-olive h-1 transition-all duration-300" style="width: 0%"></div>
+    </div>
+  </header>
+
+  <!-- INTRO BANNER -->
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 w-full">
+    <div class="bg-gradient-to-br from-amber-50 via-orange-50/50 to-emerald-50/40 border border-amber-200/70 rounded-2xl p-6 sm:p-8 shadow-xs relative overflow-hidden print-shadow-none">
+      <div class="absolute -right-12 -top-12 w-48 h-48 bg-amber-200/30 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="relative z-10">
+        <div class="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase text-med-terracotta bg-white px-3 py-1 rounded-full shadow-2xs mb-3 border border-amber-100">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Vprašalnik za Naročnika
+        </div>
+        <h2 class="font-serif text-2xl sm:text-3xl text-stone-900 font-bold tracking-tight mb-2">
+          Definicija Blagovne Znamke in Vsebin
+        </h2>
+        <p class="text-sm sm:text-base text-stone-600 max-w-3xl leading-relaxed">
+          Dobrodošli! Pred vami je strukturiran vprašalnik, s pomočjo katerega bomo oblikovali prepoznavno identiteto, vsebinski načrt in ton komunikacije za <strong>O' Sole Mio</strong>. Izpolnite vprašanja s svojimi besedami; vaši odgovori bodo neposredna osnova za pripravo objav, video vsebin in kampanj.
+        </p>
+
+        <!-- Progress stats -->
+        <div class="mt-5 flex items-center gap-3 text-xs text-stone-600 font-medium pt-4 border-t border-amber-200/60 no-print">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <span>Napredek izpolnjevanja: <strong id="progressPercent" class="text-stone-900 font-bold">0%</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN FORM -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+    <form id="brandForm" class="space-y-8" onsubmit="event.preventDefault()">
+
+      <!-- SEKCIJA 1: ZGODBA & VIZIJA -->
+      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
+        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
+          <div class="w-12 h-12 rounded-xl bg-orange-100 text-med-terracotta flex items-center justify-center shrink-0">
+            <i data-lucide="book-open" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-med-terracotta tracking-wider uppercase">1. Sklop</span>
+            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Zgodba, Srce & Poslanstvo</h3>
+            <p class="text-xs sm:text-sm text-stone-500">Kaj je tisto pristno mediteransko bistvo, ki ga morajo začutiti ljudje skozi zaslon?</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Vprašanje 1.1 -->
+          <div>
+            <label for="q_story_why" class="block text-sm font-semibold text-stone-800 mb-1.5">
+              1.1 Zakaj je nastal O' Sole Mio? Kateri ključni trenutek je botroval odprtju?
+            </label>
+            <p class="text-xs text-stone-500 mb-2">Opišite svojo osebno strast, spomin z dopusta, pomanjkanje pristnih sestavin na slovenskem trgu itd.</p>
+            <textarea id="q_story_why" rows="3" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-med-terracotta focus:ring-1 focus:ring-med-terracotta outline-none transition" placeholder="Npr.: Želeli smo prinesti nefiltrirane okuse južne Italije v domačo kuhinjo..."></textarea>
+          </div>
+
+          <!-- Vprašanje 1.2 -->
+          <div>
+            <label for="q_story_team" class="block text-sm font-semibold text-stone-800 mb-1.5">
+              1.2 Kdo stoji za trgovino in kakšen je vaš odnos do izdelkov?
+            </label>
+            <p class="text-xs text-stone-500 mb-2">Ali sami potujete na jug, osebno testirate vsak kolobar sira, poznate kmete?</p>
+            <textarea id="q_story_team" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-med-terracotta focus:ring-1 focus:ring-med-terracotta outline-none transition" placeholder="Npr.: Majhna družinska ekipa, ki vsak izdelek najprej preizkusi za lastno nedeljsko mizo..."></textarea>
+          </div>
+
+          <!-- Vprašanje 1.3: Pred kamero? -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-2">
+              1.3 Ali ste pripravljeni stopiti pred kamero kot obraz trgovine?
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="camera_preference_group">
+              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="camera_presence" value="Da, osebno bom govoril/a pred kamero" class="accent-med-terracotta h-4 w-4">
+                <span class="text-xs sm:text-sm font-medium text-stone-700">Da, polna prisotnost (jaz sem obraz)</span>
+              </label>
+              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="camera_presence" value="Zgolj delno (roke pri rezanju, glas v ozadju - voiceover)" class="accent-med-terracotta h-4 w-4">
+                <span class="text-xs sm:text-sm font-medium text-stone-700">Delno (roke pri rezanju, glas v ozadju)</span>
+              </label>
+              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="camera_presence" value="Ne, fokus naj bo le na hrani, ambientu in kupcih" class="accent-med-terracotta h-4 w-4">
+                <span class="text-xs sm:text-sm font-medium text-stone-700">Brez obraza (fokus le na izdelkih in estetiki)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEKCIJA 2: HERO IZDELKI & KULINARIČNA PONUDBA -->
+      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
+        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
+          <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <i data-lucide="utensils" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-amber-600 tracking-wider uppercase">2. Sklop</span>
+            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Hero Izdelki & Ponudba Delikatese</h3>
+            <p class="text-xs sm:text-sm text-stone-500">Konkretni kulinarični aduti, ki bodo na videoposnetkih sprožili slinjenje gledalcev.</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- 2.1 Hero Izdelki -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
+              2.1 Naših 5 »Hero« zvezdnikov (Izdelki, po katerih smo/bomo prepoznavni):
+            </label>
+            <p class="text-xs text-stone-500 mb-2">Navedite točna imena ali vrste (npr. Guanciale za pravo carbonaro, Burrata pugliese, Sicilijansko oljčno olje, Pecorino Romano...)</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="hero_products_container">
+              <input type="text" id="hero_prod_1" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none" placeholder="1. Zvezdnik (npr. Pristen San Daniele pršut)">
+              <input type="text" id="hero_prod_2" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none" placeholder="2. Zvezdnik (npr. Sveža Burrata z juga)">
+              <input type="text" id="hero_prod_3" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none" placeholder="3. Zvezdnik (npr. Bronasto vlečene testenine)">
+              <input type="text" id="hero_prod_4" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none" placeholder="4. Zvezdnik (npr. Pesto Genovese DOP)">
+              <input type="text" id="hero_prod_5" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none sm:col-span-2" placeholder="5. Zvezdnik (npr. Narezane delikatesne plošče za domov)">
+            </div>
+          </div>
+
+          <!-- 2.2 Poreklo / Zgodba dobaviteljev -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
+              2.2 Iz katerih regij prihajajo dobrote in kako sodelujete z dobavitelji?
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3" id="regions_chips">
+              <button type="button" onclick="toggleRegion(this, 'Južna Italija (Sicilija, Kampanija, Apulija)')" class="region-chip text-xs px-3 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:border-amber-400 text-left transition-all font-medium active:scale-98">
+                ☀️ Južna Italija
+              </button>
+              <button type="button" onclick="toggleRegion(this, 'Severna/Osrednja Italija (Emilija-Romanja, Toskana)')" class="region-chip text-xs px-3 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:border-amber-400 text-left transition-all font-medium active:scale-98">
+                🍷 Toskana & Parma
+              </button>
+              <button type="button" onclick="toggleRegion(this, 'Istra in Kvarner (Oljke, tartufi)')" class="region-chip text-xs px-3 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:border-amber-400 text-left transition-all font-medium active:scale-98">
+                🫒 Istra & Jadran
+              </button>
+              <button type="button" onclick="toggleRegion(this, 'Španija in Grčija (Feta, jamon, oljke)')" class="region-chip text-xs px-3 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:border-amber-400 text-left transition-all font-medium active:scale-98">
+                🌿 Širši Mediteran
+              </button>
+            </div>
+            <textarea id="q_regions_details" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-amber-500 outline-none" placeholder="Dodatne opombe o družinskih kmetijah, butičnih proizvajalcih ali certifikatih DOP/IGP..."></textarea>
+          </div>
+
+          <!-- 2.3 Storitve v trgovini -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-2">
+              2.3 Dodatne storitve na licu mesta (Označite vse kar velja):
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 cursor-pointer transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="checkbox" id="srv_narezek" class="accent-med-terracotta rounded h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700">Priprava narezkov & aperitivo desk po naročilu</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 cursor-pointer transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="checkbox" id="srv_sendvic" class="accent-med-terracotta rounded h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700">Sveži sendviči (focaccia / panino) za s seboj</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 cursor-pointer transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="checkbox" id="srv_degustacija" class="accent-med-terracotta rounded h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700">Degustacije v trgovini (poskusi pred nakupom)</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 cursor-pointer transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="checkbox" id="srv_darila" class="accent-med-terracotta rounded h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700">Personalizirani kulinarični darilni paketi</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEKCIJA 3: CILJNI KUPEC & NJEGOVI MOTIVI -->
+      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
+        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-med-olive flex items-center justify-center shrink-0">
+            <i data-lucide="users" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-med-olive tracking-wider uppercase">3. Sklop</span>
+            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Naš Idealni Gost & Kupec</h3>
+            <p class="text-xs sm:text-sm text-stone-500">Komu točno govorimo v videoposnetkih in zakaj raje izberejo nas kot navaden trgovski diskont?</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- 3.1 Profil kupca -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
+              3.1 Kdo je naša tipična stranka in ob kakšnih priložnostih kupuje?
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-2.5">
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-olive has-[:checked]:bg-emerald-50/40">
+                <input type="checkbox" id="target_foodies" class="accent-med-olive rounded h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700 font-medium">Domači kulinarični navdušenci (za vikend kuhanje)</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-olive has-[:checked]:bg-emerald-50/40">
+                <input type="checkbox" id="target_parties" class="accent-med-olive rounded h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700 font-medium">Gostitelji zabav (narezki, vino za družbo)</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-olive has-[:checked]:bg-emerald-50/40">
+                <input type="checkbox" id="target_gifts" class="accent-med-olive rounded h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700 font-medium">Kupci daril & poslovni partnerji</span>
+              </label>
+            </div>
+            <textarea id="q_target_description" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-med-olive outline-none" placeholder="Opišite še druge posebnosti (starost, navade, kaj jim pomeni dobra hrana)..."></textarea>
+          </div>
+
+          <!-- 3.2 Glavna prednost pred supermarketom -->
+          <div>
+            <label for="q_advantage_supermarket" class="block text-sm font-semibold text-stone-800 mb-1.5">
+              3.2 Kateri je tisti glavni razlog, da kupec pride k nam in ne gre v supermarket?
+            </label>
+            <p class="text-xs text-stone-500 mb-2">To bo temelj vseh naših izobraževalnih primerjalnih videov (npr. sveže rezanje na licu mesta, svetovanje bottegaia, nerazredčeno olje, okus ki ga supermarket nima).</p>
+            <textarea id="q_advantage_supermarket" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-med-olive outline-none" placeholder="Npr.: Pri nas lahko vsak sir prej pokusiš. Znamo svetovati, katero vino gre zraven. Naš pršut režemo tako tanko, da se stopi na jeziku..."></textarea>
+          </div>
+
+          <!-- 3.3 Pogosta vprašanja strank -->
+          <div>
+            <label for="q_faq_customer" class="block text-sm font-semibold text-stone-800 mb-1.5">
+              3.3 Katero vprašanje stranke v trgovini najpogosteje zastavijo?
+            </label>
+            <p class="text-xs text-stone-500 mb-2">To so takojšnje ideje za privlačne TikTok in Reel posnetke!</p>
+            <input type="text" id="q_faq_customer" class="w-full rounded-xl border border-stone-300 p-3 text-sm focus:border-med-olive outline-none" placeholder="Npr.: 'Kako pripravim pravo carbonaro brez smetane?' ali 'Kako dolgo zdrži parmezan?'">
+          </div>
+        </div>
+      </section>
+
+      <!-- SEKCIJA 4: ESTETIKA, ZVOK & VIBE -->
+      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
+        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
+          <div class="w-12 h-12 rounded-xl bg-red-100 text-med-terracotta flex items-center justify-center shrink-0">
+            <i data-lucide="palette" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-med-terracotta tracking-wider uppercase">4. Sklop</span>
+            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Vzdušje, Estetika & Ton (Vibe)</h3>
+            <p class="text-xs sm:text-sm text-stone-500">Kako mora profil zveneti in izgledati: izberite energijo in občutke.</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- 4.1 Pridevniki za občutek (Chips) -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
+              4.1 Izberite 4 do 6 besed, ki najbolje opisujejo želeni občutek vsebin:
+            </label>
+            <p class="text-xs text-stone-500 mb-2.5">Kliknite na oznake, da jih označite:</p>
+            <div class="flex flex-wrap gap-2" id="vibe_chips_container">
+              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">☀️ Sončno & Sredozemsko</button>
+              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🍷 Toplo & Gostoljubno</button>
+              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🪵 Rustikalno & Pristno</button>
+              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">✨ Premium & Delikatesno</button>
+              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🤌 Strastno & Italijansko</button>
+              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🤤 Apetitivno (ASMR)</button>
+              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🎓 Strokovno & Poučno</button>
+              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">😄 Sproščeno & Duhovito</button>
+              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🍋 Dolce Vita sproščenost</button>
+            </div>
+          </div>
+
+          <!-- 4.2 Zvočna podlaga -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-2">
+              4.2 Zvočni slog za video vsebine (Reels & TikTok):
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="sound_style" value="Avtentični zvoki priprave (ASMR noža, kapljanja, hrustanja) z nežno akustično podlago" class="accent-med-terracotta h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700 font-medium">Kulinarični ASMR + naravni zvoki</span>
+              </label>
+              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="sound_style" value="Klasični nostalgični italijanski šansoni (Dean Martin, Mina, Celentano)" class="accent-med-terracotta h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700 font-medium">Italijanska nostalgija & šansoni</span>
+              </label>
+              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="sound_style" value="Moderen trendovski mediteranski chill / lofi ritem" class="accent-med-terracotta h-4 w-4">
+                <span class="text-xs sm:text-sm text-stone-700 font-medium">Moderen chill & poletni ritmi</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 4.3 Rdeča linija: Kaj je PREPOVEDANO? -->
+          <div>
+            <label for="q_forbidden_elements" class="block text-sm font-semibold text-stone-800 mb-1.5">
+              4.3 Kaj je za naš profil strogo PREPOVEDANO (Rdeča linija)?
+            </label>
+            <p class="text-xs text-stone-500 mb-2">Česa se pri ustvarjanju vsebin pod nobenim pogojem ne sme uporabiti? (npr. agresivno kričanje 'Kupite zdaj', sterilna umetna svetloba, poceni grafike, hladna plastika...)</p>
+            <textarea id="q_forbidden_elements" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-red-500 outline-none" placeholder="Npr.: Ne želimo agresivnih 'TV prodaja' popustov, ne želimo generičnih stock videov, ne želimo slabe svetlobe..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEKCIJA 5: TON KOMUNIKACIJE & JEZIK -->
+      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
+        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
+          <div class="w-12 h-12 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
+            <i data-lucide="message-square" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-stone-500 tracking-wider uppercase">5. Sklop</span>
+            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Jezik, Nagovor & Besedišče</h3>
+            <p class="text-xs sm:text-sm text-stone-500">Pravila za pisanje opisov pod objavami in odgovarjanje na komentarje.</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- 5.1 Tikanje ali Vikanje -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-2">
+              5.1 Način nagovora v objavah in komentarjih:
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="address_style" value="Tikanje (Toplo, osebno, kot s prijateljem ob kozarcu vina)" class="accent-med-terracotta h-4 w-4">
+                <div>
+                  <span class="text-sm font-medium text-stone-800 block">Tikanje (Priporočeno za družbena omrežja)</span>
+                  <span class="text-xs text-stone-500">»Pridi na kozarec«, »Poskusi to kombinacijo«, »Kaj boš kuhal danes?«</span>
+                </div>
+              </label>
+              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="address_style" value="Vikanje (Zelo vljudno, tradicionalno gosposko)" class="accent-med-terracotta h-4 w-4">
+                <div>
+                  <span class="text-sm font-medium text-stone-800 block">Vikanje</span>
+                  <span class="text-xs text-stone-500">»Vljudno vabljeni v našo delikateso«, »Za vas smo pripravili...«</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 5.2 Raba tujih izrazov -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
+              5.2 Ali vpletamo italijanske/sredozemske izraze?
+            </label>
+            <p class="text-xs text-stone-500 mb-2">Npr. <em>»Aperitivo time«, »Buon appetito«, »Mamma mia«, »Dolce far niente«, »Bottega«</em></p>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="italian_phrases" value="Da, zmerno za šarm in mediteranski pridih" class="accent-med-terracotta">
+                <span class="text-xs sm:text-sm text-stone-700">Da, zmerno za šarm in mediteranski pridih</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="italian_phrases" value="Samo slovensko, brez tujih fraz" class="accent-med-terracotta">
+                <span class="text-xs sm:text-sm text-stone-700">Raje samo čista slovenščina</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEKCIJA 6: CILJI & PRAKTIČNA NAVODILA ZA SNEMANJE -->
+      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
+        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
+          <div class="w-12 h-12 rounded-xl bg-yellow-100 text-yellow-800 flex items-center justify-center shrink-0">
+            <i data-lucide="target" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-yellow-700 tracking-wider uppercase">6. Sklop</span>
+            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Poslovni Cilji & Tehnične Možnosti</h3>
+            <p class="text-xs sm:text-sm text-stone-500">Kratkoročni zagon, dolgoročna vizija in konkretni dogovor za snemanje.</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- 6.1 Prioriteta ciljev (Naslednje 3 mesece) -->
+          <div>
+            <label class="block text-sm font-semibold text-stone-800 mb-2">
+              6.1 Glavna poslovna prioriteta za prve 3 mesece:
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="main_goal" value="Fizični obisk delikatese in nakup v živo" class="accent-amber-600">
+                <span class="text-xs sm:text-sm font-medium text-stone-800">1. Obisk v fizični trgovini</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="main_goal" value="Spletna naročila na osolemio.si (dostava na dom)" class="accent-amber-600">
+                <span class="text-xs sm:text-sm font-medium text-stone-800">2. Spletna prodaja na osolemio.si</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/40">
+                <input type="radio" name="main_goal" value="Gradnja prepoznavnosti znamke in zaupanja" class="accent-amber-600">
+                <span class="text-xs sm:text-sm font-medium text-stone-800">3. Prepoznavnost znamke & doseg</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 6.2 Dolgoročni cilj (1-3 leta) -->
+          <div>
+            <label for="q_longterm_goal" class="block text-sm font-semibold text-stone-800 mb-1.5">
+              6.2 Dolgoročni strateški cilj in vizija (Kje vidite O' Sole Mio čez 1 do 3 leta?):
+            </label>
+            <p class="text-xs text-stone-500 mb-2">Npr.: Postati vodilna spletna delikatesa za italijanska živila v Sloveniji, odprtje kulinaričnega degustacijskega bara, širitev lastne blagovne znamke oljčnega olja, franšize...</p>
+            <textarea id="q_longterm_goal" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-amber-500 outline-none" placeholder="Opišite vaš dolgoročni cilj..."></textarea>
+          </div>
+
+          <!-- 6.3 Snemalni dnevi & čas -->
+          <div>
+            <label for="q_filming_logistics" class="block text-sm font-semibold text-stone-800 mb-1.5">
+              6.3 Kdaj in kako lahko poteka snemanje v delikatesi?
+            </label>
+            <p class="text-xs text-stone-500 mb-2">Kdaj je v prostoru dovolj miru za zvok, kdaj je najboljša naravna svetloba ali sveža zaloga?</p>
+            <textarea id="q_filming_logistics" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-amber-500 outline-none" placeholder="Npr.: Najbolje ob torkih zjutraj pred odprtjem (od 8h do 10h), ko prispe sveža pošiljka mocarele in je v prostoru popoln mir..."></textarea>
+          </div>
+
+          <!-- 6.4 Kontakt & Spletna stran -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div>
+              <label for="cfg_url" class="block text-xs font-semibold text-stone-700 mb-1">Povezava do spletne trgovine:</label>
+              <input type="text" id="cfg_url" value="https://www.osolemio.si" class="w-full rounded-xl border border-stone-300 p-2.5 text-sm bg-stone-50">
+            </div>
+            <div>
+              <label for="cfg_contact" class="block text-xs font-semibold text-stone-700 mb-1">Ime odgovorne osebe za vsebine:</label>
+              <input type="text" id="cfg_contact" placeholder="Tvoje ime / kontakt" class="w-full rounded-xl border border-stone-300 p-2.5 text-sm">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXPORT / SUBMIT BAR -->
+      <section class="bg-gradient-to-r from-stone-900 to-stone-800 text-white rounded-2xl p-6 sm:p-8 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6 no-print">
+        <div>
+          <h4 class="font-serif text-xl sm:text-2xl font-bold mb-1">Je vprašalnik izpolnjen?</h4>
+          <p class="text-stone-300 text-xs sm:text-sm max-w-lg">
+            Preglejte svoje odgovore. Ko ste pripravljeni, shranite obrazec v PDF obliki ali ga natisnite in pošljite svoji ekipi.
+          </p>
+        </div>
+        <div class="flex items-center w-full sm:w-auto">
+          <button type="button" onclick="window.print()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            Natisni / Shrani PDF
+          </button>
+        </div>
+      </section>
+
+    </form>
+  </main>
+
+  <!-- CUSTOM RESET CONFIRMATION MODAL -->
+  <div id="resetModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-200">
+      <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
+        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+      </div>
+      <h3 class="font-bold text-stone-900 text-base mb-1">Počisti vsa polja?</h3>
+      <p class="text-xs text-stone-500 mb-5 leading-relaxed">
+        Ali ste prepričani, da želite počistiti vprašalnik? Vsi vaši dosedanji odgovori bodo izbrisani.
+      </p>
+      <div class="flex gap-2 justify-end">
+        <button type="button" onclick="closeResetModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 border border-stone-200 transition">
+          Prekliči
+        </button>
+        <button type="button" onclick="confirmReset()" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition">
+          Da, počisti
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-stone-200 py-6 mt-12 text-center text-xs text-stone-400 no-print">
+    <p>O’ Sole Mio – Delikatesa z mediteransko dušo • <a href="https://www.osolemio.si" target="_blank" class="text-med-terracotta hover:underline">www.osolemio.si</a></p>
+  </footer>
+
+  <!-- APPLICATION LOGIC -->
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    const STORAGE_KEY = 'osolemio_brand_workbook_v2';
+    let selectedVibes = new Set();
+    let selectedRegions = new Set();
+
+    // Elements to track for calculation and auto-saving
+    const formFields = [
+      'q_story_why', 'q_story_team', 'hero_prod_1', 'hero_prod_2', 'hero_prod_3',
+      'hero_prod_4', 'hero_prod_5', 'q_regions_details', 'q_target_description',
+      'q_advantage_supermarket', 'q_faq_customer', 'q_forbidden_elements',
+      'q_longterm_goal', 'q_filming_logistics', 'cfg_url', 'cfg_contact'
+    ];
+
+    const checkboxFields = [
+      'srv_narezek', 'srv_sendvic', 'srv_degustacija', 'srv_darila',
+      'target_foodies', 'target_parties', 'target_gifts'
+    ];
+
+    const radioGroups = [
+      'camera_presence', 'sound_style', 'address_style', 'italian_phrases', 'main_goal'
+    ];
+
+    // Load saved data on startup
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedData();
+      calculateProgress();
+      attachAutoSaveListeners();
+    });
+
+    function toggleVibeChip(btn) {
+      const text = btn.innerText.trim();
+      if (selectedVibes.has(text)) {
+        selectedVibes.delete(text);
+        btn.classList.remove('bg-amber-100', 'border-amber-500', 'text-amber-900', 'font-semibold', 'shadow-2xs');
+        btn.classList.add('border-stone-200', 'text-stone-700');
+      } else {
+        selectedVibes.add(text);
+        btn.classList.add('bg-amber-100', 'border-amber-500', 'text-amber-900', 'font-semibold', 'shadow-2xs');
+        btn.classList.remove('border-stone-200', 'text-stone-700');
+      }
+      triggerSave();
+    }
+
+    function toggleRegion(btn, regionName) {
+      if (selectedRegions.has(regionName)) {
+        selectedRegions.delete(regionName);
+        btn.classList.remove('bg-emerald-50', 'border-emerald-600', 'text-emerald-900', 'font-bold', 'shadow-2xs');
+        btn.classList.add('border-stone-200', 'text-stone-600');
+      } else {
+        selectedRegions.add(regionName);
+        btn.classList.add('bg-emerald-50', 'border-emerald-600', 'text-emerald-900', 'font-bold', 'shadow-2xs');
+        btn.classList.remove('border-stone-200', 'text-stone-600');
+      }
+      triggerSave();
+    }
+
+    function attachAutoSaveListeners() {
+      // Inputs and textareas
+      formFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('input', () => {
+            triggerSave();
+          });
+        }
+      });
+
+      // Checkboxes
+      checkboxFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('change', () => {
+            triggerSave();
+          });
+        }
+      });
+
+      // Radios
+      radioGroups.forEach(name => {
+        const radios = document.querySelectorAll(`input[name="${name}"]`);
+        radios.forEach(r => {
+          r.addEventListener('change', () => {
+            triggerSave();
+          });
+        });
+      });
+    }
+
+    let saveTimeout = null;
+    function triggerSave() {
+      if (saveTimeout) clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveData();
+        calculateProgress();
+      }, 250);
+    }
+
+    function saveData() {
+      const data = {
+        fields: {},
+        checkboxes: {},
+        radios: {},
+        vibes: Array.from(selectedVibes),
+        regions: Array.from(selectedRegions),
+        lastUpdated: new Date().toISOString()
+      };
+
+      formFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) data.fields[id] = el.value;
+      });
+
+      checkboxFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) data.checkboxes[id] = el.checked;
+      });
+
+      radioGroups.forEach(name => {
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        data.radios[name] = checked ? checked.value : '';
+      });
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        // Storage fallback if private browsing limits it
+      }
+    }
+
+    function loadSavedData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+
+        // Populate fields
+        if (data.fields) {
+          Object.keys(data.fields).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = data.fields[id];
+          });
+        }
+
+        // Populate checkboxes
+        if (data.checkboxes) {
+          Object.keys(data.checkboxes).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.checked = data.checkboxes[id];
+          });
+        }
+
+        // Populate radios
+        if (data.radios) {
+          Object.keys(data.radios).forEach(name => {
+            const val = data.radios[name];
+            if (val) {
+              const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+              if (el) el.checked = true;
+            }
+          });
+        }
+
+        // Populate vibes
+        if (data.vibes && Array.isArray(data.vibes)) {
+          selectedVibes = new Set(data.vibes);
+          document.querySelectorAll('.vibe-tag').forEach(btn => {
+            if (selectedVibes.has(btn.innerText.trim())) {
+              btn.classList.add('bg-amber-100', 'border-amber-500', 'text-amber-900', 'font-semibold', 'shadow-2xs');
+              btn.classList.remove('border-stone-200', 'text-stone-700');
+            }
+          });
+        }
+
+        // Populate regions
+        if (data.regions && Array.isArray(data.regions)) {
+          selectedRegions = new Set(data.regions);
+          document.querySelectorAll('.region-chip').forEach(btn => {
+            const match = Array.from(selectedRegions).some(r => btn.innerText.includes(r.split(' ')[0]));
+            if (match) {
+              btn.classList.add('bg-emerald-50', 'border-emerald-600', 'text-emerald-900', 'font-bold', 'shadow-2xs');
+              btn.classList.remove('border-stone-200', 'text-stone-600');
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Napaka pri nalaganju podatkov:', err);
+      }
+    }
+
+    function calculateProgress() {
+      const totalPoints = formFields.length + radioGroups.length + 2;
+      let filledPoints = 0;
+
+      formFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value.trim().length > 1) filledPoints++;
+      });
+
+      radioGroups.forEach(name => {
+        if (document.querySelector(`input[name="${name}"]:checked`)) filledPoints++;
+      });
+
+      if (selectedVibes.size > 0) filledPoints++;
+      if (selectedRegions.size > 0) filledPoints++;
+
+      const pct = Math.min(100, Math.round((filledPoints / totalPoints) * 100));
+      const progressBar = document.getElementById('progressBar');
+      const progressPercent = document.getElementById('progressPercent');
+
+      if (progressBar) progressBar.style.width = pct + '%';
+      if (progressPercent) progressPercent.innerText = pct + '%';
+    }
+
+    function openResetModal() {
+      document.getElementById('resetModal').classList.remove('hidden');
+    }
+
+    function closeResetModal() {
+      document.getElementById('resetModal').classList.add('hidden');
+    }
+
+    function confirmReset() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {}
+      location.reload();
+    }
+  </script>
+</body>
+</html>
