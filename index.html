@@ -2168,7 +2168,8 @@
         if (qStatus[i]) filledQuestions++;
       }
 
-      const pct = Math.min(100, Math.round((filledQuestions / totalQuestions) * 100));
+      // STRICT RULE: 100% is strictly reserved for all 20 questions filled (filledQuestions === 20)
+      const pct = (filledQuestions === totalQuestions) ? 100 : Math.min(95, Math.floor((filledQuestions / totalQuestions) * 100));
       const pb = document.getElementById('progressBar');
       const pp = document.getElementById('progressPercent');
 

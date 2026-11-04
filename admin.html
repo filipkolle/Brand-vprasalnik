@@ -974,10 +974,10 @@
       const crm = answers.crm || {};
       const strategyStats = calculateStrategyStats(crm);
       
-      // Determine status
+      // Determine status strictly based on all 20 questions
       let status = crm.status;
       if (!status) {
-        if (stats.percent >= 80) status = 'questionnaire_completed';
+        if (stats.answeredCount === 20) status = 'questionnaire_completed';
         else if (stats.answeredCount > 0) status = 'questionnaire_in_progress';
         else status = 'new';
       }
@@ -1137,7 +1137,8 @@
       }
 
       const answered = answeredList.length;
-      const percent = Math.round((answered / 20) * 100);
+      // STRICT RULE: 100% is only possible if all 20 questions are answered (answered === 20)
+      const percent = (answered === 20) ? 100 : Math.min(95, Math.floor((answered / 20) * 100));
       return { answeredCount: answered, percent, answeredList, missingList, qStatus };
     }
 
