@@ -95,6 +95,21 @@
         margin: 1.6cm 1.4cm 1.6cm 1.4cm;
       }
     }
+
+    /* Smart CRM Form Fields: auto-expand and equal height */
+    .smart-field-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .smart-field-textarea {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 84px;
+      resize: none;
+      overflow-y: hidden !important;
+      line-height: 1.5;
+    }
   </style>
 </head>
 
@@ -2340,6 +2355,8 @@
       }
 
       lucide.createIcons({ root: container });
+      autoResizeAllTextareas(container);
+      requestAnimationFrame(() => autoResizeAllTextareas(container));
     }
 
     // -------------------------------------------------------------
@@ -2499,7 +2516,7 @@
                 </h3>
                 <span class="text-[10px] text-slate-500">Avtomatsko shranjevanje</span>
               </div>
-              <textarea oninput="handleAutoSaveCrmField('internal_notes', this.value)" rows="4" placeholder="Vpišite interne opombe, dogovore ali posebnosti za tega naročnika..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 leading-relaxed">${escapeHtml(crm.internal_notes || '')}</textarea>
+              <textarea oninput="handleAutoSaveCrmField('internal_notes', this.value); handleSmartFieldInput(this);" rows="4" placeholder="Vpišite interne opombe, dogovore ali posebnosti za tega naročnika..." class="smart-field-textarea w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 leading-relaxed resize-none overflow-hidden">${escapeHtml(crm.internal_notes || '')}</textarea>
             </div>
 
           </div>
@@ -2759,6 +2776,76 @@
       };
     }
 
+    function autoResizeAllTextareas(container = document) {
+      if (!container) return;
+      const textareas = Array.from(container.querySelectorAll('.smart-field-textarea'));
+      if (!textareas.length) return;
+
+      const prevScrollY = window.scrollY;
+
+      // 1. Temporarily reset each textarea inline height to auto so scrollHeight reflects true content height
+      textareas.forEach(ta => {
+        ta.style.height = 'auto';
+      });
+
+      // 2. Measure required height for each textarea (minimum 84px, plus borders)
+      const items = textareas.map(ta => {
+        const style = window.getComputedStyle(ta);
+        const borderTop = parseFloat(style.borderTopWidth) || 0;
+        const borderBottom = parseFloat(style.borderBottomWidth) || 0;
+        const requiredHeight = Math.max(84, Math.ceil(ta.scrollHeight + borderTop + borderBottom));
+        const wrapper = ta.closest('.smart-field-wrapper') || ta;
+        const rect = wrapper.getBoundingClientRect();
+        return {
+          ta,
+          wrapper,
+          requiredHeight,
+          top: Math.round(rect.top + window.scrollY),
+          parent: wrapper.parentElement
+        };
+      });
+
+      // 3. Group textareas in the same parent container and same row (top within 20px)
+      const rowGroups = [];
+      items.forEach(item => {
+        const group = rowGroups.find(g => g.parent === item.parent && Math.abs(g.top - item.top) <= 20);
+        if (group) {
+          group.items.push(item);
+        } else {
+          rowGroups.push({
+            parent: item.parent,
+            top: item.top,
+            items: [item]
+          });
+        }
+      });
+
+      // 4. Equalize height within each row group: all parallel textareas expand to the maximum required height of that row
+      rowGroups.forEach(group => {
+        const maxHeight = Math.max(...group.items.map(i => i.requiredHeight));
+        group.items.forEach(i => {
+          i.ta.style.height = maxHeight + 'px';
+        });
+      });
+
+      if (window.scrollY !== prevScrollY) {
+        window.scrollTo(window.scrollX, prevScrollY);
+      }
+    }
+
+    function handleSmartFieldInput(textarea) {
+      if (!textarea) return;
+      const scope = textarea.closest('.grid') || textarea.closest('.smart-field-wrapper')?.parentElement || document;
+      autoResizeAllTextareas(scope);
+    }
+
+    window.addEventListener('resize', () => {
+      clearTimeout(window._smartFieldResizeTimer);
+      window._smartFieldResizeTimer = setTimeout(() => {
+        autoResizeAllTextareas(document.getElementById('workspaceTabContent') || document);
+      }, 100);
+    });
+
     function renderCrmSmartField({
       client,
       parentPath,
@@ -2796,17 +2883,17 @@
       ` : '';
 
       return `
-        <div class="smart-field-wrapper" data-has-q-answer="${qHasAnswer ? '1' : '0'}" data-parent-path="${parentPath}" data-field-name="${fieldName}">
-          <div class="flex items-center justify-between gap-2 mb-1">
+        <div class="smart-field-wrapper h-full flex flex-col" data-has-q-answer="${qHasAnswer ? '1' : '0'}" data-parent-path="${parentPath}" data-field-name="${fieldName}">
+          <div class="flex items-center justify-between gap-2 mb-1 shrink-0">
             <label class="block font-bold uppercase tracking-wider text-slate-300 text-xs">${label}</label>
             <div class="smart-field-badge">${badgeContent}</div>
           </div>
-          ${description ? `<p class="text-[11px] text-slate-400 mb-1.5">${description}</p>` : ''}
+          ${description ? `<p class="text-[11px] text-slate-400 mb-1.5 shrink-0">${description}</p>` : ''}
           ${type === 'textarea' ? `
             <textarea 
-              oninput="handleAutoSaveCrmSubfield('${parentPath}', '${fieldName}', this.value)" 
+              oninput="handleAutoSaveCrmSubfield('${parentPath}', '${fieldName}', this.value); handleSmartFieldInput(this);" 
               rows="${rows}" 
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 ${focusRing} transition leading-relaxed placeholder:text-slate-600" 
+              class="smart-field-textarea flex-1 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 ${focusRing} transition leading-relaxed placeholder:text-slate-600 resize-none overflow-hidden" 
               placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>
           ` : `
             <input 
@@ -2816,7 +2903,7 @@
               class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-2 ${focusRing} transition placeholder:text-slate-600" 
               placeholder="${escapeHtml(placeholder)}">
           `}
-          <div class="smart-field-reset mt-1 flex justify-end">${resetBtnContent}</div>
+          <div class="smart-field-reset mt-1 flex justify-end shrink-0">${resetBtnContent}</div>
         </div>
       `;
     }
@@ -3941,13 +4028,13 @@
 
                 <!-- Strategic Retrospective -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-2">
-                  <div>
-                    <label class="block font-bold text-emerald-400 uppercase text-[10px] mb-1">Kaj je delovalo odlično?</label>
-                    <textarea oninput="handleUpdatePerfMonth(${idx}, 'worked', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none" placeholder="Kateri stebri ali video formati so prinesli največ odziva...">${escapeHtml(m.worked || '')}</textarea>
+                  <div class="smart-field-wrapper h-full flex flex-col">
+                    <label class="block font-bold text-emerald-400 uppercase text-[10px] mb-1 shrink-0">Kaj je delovalo odlično?</label>
+                    <textarea oninput="handleUpdatePerfMonth(${idx}, 'worked', this.value); handleSmartFieldInput(this);" class="smart-field-textarea flex-1 w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none resize-none overflow-hidden" placeholder="Kateri stebri ali video formati so prinesli največ odziva...">${escapeHtml(m.worked || '')}</textarea>
                   </div>
-                  <div>
-                    <label class="block font-bold text-amber-400 uppercase text-[10px] mb-1">Kaj izboljšati / testirati naslednji mesec?</label>
-                    <textarea oninput="handleUpdatePerfMonth(${idx}, 'improvements', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none" placeholder="Sprememba uvodnega kadra, drugačen čas objavljanja...">${escapeHtml(m.improvements || '')}</textarea>
+                  <div class="smart-field-wrapper h-full flex flex-col">
+                    <label class="block font-bold text-amber-400 uppercase text-[10px] mb-1 shrink-0">Kaj izboljšati / testirati naslednji mesec?</label>
+                    <textarea oninput="handleUpdatePerfMonth(${idx}, 'improvements', this.value); handleSmartFieldInput(this);" class="smart-field-textarea flex-1 w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none resize-none overflow-hidden" placeholder="Sprememba uvodnega kadra, drugačen čas objavljanja...">${escapeHtml(m.improvements || '')}</textarea>
                   </div>
                 </div>
               </div>
