@@ -1,138 +1,285 @@
 <!DOCTYPE html>
-<html lang="sl" class="h-full bg-stone-50">
+<html lang="sl" class="h-full bg-slate-50 scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>O' Sole Mio – Vprašalnik o Blagovni Znamki in Vsebinah</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Playfair Display for Mediterranean feel & Inter for readability -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Playfair Display for Mediterranean feel & Inter for readability -->
+  <title>Vprašalnik za Spoznavanje Podjetja & Načrtovanje Marketinške Strategije</title>
+  
+  <!-- Google Fonts: Montserrat -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            serif: ['"Playfair Display"', 'Georgia', 'serif'],
-            sans: ['Inter', 'system-ui', 'sans-serif'],
+            sans: ['Montserrat', 'system-ui', 'sans-serif'],
+            serif: ['Montserrat', 'system-ui', 'sans-serif'],
           },
           colors: {
-            med: {
-              terracotta: '#c85a32',
-              terracottaDark: '#a3411e',
-              sun: '#f59e0b',
-              olive: '#475e3e',
-              oliveDark: '#35472e',
-              warmCream: '#fbf9f4',
-              sand: '#f3efe6',
-              stone: '#38332e',
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#0d9488',
+              600: '#0f766e',
+              700: '#115e59',
+            },
+            accent: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+            },
+            primary: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
             }
           }
         }
       }
     }
   </script>
+
   <style>
-    /* Custom subtle scrollbar & transitions */
+    * {
+      font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    /* Custom Scrollbar */
     ::-webkit-scrollbar {
       width: 8px;
+      height: 8px;
     }
     ::-webkit-scrollbar-track {
-      background: #f3efe6;
+      background: #f1f5f9;
     }
     ::-webkit-scrollbar-thumb {
-      background: #d6ccbe;
-      border-radius: 4px;
+      background: #cbd5e1;
+      border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #c85a32;
+      background: #94a3b8;
     }
-    .custom-ring:focus-within {
-      ring-width: 2px;
-      --tw-ring-color: #c85a32;
-      border-color: #c85a32;
+
+    /* Interactive Chip & Card transitions */
+    .interactive-chip {
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
     }
+    .interactive-chip:active {
+      transform: scale(0.97);
+    }
+    .interactive-chip.active {
+      background-color: #4f46e5 !important;
+      color: #ffffff !important;
+      border-color: #4f46e5 !important;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28) !important;
+    }
+    .interactive-chip.active strong,
+    .interactive-chip.active span,
+    .interactive-chip.active p,
+    .interactive-chip.active div {
+      color: #ffffff !important;
+    }
+    .interactive-chip.active .chip-desc {
+      color: #e0e7ff !important;
+      opacity: 0.95;
+    }
+    .interactive-chip.active i {
+      color: #ffffff !important;
+    }
+
+    /* Negative / Warning Chip */
+    .danger-chip.active {
+      background-color: #ef4444 !important;
+      color: #ffffff !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
+    }
+
+    html {
+      scroll-padding-top: 130px;
+    }
+    section[id] {
+      scroll-margin-top: 130px;
+    }
+
+    /* Print Styles: Hide interactive web UI, show ONLY dedicated report with main questions & answers */
+    #printReportContainer {
+      display: none;
+    }
+
     @media print {
-      .no-print {
+      body > *:not(#printReportContainer) {
         display: none !important;
       }
+      
       body {
         background: #ffffff !important;
-        color: #1c1917 !important;
+        color: #0f172a !important;
+        font-family: 'Montserrat', system-ui, -apple-system, sans-serif !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
-      .print-shadow-none {
-        box-shadow: none !important;
-        border: 1px solid #e7e5e4 !important;
+
+      #printReportContainer {
+        display: block !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-family: 'Montserrat', system-ui, -apple-system, sans-serif !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
       }
-      textarea, input {
-        border-color: #d6d3d1 !important;
+
+      @page {
+        size: A4 portrait;
+        margin: 1.6cm 1.4cm 1.6cm 1.4cm;
+      }
+
+      .print-no-break {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+
+      .print-section-header {
+        break-after: avoid !important;
+        page-break-after: avoid !important;
       }
     }
   </style>
 </head>
 
-<body class="min-h-full font-sans text-stone-800 antialiased flex flex-col bg-stone-50 selection:bg-amber-100 selection:text-amber-900">
+<body class="min-h-full font-sans text-slate-800 antialiased flex flex-col bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900">
 
-  <!-- TOP HEADER / NAV -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 transition-all shadow-xs no-print">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-row items-center justify-between gap-4">
+  <!-- TOP HEADER / NAV (UNIFIED SOLID STICKY BAR) -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-md transition-all no-print">
+    <!-- Top Row: Logo, Title & Actions -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-4 border-b border-slate-100">
+      
+      <!-- Logo & Title -->
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-med-terracotta flex items-center justify-center text-white shadow-sm shrink-0">
-          <i data-lucide="sun" class="w-5 h-5"></i>
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-primary-600 to-indigo-800 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+          <i data-lucide="compass" class="w-5 h-5"></i>
         </div>
         <div>
-          <h1 class="font-serif font-bold text-lg sm:text-xl text-stone-900 leading-tight">O’ Sole Mio</h1>
-          <p class="text-xs font-medium text-stone-500">Delikatesa & Kulinarični Studio • Strateški Vprašalnik</p>
+          <h1 class="font-bold text-sm sm:text-base text-slate-900 leading-tight tracking-tight">Marketinška Strategija</h1>
+          <p class="text-xs font-medium text-slate-500 flex items-center gap-1.5">
+            <span class="hidden sm:inline">Strateški vprašalnik</span>
+            <span id="saveDot" class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="saveStatus" class="text-emerald-700 font-semibold text-xs">Povezano s Supabase</span>
+          </p>
         </div>
       </div>
 
-      <!-- Actions -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button onclick="openResetModal()" type="button" class="px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-colors border border-stone-200">
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <button onclick="submitToSupabase()" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition-all active:scale-95" title="Shrani odgovore v bazo">
+          <i data-lucide="save" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Shrani</span>
+        </button>
+
+        <button onclick="openResetModal()" type="button" class="px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-slate-200">
           Počisti
         </button>
 
-        <button onclick="window.print()" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-med-terracotta hover:bg-med-terracottaDark rounded-xl shadow-xs transition-all active:scale-95">
+        <button onclick="printReport()" type="button" class="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-all active:scale-95 shadow-indigo-600/20">
           <i data-lucide="printer" class="w-4 h-4"></i>
-          <span>Natisni / Shrani PDF</span>
+          <span class="hidden sm:inline">Natisni / Shrani PDF</span>
+          <span class="sm:hidden">Natisni PDF</span>
         </button>
       </div>
     </div>
 
-    <!-- Progress Indicator Bar -->
-    <div class="w-full bg-stone-100 h-1">
-      <div id="progressBar" class="bg-gradient-to-r from-amber-500 via-med-terracotta to-med-olive h-1 transition-all duration-300" style="width: 0%"></div>
+    <!-- Bottom Row: Sklopi Navigation (Constantly Visible & Solid) -->
+    <div class="bg-slate-50/95 border-b border-slate-200/60 py-2">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap scrollbar-none">
+        <span class="text-slate-500 font-bold uppercase tracking-wider text-[11px] mr-1 flex items-center gap-1 shrink-0">
+          <i data-lucide="bookmark" class="w-3.5 h-3.5 text-indigo-600"></i> Sklopi:
+        </span>
+        <a href="#podatki-narocnika" class="nav-section-link px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:border-indigo-400 hover:text-indigo-600 transition shadow-2xs">
+          Podatki
+        </a>
+        <a href="#sklop-1" class="nav-section-link px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:border-indigo-400 hover:text-indigo-600 transition shadow-2xs">
+          1. Predstavitev
+        </a>
+        <a href="#sklop-2" class="nav-section-link px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:border-indigo-400 hover:text-indigo-600 transition shadow-2xs">
+          2. Ponudba & Prednost
+        </a>
+        <a href="#sklop-3" class="nav-section-link px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:border-indigo-400 hover:text-indigo-600 transition shadow-2xs">
+          3. Vaše Stranke
+        </a>
+        <a href="#sklop-4" class="nav-section-link px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:border-indigo-400 hover:text-indigo-600 transition shadow-2xs">
+          4. Cilji
+        </a>
+        <a href="#sklop-5" class="nav-section-link px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:border-indigo-400 hover:text-indigo-600 transition shadow-2xs">
+          5. Identiteta & Ton
+        </a>
+      </div>
+    </div>
+
+    <!-- Progress Indicator Bar at bottom of sticky header -->
+    <div class="w-full bg-slate-200/80 h-1.5">
+      <div id="progressBar" class="bg-gradient-to-r from-indigo-500 via-primary-600 to-emerald-500 h-1.5 transition-all duration-300" style="width: 0%"></div>
     </div>
   </header>
 
   <!-- INTRO BANNER -->
-  <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 w-full">
-    <div class="bg-gradient-to-br from-amber-50 via-orange-50/50 to-emerald-50/40 border border-amber-200/70 rounded-2xl p-6 sm:p-8 shadow-xs relative overflow-hidden print-shadow-none">
-      <div class="absolute -right-12 -top-12 w-48 h-48 bg-amber-200/30 rounded-full blur-2xl pointer-events-none"></div>
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 w-full">
+    <div class="bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-10 shadow-xl relative overflow-hidden card-print">
+      <!-- Background Ambient Glow -->
+      <div class="absolute -right-16 -top-16 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-16 -bottom-16 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      
       <div class="relative z-10">
-        <div class="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase text-med-terracotta bg-white px-3 py-1 rounded-full shadow-2xs mb-3 border border-amber-100">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Vprašalnik za Naročnika
+        <div class="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-indigo-300 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full mb-4 border border-white/15">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+          Strateški vprašalnik za naročnika
         </div>
-        <h2 class="font-serif text-2xl sm:text-3xl text-stone-900 font-bold tracking-tight mb-2">
-          Definicija Blagovne Znamke in Vsebin
+        
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight mb-3 text-white">
+          Vprašalnik za Spoznavanje Podjetja in Načrtovanje Marketinške Strategije
         </h2>
-        <p class="text-sm sm:text-base text-stone-600 max-w-3xl leading-relaxed">
-          Dobrodošli! Pred vami je strukturiran vprašalnik, s pomočjo katerega bomo oblikovali prepoznavno identiteto, vsebinski načrt in ton komunikacije za <strong>O' Sole Mio</strong>. Izpolnite vprašanja s svojimi besedami; vaši odgovori bodo neposredna osnova za pripravo objav, video vsebin in kampanj.
+        
+        <p class="text-sm sm:text-base text-slate-300 max-w-3xl leading-relaxed mb-6 font-normal">
+          Da bi lahko učinkovito predstavili vaše podjetje, zgradili prepoznavno blagovno znamko in pripravili strategijo za njegovo prisotnost na družbenih omrežjih, potrebujemo nekaj ključnih informacij o vašem podjetju, ponudbi, strankah in poslovnih ciljih.
         </p>
 
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm max-w-3xl text-xs sm:text-sm text-slate-300 flex items-start gap-3">
+          <i data-lucide="lightbulb" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+          <div>
+            <strong class="text-white font-semibold">Namig za preprosto izpolnjevanje:</strong> 
+            Za večino vprašanj lahko preprosto <em>kliknete pripravljene opcije</em>, označite ustrezne oznake in dodate le tiste podrobnosti, ki so specifične za vaše podjetje. Vaši odgovori se samodejno sproti shranjujejo!
+          </div>
+        </div>
+
         <!-- Progress stats -->
-        <div class="mt-5 flex items-center gap-3 text-xs text-stone-600 font-medium pt-4 border-t border-amber-200/60 no-print">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-            <span>Napredek izpolnjevanja: <strong id="progressPercent" class="text-stone-900 font-bold">0%</strong></span>
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm text-slate-300 font-medium pt-5 border-t border-white/10 no-print">
+          <div class="flex items-center gap-2.5">
+            <span class="relative flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+            <span>Napredek izpolnjevanja: <strong id="progressPercent" class="text-white text-base font-bold">0%</strong></span>
+          </div>
+
+          <div class="flex items-center gap-4 text-xs text-slate-400">
+            <span>5 sklopov • 20 interaktivnih vprašanj</span>
           </div>
         </div>
       </div>
@@ -140,495 +287,1283 @@
   </section>
 
   <!-- MAIN FORM -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
-    <form id="brandForm" class="space-y-8" onsubmit="event.preventDefault()">
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+    <form id="marketingForm" class="space-y-8" onsubmit="event.preventDefault()">
 
-      <!-- SEKCIJA 1: ZGODBA & VIZIJA -->
-      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
-        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
-          <div class="w-12 h-12 rounded-xl bg-orange-100 text-med-terracotta flex items-center justify-center shrink-0">
-            <i data-lucide="book-open" class="w-6 h-6"></i>
+      <!-- OSNOVNI PODATKI O PODJETJU / NAROČNIKU -->
+      <section id="podatki-narocnika" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
+        <div class="flex items-center gap-3.5 mb-6 pb-4 border-b border-slate-100">
+          <div class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <i data-lucide="user-check" class="w-5 h-5"></i>
           </div>
           <div>
-            <span class="text-xs font-bold text-med-terracotta tracking-wider uppercase">1. Sklop</span>
-            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Zgodba, Srce & Poslanstvo</h3>
-            <p class="text-xs sm:text-sm text-stone-500">Kaj je tisto pristno mediteransko bistvo, ki ga morajo začutiti ljudje skozi zaslon?</p>
+            <span class="text-xs font-bold text-indigo-600 tracking-wider uppercase">Začetek</span>
+            <h3 class="text-lg sm:text-xl font-bold text-slate-900">Podatki o naročniku in podjetju</h3>
           </div>
         </div>
 
-        <div class="space-y-6">
-          <!-- Vprašanje 1.1 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label for="q_story_why" class="block text-sm font-semibold text-stone-800 mb-1.5">
-              1.1 Zakaj je nastal O' Sole Mio? Kateri ključni trenutek je botroval odprtju?
-            </label>
-            <p class="text-xs text-stone-500 mb-2">Opišite svojo osebno strast, spomin z dopusta, pomanjkanje pristnih sestavin na slovenskem trgu itd.</p>
-            <textarea id="q_story_why" rows="3" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-med-terracotta focus:ring-1 focus:ring-med-terracotta outline-none transition" placeholder="Npr.: Želeli smo prinesti nefiltrirane okuse južne Italije v domačo kuhinjo..."></textarea>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_company">Naziv podjetja / znamke *</label>
+            <input type="text" id="client_company" placeholder="npr. Moje Podjetje d.o.o." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_contact">Kontaktna oseba *</label>
+            <input type="text" id="client_contact" placeholder="Ime in priimek" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_email">E-poštni naslov *</label>
+            <input type="email" id="client_email" placeholder="vas@podjetje.si" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_website">Spletna stran / družbena omrežja</label>
+            <input type="text" id="client_website" placeholder="www.podjetje.si, @instagram" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- 1. SKLOP: PREDSTAVITEV PODJETJA -->
+      <!-- ========================================== -->
+      <section id="sklop-1" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
+        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-xs">
+            <i data-lucide="building-2" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-indigo-600 tracking-wider uppercase bg-indigo-50 px-2.5 py-0.5 rounded-full">1. Sklop</span>
+              <span class="text-xs text-slate-400">Vprašanja 1 – 4</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Predstavitev Podjetja</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kdo ste, kaj je vaše bistvo, zakaj ste začeli in kam potujete.</p>
+          </div>
+        </div>
+
+        <div class="space-y-8">
+          <!-- VPRAŠANJE 1 -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kako bi na kratko predstavili svoje podjetje nekomu, ki zanj še nikoli ni slišal?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">S čim se ukvarjate, kaj ponujate in na katerem področju poslujete?</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Besedilo -->
+              <div>
+                <label for="q1_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Vaša kratka predstavitev (2-3 stavki):</label>
+                <textarea id="q1_text" rows="3" placeholder="Opišite vaše podjetje s svojimi besedami: komu pomagate, kaj ponujate in kaj je vaša posebnost..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-white transition"></textarea>
+              </div>
+
+              <!-- Hitra izbira poslovnega modela -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Označite tip vašega poslovanja:</span>
+                <div class="flex flex-wrap gap-2" data-group="q1_business_type">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🛍️ B2C (Končnim kupcem)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🏢 B2B (Podjetjem & partnerjem)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🛒 Fizična trgovina / salon / studio
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🌐 Spletna trgovina (E-commerce)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🛠️ Storitvena dejavnost
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🏭 Lastna proizvodnja
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🍽️ Gostinstvo & kulinarika
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    💡 Svetovanje & agencija
+                  </button>
+                </div>
+              </div>
+
+              <!-- Geografski doseg -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Geografski doseg:</span>
+                <div class="flex flex-wrap gap-2" data-group="q1_reach">
+                  <button type="button" class="interactive-chip text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    📍 Lokalno (mesto / regija)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    🇸🇮 Celotna Slovenija
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    🇪🇺 Mednarodno / Regija (Adria / EU)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    🌍 Globalno
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Vprašanje 1.2 -->
-          <div>
-            <label for="q_story_team" class="block text-sm font-semibold text-stone-800 mb-1.5">
-              1.2 Kdo stoji za trgovino in kakšen je vaš odnos do izdelkov?
-            </label>
-            <p class="text-xs text-stone-500 mb-2">Ali sami potujete na jug, osebno testirate vsak kolobar sira, poznate kmete?</p>
-            <textarea id="q_story_team" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-med-terracotta focus:ring-1 focus:ring-med-terracotta outline-none transition" placeholder="Npr.: Majhna družinska ekipa, ki vsak izdelek najprej preizkusi za lastno nedeljsko mizo..."></textarea>
+          <!-- VPRAŠANJE 2 -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kako in zakaj se je začela zgodba vašega podjetja?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Kaj vas je spodbudilo k ustanovitvi podjetja? Ali obstaja zanimiva zgodba, posebnost ali pomemben mejnik v njegovem razvoju?</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Motivi za ustanovitev -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Glavni povodi za nastanek (izberite ustrezne):</span>
+                <div class="flex flex-wrap gap-2" data-group="q2_origins">
+                  <button type="button" class="interactive-chip text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    💡 Odkrita tržna vrzel (nekaj je manjkalo)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    ❤️ Osebna strast & ljubezen do stroke
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    👨‍👩‍👧 Družinska tradicija & nadaljevanje znanja
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🎯 Reševanje lastne osebne težave
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🚀 Želja po bistveno višji ravni kakovosti
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🔬 Inovacija ali lasten unikaten recept / pristop
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q2_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Zgodba ali ključni mejnik podjetja:</label>
+                <textarea id="q2_text" rows="3" placeholder="Napišite zanimivo anekdoto ali prelomni trenutek, ki je zaznamoval razvoj podjetja..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-white transition"></textarea>
+              </div>
+            </div>
           </div>
 
-          <!-- Vprašanje 1.3: Pred kamero? -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-2">
-              1.3 Ali ste pripravljeni stopiti pred kamero kot obraz trgovine?
-            </label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="camera_preference_group">
-              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="camera_presence" value="Da, osebno bom govoril/a pred kamero" class="accent-med-terracotta h-4 w-4">
-                <span class="text-xs sm:text-sm font-medium text-stone-700">Da, polna prisotnost (jaz sem obraz)</span>
-              </label>
-              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="camera_presence" value="Zgolj delno (roke pri rezanju, glas v ozadju - voiceover)" class="accent-med-terracotta h-4 w-4">
-                <span class="text-xs sm:text-sm font-medium text-stone-700">Delno (roke pri rezanju, glas v ozadju)</span>
-              </label>
-              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="camera_presence" value="Ne, fokus naj bo le na hrani, ambientu in kupcih" class="accent-med-terracotta h-4 w-4">
-                <span class="text-xs sm:text-sm font-medium text-stone-700">Brez obraza (fokus le na izdelkih in estetiki)</span>
-              </label>
+          <!-- VPRAŠANJE 3 -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kakšna je vaša dolgoročna vizija podjetja?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Kaj želite s podjetjem doseči v prihodnosti? Kje se vidite čez 5–10 let in kakšno podjetje želite postati?</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Hitre usmeritve vizije -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Ključne smeri vaše vizije:</span>
+                <div class="flex flex-wrap gap-2" data-group="q3_vision_tags">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🏆 Vodilni ponudnik ("Top-of-mind") v regiji
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🌍 Širitev na tuje trge / internacionalizacija
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    💎 Sinonim za butičnost & brezkompromisno kakovost
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🏪 Odpiranje novih poslovalnic ali franšiz
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🤝 Močna, zvesta in angažirana skupnost kupcev
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400 flex items-center gap-1.5">
+                    🌿 Trajnostno, ekološko in družbeno odgovorno podjetje
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q3_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Opišite vašo vizijo čez 5 do 10 let:</label>
+                <textarea id="q3_text" rows="3" placeholder="Kakšno podjetje želite zgraditi, kakšne cilje doseči in po čem želite biti prepoznani..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-white transition"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- VPRAŠANJE 4 -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">4</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Katere vrednote so za vaše podjetje najpomembnejše?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Kaj vam je pri poslovanju najbolj pomembno? Kliknite najpomembnejše vrednote ali dodajte svoje.</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Vrednote čipi -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Izberite 3–5 ključnih vrednot:</span>
+                <div class="flex flex-wrap gap-2" data-group="q4_values">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    💎 Vrhunska kakovost
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    🤝 Zanesljivost in točnost
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    ⚖️ Poštenost in transparentnost
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    💡 Inovativnost in napredek
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    👤 Osebni pristop in človečnost
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    📜 Tradicija in spoštovanje korenin
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    💰 Dostopnost in poštena cena
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    🌿 Naravno, lokalno in trajnostno
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    ⚡ Hitrost in odzivnost
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    🎨 Estetika in dovršenost detajlov
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-indigo-400">
+                    🛡️ Varnost in strokovnost
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q4_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Kako te vrednote živite v praksi ali dodatne vrednote:</label>
+                <textarea id="q4_text" rows="2" placeholder="Npr. Nikoli ne sklepamo kompromisov pri sestavinah; vedno se osebno javimo na telefon..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-white transition"></textarea>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SEKCIJA 2: HERO IZDELKI & KULINARIČNA PONUDBA -->
-      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
-        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
-          <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-            <i data-lucide="utensils" class="w-6 h-6"></i>
+      <!-- ========================================== -->
+      <!-- 2. SKLOP: PONUDBA IN KONKURENČNA PREDNOST -->
+      <!-- ========================================== -->
+      <section id="sklop-2" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
+        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 shadow-xs">
+            <i data-lucide="award" class="w-6 h-6"></i>
           </div>
           <div>
-            <span class="text-xs font-bold text-amber-600 tracking-wider uppercase">2. Sklop</span>
-            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Hero Izdelki & Ponudba Delikatese</h3>
-            <p class="text-xs sm:text-sm text-stone-500">Konkretni kulinarični aduti, ki bodo na videoposnetkih sprožili slinjenje gledalcev.</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-amber-600 tracking-wider uppercase bg-amber-50 px-2.5 py-0.5 rounded-full">2. Sklop</span>
+              <span class="text-xs text-slate-400">Vprašanja 5 – 9</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Ponudba in Konkurenčna Prednost</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kaj prodajate, kateri so vaši aduti, zakaj stranke izberejo prav vas in koga spoštujete.</p>
           </div>
         </div>
 
-        <div class="space-y-6">
-          <!-- 2.1 Hero Izdelki -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
-              2.1 Naših 5 »Hero« zvezdnikov (Izdelki, po katerih smo/bomo prepoznavni):
-            </label>
-            <p class="text-xs text-stone-500 mb-2">Navedite točna imena ali vrste (npr. Guanciale za pravo carbonaro, Burrata pugliese, Sicilijansko oljčno olje, Pecorino Romano...)</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="hero_products_container">
-              <input type="text" id="hero_prod_1" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none" placeholder="1. Zvezdnik (npr. Pristen San Daniele pršut)">
-              <input type="text" id="hero_prod_2" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none" placeholder="2. Zvezdnik (npr. Sveža Burrata z juga)">
-              <input type="text" id="hero_prod_3" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none" placeholder="3. Zvezdnik (npr. Bronasto vlečene testenine)">
-              <input type="text" id="hero_prod_4" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none" placeholder="4. Zvezdnik (npr. Pesto Genovese DOP)">
-              <input type="text" id="hero_prod_5" class="rounded-xl border border-stone-300 p-2.5 text-sm focus:border-amber-500 outline-none sm:col-span-2" placeholder="5. Zvezdnik (npr. Narezane delikatesne plošče za domov)">
+        <div class="space-y-8">
+          <!-- VPRAŠANJE 5 -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">5</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Katere izdelke ali storitve trenutno ponujate?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Na kratko predstavite svojo ponudbo in področja, na katerih poslujete.</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Cenovni nivo ponudbe -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Cenovni rang vaše ponudbe:</span>
+                <div class="flex flex-wrap gap-2" data-group="q5_price_range">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🟢 Dostopno / ugodno za vsak žep
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🟡 Srednji razred (optimalno razmerje cena/kakovost)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🟣 Višji / Premium segment
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    ⚫ Ekskluzivno / Luksuz / Po meri
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q5_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Kratek pregled glavnih skupin izdelkov ali storitev:</label>
+                <textarea id="q5_text" rows="3" placeholder="Naštejte glavne kategorije (npr. catering, narezki, spletni tečaji, frizerske storitve, ročno izdelani izdelki...)" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white transition"></textarea>
+              </div>
             </div>
           </div>
 
-          <!-- 2.2 Poreklo / Zgodba dobaviteljev -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
-              2.2 Iz katerih regij prihajajo dobrote in kako sodelujete z dobavitelji?
-            </label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3" id="regions_chips">
-              <button type="button" onclick="toggleRegion(this, 'Južna Italija (Sicilija, Kampanija, Apulija)')" class="region-chip text-xs px-3 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:border-amber-400 text-left transition-all font-medium active:scale-98">
-                ☀️ Južna Italija
-              </button>
-              <button type="button" onclick="toggleRegion(this, 'Severna/Osrednja Italija (Emilija-Romanja, Toskana)')" class="region-chip text-xs px-3 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:border-amber-400 text-left transition-all font-medium active:scale-98">
-                🍷 Toskana & Parma
-              </button>
-              <button type="button" onclick="toggleRegion(this, 'Istra in Kvarner (Oljke, tartufi)')" class="region-chip text-xs px-3 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:border-amber-400 text-left transition-all font-medium active:scale-98">
-                🫒 Istra & Jadran
-              </button>
-              <button type="button" onclick="toggleRegion(this, 'Španija in Grčija (Feta, jamon, oljke)')" class="region-chip text-xs px-3 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:border-amber-400 text-left transition-all font-medium active:scale-98">
-                🌿 Širši Mediteran
-              </button>
+          <!-- VPRAŠANJE 6: 5 NAJBOLJE PRODAJANIH IZDELKOV -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">6</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Katerih je vaših 5 najbolje prodajanih izdelkov oziroma storitev?</label>
             </div>
-            <textarea id="q_regions_details" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-amber-500 outline-none" placeholder="Dodatne opombe o družinskih kmetijah, butičnih proizvajalcih ali certifikatih DOP/IGP..."></textarea>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Naštejte pet izdelkov ali storitev, ki trenutno ustvarjajo največ prodaje oziroma po katerih je največ povpraševanja.</p>
+
+            <div class="ml-0 sm:ml-8 space-y-2.5">
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-xl bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">1</span>
+                <input type="text" id="q6_top1" placeholder="Glavni prodajni adut (Bestseller #1)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white transition">
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-xl bg-amber-500/80 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">2</span>
+                <input type="text" id="q6_top2" placeholder="Drugi najbolj priljubljen izdelek / storitev" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white transition">
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-xl bg-amber-500/70 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">3</span>
+                <input type="text" id="q6_top3" placeholder="Izdelek / storitev #3" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white transition">
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-xl bg-amber-500/60 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">4</span>
+                <input type="text" id="q6_top4" placeholder="Izdelek / storitev #4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white transition">
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-xl bg-amber-500/50 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">5</span>
+                <input type="text" id="q6_top5" placeholder="Izdelek / storitev #5" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white transition">
+              </div>
+            </div>
           </div>
 
-          <!-- 2.3 Storitve v trgovini -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-2">
-              2.3 Dodatne storitve na licu mesta (Označite vse kar velja):
-            </label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 cursor-pointer transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="checkbox" id="srv_narezek" class="accent-med-terracotta rounded h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700">Priprava narezkov & aperitivo desk po naročilu</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 cursor-pointer transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="checkbox" id="srv_sendvic" class="accent-med-terracotta rounded h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700">Sveži sendviči (focaccia / panino) za s seboj</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 cursor-pointer transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="checkbox" id="srv_degustacija" class="accent-med-terracotta rounded h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700">Degustacije v trgovini (poskusi pred nakupom)</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200 hover:bg-stone-50 cursor-pointer transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="checkbox" id="srv_darila" class="accent-med-terracotta rounded h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700">Personalizirani kulinarični darilni paketi</span>
-              </label>
+          <!-- VPRAŠANJE 7: ZAKAJ STRANKE IZBEREJO PRAV VAS -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">7</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Zakaj stranke izberejo prav vaše podjetje? (Konkurenčna prednost)</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Kaj vas razlikuje od drugih ponudnikov? Kaj lahko ponudite, česar konkurenca ne more ali ne ponuja v enaki meri?</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Čipi prednosti -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Glavne razlikovalne prednosti:</span>
+                <div class="flex flex-wrap gap-2" data-group="q7_advantages">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    ⭐ Preverjeno višja kakovost materialov / sestavin
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🧑‍💼 Strokovno osebno svetovanje & pristop
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    ⚡ Izjemna hitrost odziva & kratki roki
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🎯 Popolna prilagoditev željam naročnika (po meri)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🏷️ Boljše razmerje med ceno in vrednostjo
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🏆 Dolgoletne izkušnje & referenčni projekti
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    📍 Lokalno poreklo / domača proizvodnja
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    💫 Edinstvena izkušnja, ambient & estetika
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🛡️ Zanesljiva poprodajna podpora & garancija
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q7_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Vaša ključna konkurenčna prednost s svojimi besedami:</label>
+                <textarea id="q7_text" rows="3" placeholder="Zakaj se stranka na koncu odloči za vas in ne za konkurenco..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white transition"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- VPRAŠANJE 8: KONKURENTI & VZORNIKI -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">8</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kdo so vaši največji konkurenti oziroma podjetja, ki jih najbolj spoštujete?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Navedite nekaj podjetij, s katerimi tekmujete, ali podjetij (tudi iz tujine), katerih način poslovanja in predstavitve vam je všeč.</p>
+
+            <div class="ml-0 sm:ml-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 rounded-xl bg-white border border-slate-200">
+                <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5 mb-2">
+                  <i data-lucide="swords" class="w-4 h-4 text-rose-500"></i> Neposredni konkurenti:
+                </span>
+                <p class="text-xs text-slate-500 mb-2.5">Kdo na vašem trgu ponuja podobne rešitve?</p>
+                <textarea id="q8_competitors" rows="3" placeholder="Imena podjetij / profilov konkurentov..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-slate-50/50 transition"></textarea>
+              </div>
+
+              <div class="p-4 rounded-xl bg-white border border-slate-200">
+                <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5 mb-2">
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i> Podjetja za navdih / vzorniki:
+                </span>
+                <p class="text-xs text-slate-500 mb-2.5">Čigav marketing, videi ali estetika vam je všeč?</p>
+                <textarea id="q8_inspiration" rows="3" placeholder="Znamke doma ali v tujini, ki so vam za vzor..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-slate-50/50 transition"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- VPRAŠANJE 9: IZKUŠNJA STRANKE -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">9</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kakšno izkušnjo želite zagotoviti svojim strankam?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Kako želite, da se stranka počuti med sodelovanjem z vami in po opravljenem nakupu oziroma storitvi?</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Čustva / občutki -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Kako naj se stranka počuti:</span>
+                <div class="flex flex-wrap gap-2" data-group="q9_feelings">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    😌 Mirno & varno ("V pravih rokah sem")
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🤩 Navdušeno ("Waw" učinek nad pričakovanji)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    👑 Posebno & spoštovano (osebna pozornost)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    🫂 Domače & toplo sprejeto (brez togosti)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    ⚡ Razbremenjeno (vse je rešeno hitro in brez zapletov)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-amber-400">
+                    💡 Samozavestno & dobro informirano
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q9_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Vaša vizija popolne uporabniške izkušnje:</label>
+                <textarea id="q9_text" rows="2" placeholder="Opišite občutek, ki ga želite zapustiti stranki po nakupu ali sodelovanju..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 bg-white transition"></textarea>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SEKCIJA 3: CILJNI KUPEC & NJEGOVI MOTIVI -->
-      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
-        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
-          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-med-olive flex items-center justify-center shrink-0">
+      <!-- ========================================== -->
+      <!-- 3. SKLOP: VAŠE STRANKE -->
+      <!-- ========================================== -->
+      <section id="sklop-3" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
+        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-xs">
             <i data-lucide="users" class="w-6 h-6"></i>
           </div>
           <div>
-            <span class="text-xs font-bold text-med-olive tracking-wider uppercase">3. Sklop</span>
-            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Naš Idealni Gost & Kupec</h3>
-            <p class="text-xs sm:text-sm text-stone-500">Komu točno govorimo v videoposnetkih in zakaj raje izberejo nas kot navaden trgovski diskont?</p>
-          </div>
-        </div>
-
-        <div class="space-y-6">
-          <!-- 3.1 Profil kupca -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
-              3.1 Kdo je naša tipična stranka in ob kakšnih priložnostih kupuje?
-            </label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-2.5">
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-olive has-[:checked]:bg-emerald-50/40">
-                <input type="checkbox" id="target_foodies" class="accent-med-olive rounded h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700 font-medium">Domači kulinarični navdušenci (za vikend kuhanje)</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-olive has-[:checked]:bg-emerald-50/40">
-                <input type="checkbox" id="target_parties" class="accent-med-olive rounded h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700 font-medium">Gostitelji zabav (narezki, vino za družbo)</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-olive has-[:checked]:bg-emerald-50/40">
-                <input type="checkbox" id="target_gifts" class="accent-med-olive rounded h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700 font-medium">Kupci daril & poslovni partnerji</span>
-              </label>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-emerald-600 tracking-wider uppercase bg-emerald-50 px-2.5 py-0.5 rounded-full">3. Sklop</span>
+              <span class="text-xs text-slate-400">Vprašanja 10 – 13</span>
             </div>
-            <textarea id="q_target_description" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-med-olive outline-none" placeholder="Opišite še druge posebnosti (starost, navade, kaj jim pomeni dobra hrana)..."></textarea>
-          </div>
-
-          <!-- 3.2 Glavna prednost pred supermarketom -->
-          <div>
-            <label for="q_advantage_supermarket" class="block text-sm font-semibold text-stone-800 mb-1.5">
-              3.2 Kateri je tisti glavni razlog, da kupec pride k nam in ne gre v supermarket?
-            </label>
-            <p class="text-xs text-stone-500 mb-2">To bo temelj vseh naših izobraževalnih primerjalnih videov (npr. sveže rezanje na licu mesta, svetovanje bottegaia, nerazredčeno olje, okus ki ga supermarket nima).</p>
-            <textarea id="q_advantage_supermarket" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-med-olive outline-none" placeholder="Npr.: Pri nas lahko vsak sir prej pokusiš. Znamo svetovati, katero vino gre zraven. Naš pršut režemo tako tanko, da se stopi na jeziku..."></textarea>
-          </div>
-
-          <!-- 3.3 Pogosta vprašanja strank -->
-          <div>
-            <label for="q_faq_customer" class="block text-sm font-semibold text-stone-800 mb-1.5">
-              3.3 Katero vprašanje stranke v trgovini najpogosteje zastavijo?
-            </label>
-            <p class="text-xs text-stone-500 mb-2">To so takojšnje ideje za privlačne TikTok in Reel posnetke!</p>
-            <input type="text" id="q_faq_customer" class="w-full rounded-xl border border-stone-300 p-3 text-sm focus:border-med-olive outline-none" placeholder="Npr.: 'Kako pripravim pravo carbonaro brez smetane?' ali 'Kako dolgo zdrži parmezan?'">
-          </div>
-        </div>
-      </section>
-
-      <!-- SEKCIJA 4: ESTETIKA, ZVOK & VIBE -->
-      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
-        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
-          <div class="w-12 h-12 rounded-xl bg-red-100 text-med-terracotta flex items-center justify-center shrink-0">
-            <i data-lucide="palette" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <span class="text-xs font-bold text-med-terracotta tracking-wider uppercase">4. Sklop</span>
-            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Vzdušje, Estetika & Ton (Vibe)</h3>
-            <p class="text-xs sm:text-sm text-stone-500">Kako mora profil zveneti in izgledati: izberite energijo in občutke.</p>
+            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Vaše Stranke</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kdo so, kaj potrebujejo, katera vprašanja si zastavljajo in kakšne stranke si želite v prihodnje.</p>
           </div>
         </div>
 
-        <div class="space-y-6">
-          <!-- 4.1 Pridevniki za občutek (Chips) -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
-              4.1 Izberite 4 do 6 besed, ki najbolje opisujejo želeni občutek vsebin:
-            </label>
-            <p class="text-xs text-stone-500 mb-2.5">Kliknite na oznake, da jih označite:</p>
-            <div class="flex flex-wrap gap-2" id="vibe_chips_container">
-              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">☀️ Sončno & Sredozemsko</button>
-              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🍷 Toplo & Gostoljubno</button>
-              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🪵 Rustikalno & Pristno</button>
-              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">✨ Premium & Delikatesno</button>
-              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🤌 Strastno & Italijansko</button>
-              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🤤 Apetitivno (ASMR)</button>
-              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🎓 Strokovno & Poučno</button>
-              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">😄 Sproščeno & Duhovito</button>
-              <button type="button" onclick="toggleVibeChip(this)" class="vibe-tag text-xs font-medium px-3.5 py-2 rounded-full border border-stone-200 text-stone-700 hover:border-amber-500 transition-all active:scale-95">🍋 Dolce Vita sproščenost</button>
+        <div class="space-y-8">
+          <!-- VPRAŠANJE 10: KDO SO STRANKE -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0">10</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kdo so vaše najpogostejše stranke?</label>
             </div>
-          </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Opišite ljudi ali podjetja, ki običajno kupujejo vaše izdelke oziroma uporabljajo vaše storitve (starost, spol, lokacija, življenjski slog).</p>
 
-          <!-- 4.2 Zvočna podlaga -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-2">
-              4.2 Zvočni slog za video vsebine (Reels & TikTok):
-            </label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="sound_style" value="Avtentični zvoki priprave (ASMR noža, kapljanja, hrustanja) z nežno akustično podlago" class="accent-med-terracotta h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700 font-medium">Kulinarični ASMR + naravni zvoki</span>
-              </label>
-              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="sound_style" value="Klasični nostalgični italijanski šansoni (Dean Martin, Mina, Celentano)" class="accent-med-terracotta h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700 font-medium">Italijanska nostalgija & šansoni</span>
-              </label>
-              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="sound_style" value="Moderen trendovski mediteranski chill / lofi ritem" class="accent-med-terracotta h-4 w-4">
-                <span class="text-xs sm:text-sm text-stone-700 font-medium">Moderen chill & poletni ritmi</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- 4.3 Rdeča linija: Kaj je PREPOVEDANO? -->
-          <div>
-            <label for="q_forbidden_elements" class="block text-sm font-semibold text-stone-800 mb-1.5">
-              4.3 Kaj je za naš profil strogo PREPOVEDANO (Rdeča linija)?
-            </label>
-            <p class="text-xs text-stone-500 mb-2">Česa se pri ustvarjanju vsebin pod nobenim pogojem ne sme uporabiti? (npr. agresivno kričanje 'Kupite zdaj', sterilna umetna svetloba, poceni grafike, hladna plastika...)</p>
-            <textarea id="q_forbidden_elements" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-red-500 outline-none" placeholder="Npr.: Ne želimo agresivnih 'TV prodaja' popustov, ne želimo generičnih stock videov, ne želimo slabe svetlobe..."></textarea>
-          </div>
-        </div>
-      </section>
-
-      <!-- SEKCIJA 5: TON KOMUNIKACIJE & JEZIK -->
-      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
-        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
-          <div class="w-12 h-12 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
-            <i data-lucide="message-square" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <span class="text-xs font-bold text-stone-500 tracking-wider uppercase">5. Sklop</span>
-            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Jezik, Nagovor & Besedišče</h3>
-            <p class="text-xs sm:text-sm text-stone-500">Pravila za pisanje opisov pod objavami in odgovarjanje na komentarje.</p>
-          </div>
-        </div>
-
-        <div class="space-y-6">
-          <!-- 5.1 Tikanje ali Vikanje -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-2">
-              5.1 Način nagovora v objavah in komentarjih:
-            </label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="address_style" value="Tikanje (Toplo, osebno, kot s prijateljem ob kozarcu vina)" class="accent-med-terracotta h-4 w-4">
-                <div>
-                  <span class="text-sm font-medium text-stone-800 block">Tikanje (Priporočeno za družbena omrežja)</span>
-                  <span class="text-xs text-stone-500">»Pridi na kozarec«, »Poskusi to kombinacijo«, »Kaj boš kuhal danes?«</span>
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Demografija čipi -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Ciljna skupina:</span>
+                <div class="flex flex-wrap gap-2" data-group="q10_audience_type">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    👩 Pretežno ženske
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    👨 Pretežno moški
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    ⚖️ Enakovredno oboji
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    👨‍👩‍👧 Družine z otroki
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🏢 Podjetja (B2B odločevalci, direktorji)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    💼 Mladi zaposleni strokovnjaki
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    👵 Starejši / upokojenci
+                  </button>
                 </div>
-              </label>
-              <label class="flex items-center gap-3 p-3.5 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="address_style" value="Vikanje (Zelo vljudno, tradicionalno gosposko)" class="accent-med-terracotta h-4 w-4">
-                <div>
-                  <span class="text-sm font-medium text-stone-800 block">Vikanje</span>
-                  <span class="text-xs text-stone-500">»Vljudno vabljeni v našo delikateso«, »Za vas smo pripravili...«</span>
+              </div>
+
+              <!-- Starostna skupina -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Glavna starostna skupina:</span>
+                <div class="flex flex-wrap gap-2" data-group="q10_age_group">
+                  <button type="button" class="interactive-chip text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    18–25 let
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    25–35 let
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    35–50 let
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    50–65 let
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    65+ let
+                  </button>
                 </div>
-              </label>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q10_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Opišite njihove navade, življenjski slog ali posebnosti:</label>
+                <textarea id="q10_text" rows="2" placeholder="Npr. Zasedeni posamezniki, ki cenijo dobro hrano; lastniki hiš; vodje marketinga..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-white transition"></textarea>
+              </div>
             </div>
           </div>
 
-          <!-- 5.2 Raba tujih izrazov -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-1.5">
-              5.2 Ali vpletamo italijanske/sredozemske izraze?
-            </label>
-            <p class="text-xs text-stone-500 mb-2">Npr. <em>»Aperitivo time«, »Buon appetito«, »Mamma mia«, »Dolce far niente«, »Bottega«</em></p>
-            <div class="flex flex-col sm:flex-row gap-3">
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="italian_phrases" value="Da, zmerno za šarm in mediteranski pridih" class="accent-med-terracotta">
-                <span class="text-xs sm:text-sm text-stone-700">Da, zmerno za šarm in mediteranski pridih</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 transition has-[:checked]:border-med-terracotta has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="italian_phrases" value="Samo slovensko, brez tujih fraz" class="accent-med-terracotta">
-                <span class="text-xs sm:text-sm text-stone-700">Raje samo čista slovenščina</span>
-              </label>
+          <!-- VPRAŠANJE 11: POTREBE, TEŽAVE IN ŽELJE -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0">11</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Katere potrebe, težave ali želje imajo vaše stranke, zaradi katerih se obrnejo na vas?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Kaj želijo rešiti, izboljšati ali doseči z vašo ponudbo?</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Razlogi in boleče točke -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Ključni vzroki za nakup / povpraševanje:</span>
+                <div class="flex flex-wrap gap-2" data-group="q11_painpoints">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    ⏳ Pomanjkanje časa (želijo hitro rešitev na ključ)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    ❌ Pretekle slabe izkušnje z drugimi ponudniki
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🔍 Iskanje preverjene in trajne kakovosti
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🎁 Iskanje popolnega darila ali rešitve za dogodek
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    💆 Želja po razvajanju, užitku ali dobrem počutju
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    📈 Želja po rasti in boljših poslovnih rezultatih
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🧩 Potreba po unikatni rešitvi po meri
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q11_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Glavna težava ali želja, ki jo rešujete za kupca:</label>
+                <textarea id="q11_text" rows="2" placeholder="Opišite najbolj pogost 'problem', s katerim pridejo do vas..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-white transition"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- VPRAŠANJE 12: KAJ STRANKE NAJBOLJ ZANIMA / SKRBI -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0">12</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kaj stranke najpogosteje zanima, preden se odločijo za nakup?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Katera vprašanja vam zastavljajo? Kaj jih najbolj skrbi? Kaj jih običajno prepriča v sodelovanje z vami?</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Najpogostejši dvomi in vprašanja -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Najpogostejša vprašanja strank pred nakupom:</span>
+                <div class="flex flex-wrap gap-2" data-group="q12_questions">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    💰 "Kakšna je končna cena in ali so kakšni skriti stroški?"
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    ⏳ "Kakšen je rok dobave oziroma izvedbe?"
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🔍 "Kako vem, ali je to primerno ravno zame?"
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🛡️ "Kaj če ne bom zadovoljen (garancija / vračilo)?"
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🌿 "Kakšen je izvor sestavin / materialov?"
+                  </button>
+                </div>
+              </div>
+
+              <!-- Kaj jih prepriča -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Kaj jih običajno dokončno prepriča:</span>
+                <div class="flex flex-wrap gap-2" data-group="q12_converters">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    💬 Mnenja zadovoljnih strank & priporočila
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🧑‍🤝‍🧑 Oseben pogovor & prijazno svetovanje
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    📸 Video ali fotografije rezultatov / izdelka v živo
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🎁 Možnost preizkusa / vzorček
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q12_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Dodatna specifična vprašanja strank:</label>
+                <textarea id="q12_text" rows="2" placeholder="Kaj vas kupci najpogosteje vprašajo po telefonu ali v sporočilu..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-white transition"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- VPRAŠANJE 13: STRANKE V PRIHODNOSTI -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0">13</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Katere stranke si želite pridobiti v prihodnosti?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Ali želite več strank, podobnih obstoječim, ali želite nagovoriti novo skupino ljudi oziroma podjetij? Opišite, kakšne stranke bi si najbolj želeli.</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Smer širitve -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Želena smer razvoja baze strank:</span>
+                <div class="flex flex-wrap gap-2" data-group="q13_future_clients">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🔄 Več strank, podobnih obstoječim (povečanje volumna)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    💎 Prehod na višji / bolj premium segment
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    🏢 Močnejši vstop v B2B (večja podjetja in naročila)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    👶 Nagovor mlajše publike (družbena omrežja, trendi)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-emerald-400">
+                    📍 Širitev v druge slovenske regije ali tujino
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q13_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Opis vaše idealne prihodnje stranke (Sanjski kupec):</label>
+                <textarea id="q13_text" rows="2" placeholder="Kakšne stranke si najbolj želite (profil, vrednote, pripravljenost na sodelovanje)..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-white transition"></textarea>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SEKCIJA 6: CILJI & PRAKTIČNA NAVODILA ZA SNEMANJE -->
-      <section class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs transition-colors print-shadow-none">
-        <div class="flex items-start gap-4 mb-6 pb-4 border-b border-stone-100">
-          <div class="w-12 h-12 rounded-xl bg-yellow-100 text-yellow-800 flex items-center justify-center shrink-0">
+      <!-- ========================================== -->
+      <!-- 4. SKLOP: POSLOVNI IN MARKETINŠKI CILJI -->
+      <!-- ========================================== -->
+      <section id="sklop-4" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
+        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-xs">
             <i data-lucide="target" class="w-6 h-6"></i>
           </div>
           <div>
-            <span class="text-xs font-bold text-yellow-700 tracking-wider uppercase">6. Sklop</span>
-            <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900">Poslovni Cilji & Tehnične Možnosti</h3>
-            <p class="text-xs sm:text-sm text-stone-500">Kratkoročni zagon, dolgoročna vizija in konkretni dogovor za snemanje.</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-blue-600 tracking-wider uppercase bg-blue-50 px-2.5 py-0.5 rounded-full">4. Sklop</span>
+              <span class="text-xs text-slate-400">Vprašanja 14 – 16</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Poslovni in Marketinški Cilji</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kaj želite doseči v naslednjih 3 mesecih, kje želite biti čez 1–2 leti in katere produkte izpostaviti.</p>
           </div>
         </div>
 
-        <div class="space-y-6">
-          <!-- 6.1 Prioriteta ciljev (Naslednje 3 mesece) -->
-          <div>
-            <label class="block text-sm font-semibold text-stone-800 mb-2">
-              6.1 Glavna poslovna prioriteta za prve 3 mesece:
-            </label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="main_goal" value="Fizični obisk delikatese in nakup v živo" class="accent-amber-600">
-                <span class="text-xs sm:text-sm font-medium text-stone-800">1. Obisk v fizični trgovini</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="main_goal" value="Spletna naročila na osolemio.si (dostava na dom)" class="accent-amber-600">
-                <span class="text-xs sm:text-sm font-medium text-stone-800">2. Spletna prodaja na osolemio.si</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200 cursor-pointer hover:bg-stone-50 hover:border-amber-300 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/40">
-                <input type="radio" name="main_goal" value="Gradnja prepoznavnosti znamke in zaupanja" class="accent-amber-600">
-                <span class="text-xs sm:text-sm font-medium text-stone-800">3. Prepoznavnost znamke & doseg</span>
-              </label>
+        <div class="space-y-8">
+          <!-- VPRAŠANJE 14: CILJI V NASLEDNJIH 3 MESECIH -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">14</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kaj želite doseči s predstavitvijo na družbenih omrežjih v naslednjih 3 mesecih?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Navedite konkretne kratkoročne cilje (in če je mogoče, konkretne številke).</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Cilji čipi -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Izberite vaše prednostne cilje v naslednjih 3 mesecih:</span>
+                <div class="flex flex-wrap gap-2" data-group="q14_short_goals">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400 flex items-center gap-1.5">
+                    📩 Več neposrednih povpraševanj (DM, klici, obrazci)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400 flex items-center gap-1.5">
+                    🛒 Povečanje prodaje določenih izdelkov / storitev
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400 flex items-center gap-1.5">
+                    👥 Pridobivanje novih strank
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400 flex items-center gap-1.5">
+                    📢 Večja prepoznavnost in doseg blagovne znamke
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400 flex items-center gap-1.5">
+                    🎉 Uspešna predstavitev novega izdelka ali storitve
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400 flex items-center gap-1.5">
+                    🏬 Več obiska v fizični trgovini ali salonu
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400 flex items-center gap-1.5">
+                    🌐 Več obiska na spletni strani
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400 flex items-center gap-1.5">
+                    🤝 Zvesta in aktivna skupnost sledilcev
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q14_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Konkretne številke ali podrobnosti (npr. +20 novih strank/mesec, +30% prodaje):</label>
+                <textarea id="q14_text" rows="2" placeholder="Navedite konkretne številke ali specifične cilje za naslednje četrtletje..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 bg-white transition"></textarea>
+              </div>
             </div>
           </div>
 
-          <!-- 6.2 Dolgoročni cilj (1-3 leta) -->
-          <div>
-            <label for="q_longterm_goal" class="block text-sm font-semibold text-stone-800 mb-1.5">
-              6.2 Dolgoročni strateški cilj in vizija (Kje vidite O' Sole Mio čez 1 do 3 leta?):
-            </label>
-            <p class="text-xs text-stone-500 mb-2">Npr.: Postati vodilna spletna delikatesa za italijanska živila v Sloveniji, odprtje kulinaričnega degustacijskega bara, širitev lastne blagovne znamke oljčnega olja, franšize...</p>
-            <textarea id="q_longterm_goal" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-amber-500 outline-none" placeholder="Opišite vaš dolgoročni cilj..."></textarea>
-          </div>
-
-          <!-- 6.3 Snemalni dnevi & čas -->
-          <div>
-            <label for="q_filming_logistics" class="block text-sm font-semibold text-stone-800 mb-1.5">
-              6.3 Kdaj in kako lahko poteka snemanje v delikatesi?
-            </label>
-            <p class="text-xs text-stone-500 mb-2">Kdaj je v prostoru dovolj miru za zvok, kdaj je najboljša naravna svetloba ali sveža zaloga?</p>
-            <textarea id="q_filming_logistics" rows="2" class="w-full rounded-xl border-stone-300 border p-3 text-sm focus:border-amber-500 outline-none" placeholder="Npr.: Najbolje ob torkih zjutraj pred odprtjem (od 8h do 10h), ko prispe sveža pošiljka mocarele in je v prostoru popoln mir..."></textarea>
-          </div>
-
-          <!-- 6.4 Kontakt & Spletna stran -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div>
-              <label for="cfg_url" class="block text-xs font-semibold text-stone-700 mb-1">Povezava do spletne trgovine:</label>
-              <input type="text" id="cfg_url" value="https://www.osolemio.si" class="w-full rounded-xl border border-stone-300 p-2.5 text-sm bg-stone-50">
+          <!-- VPRAŠANJE 15: CILJI V 1-2 LETIH -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">15</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kakšne cilje želite doseči v naslednjih 1–2 letih?</label>
             </div>
-            <div>
-              <label for="cfg_contact" class="block text-xs font-semibold text-stone-700 mb-1">Ime odgovorne osebe za vsebine:</label>
-              <input type="text" id="cfg_contact" placeholder="Tvoje ime / kontakt" class="w-full rounded-xl border border-stone-300 p-2.5 text-sm">
+            <p class="text-xs text-slate-500 mb-4 ml-8">Kakšen poslovni napredek pričakujete v tem obdobju? Širitev, rast prodaje, razvoj novih izdelkov?</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Dolgoročni cilji čipi -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Poslovni mejniki za naslednji 1–2 leti:</span>
+                <div class="flex flex-wrap gap-2" data-group="q15_long_goals">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400">
+                    📈 Občutna rast prodaje (podvojitev ali +50%)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400">
+                    🚀 Lansiranje popolnoma nove linije izdelkov / storitev
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400">
+                    🏬 Odpiranje novih lokacij ali širitev poslovalnice
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400">
+                    💼 Širitev ekipe in zaposlitev novih sodelavcev
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400">
+                    🌍 Širitev na tuje trge (izvoz)
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-400">
+                    🤝 Vzpostavitev močnih B2B partnerstev
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q15_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Vaš načrt rasti in pričakovanja:</label>
+                <textarea id="q15_text" rows="2" placeholder="Opišite poslovni napredek, ki ga želite videti v 12–24 mesecih..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 bg-white transition"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- VPRAŠANJE 16: IZDELKI ZA IZPOSTAVITEV -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">16</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Katere izdelke ali storitve želite trenutno najbolj izpostaviti?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Naštejte izdelke oziroma storitve, za katere želite, da jim v prihodnjem obdobju namenimo posebno pozornost.</p>
+
+            <div class="ml-0 sm:ml-8 space-y-3">
+              <!-- Dinamičen seznam izdelkov -->
+              <div id="q16_products_list" class="space-y-2.5">
+                <!-- Dinamične vrstice izdelkov -->
+              </div>
+
+              <!-- Gumb za dodajanje -->
+              <div class="pt-1">
+                <button type="button" onclick="addProduct16()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-all shadow-2xs active:scale-98">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  <span>Dodaj izdelek / storitev</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- EXPORT / SUBMIT BAR -->
-      <section class="bg-gradient-to-r from-stone-900 to-stone-800 text-white rounded-2xl p-6 sm:p-8 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6 no-print">
-        <div>
-          <h4 class="font-serif text-xl sm:text-2xl font-bold mb-1">Je vprašalnik izpolnjen?</h4>
-          <p class="text-stone-300 text-xs sm:text-sm max-w-lg">
-            Preglejte svoje odgovore. Ko ste pripravljeni, shranite obrazec v PDF obliki ali ga natisnite in pošljite svoji ekipi.
-          </p>
+      <!-- ========================================== -->
+      <!-- 5. SKLOP: IDENTITETA IN KOMUNIKACIJA -->
+      <!-- ========================================== -->
+      <section id="sklop-5" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
+        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 shadow-xs">
+            <i data-lucide="sparkle" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-purple-600 tracking-wider uppercase bg-purple-50 px-2.5 py-0.5 rounded-full">5. Sklop</span>
+              <span class="text-xs text-slate-400">Vprašanja 17 – 20</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Identiteta in Komunikacija Blagovne Znamke</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Osebnost znamke, vtisi, ton komunikacije in stvari, ki so strogo prepovedane (No-Go).</p>
+          </div>
         </div>
-        <div class="flex items-center w-full sm:w-auto">
-          <button type="button" onclick="window.print()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
-            <i data-lucide="printer" class="w-4 h-4"></i>
-            Natisni / Shrani PDF
-          </button>
+
+        <div class="space-y-8">
+          <!-- VPRAŠANJE 17: PODJETJE V 3 BESEDAH -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold flex items-center justify-center shrink-0">17</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Če bi morali svoje podjetje opisati s tremi besedami, katere bi izbrali?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Kliknite 3 besede spodaj ali jih sami vpišite v polja.</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Hitre besede za klik -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Kliknite za hitri vnos:</span>
+                <div class="flex flex-wrap gap-2" id="q17_word_chips">
+                  <button type="button" onclick="insertWord(this, 'Moderno')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Moderno</button>
+                  <button type="button" onclick="insertWord(this, 'Zanesljivo')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Zanesljivo</button>
+                  <button type="button" onclick="insertWord(this, 'Kakovostno')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Kakovostno</button>
+                  <button type="button" onclick="insertWord(this, 'Dostopno')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Dostopno</button>
+                  <button type="button" onclick="insertWord(this, 'Inovativno')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Inovativno</button>
+                  <button type="button" onclick="insertWord(this, 'Prestižno')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Prestižno</button>
+                  <button type="button" onclick="insertWord(this, 'Tradicionalno')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Tradicionalno</button>
+                  <button type="button" onclick="insertWord(this, 'Strokovno')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Strokovno</button>
+                  <button type="button" onclick="insertWord(this, 'Prijateljsko')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Prijateljsko</button>
+                  <button type="button" onclick="insertWord(this, 'Drzno')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Drzno</button>
+                  <button type="button" onclick="insertWord(this, 'Avtentično')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Avtentično</button>
+                  <button type="button" onclick="insertWord(this, 'Strastno')" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-medium hover:border-purple-500 hover:text-purple-700 transition">Strastno</button>
+                </div>
+              </div>
+
+              <!-- 3 Vnosna polja -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="relative">
+                  <span class="absolute left-3.5 top-3 text-xs font-bold text-purple-600">1.</span>
+                  <input type="text" id="q17_word1" placeholder="Prva beseda" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 bg-white font-semibold transition">
+                </div>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-3 text-xs font-bold text-purple-600">2.</span>
+                  <input type="text" id="q17_word2" placeholder="Druga beseda" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 bg-white font-semibold transition">
+                </div>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-3 text-xs font-bold text-purple-600">3.</span>
+                  <input type="text" id="q17_word3" placeholder="Tretja beseda" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 bg-white font-semibold transition">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VPRAŠANJE 18: VTIS PRI LJUDEH -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold flex items-center justify-center shrink-0">18</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kakšen vtis želite pustiti pri ljudeh, ko pridejo v stik z vašo blagovno znamko?</label>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 font-medium mb-4 ml-8">Kako želite, da ljudje dojemajo vaše podjetje (izberite ustrezne kartice):</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Kartice vtisov -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" data-group="q18_impressions">
+                <button type="button" class="interactive-chip p-4 rounded-2xl border border-slate-200 bg-white text-left hover:border-purple-400 flex flex-col justify-between">
+                  <div>
+                    <span class="text-xl mb-1.5 block">🎓</span>
+                    <strong class="text-xs sm:text-sm font-bold block mb-1">Strokovno in zaupanja vredno</strong>
+                    <span class="chip-desc text-xs text-slate-600 block leading-relaxed font-normal">Vedo, kaj delajo; imajo znanje in kredibilnost.</span>
+                  </div>
+                </button>
+
+                <button type="button" class="interactive-chip p-4 rounded-2xl border border-slate-200 bg-white text-left hover:border-purple-400 flex flex-col justify-between">
+                  <div>
+                    <span class="text-xl mb-1.5 block">💎</span>
+                    <strong class="text-xs sm:text-sm font-bold block mb-1">Premium in ekskluzivno</strong>
+                    <span class="chip-desc text-xs text-slate-600 block leading-relaxed font-normal">Nekaj posebnega, prestižnega in estetsko dovršenega.</span>
+                  </div>
+                </button>
+
+                <button type="button" class="interactive-chip p-4 rounded-2xl border border-slate-200 bg-white text-left hover:border-purple-400 flex flex-col justify-between">
+                  <div>
+                    <span class="text-xl mb-1.5 block">☕</span>
+                    <strong class="text-xs sm:text-sm font-bold block mb-1">Dostopno in prijazno</strong>
+                    <span class="chip-desc text-xs text-slate-600 block leading-relaxed font-normal">Topel odnos, človeški pristop, brez nepotrebne togosti.</span>
+                  </div>
+                </button>
+
+                <button type="button" class="interactive-chip p-4 rounded-2xl border border-slate-200 bg-white text-left hover:border-purple-400 flex flex-col justify-between">
+                  <div>
+                    <span class="text-xl mb-1.5 block">🚀</span>
+                    <strong class="text-xs sm:text-sm font-bold block mb-1">Inovativno in moderno</strong>
+                    <span class="chip-desc text-xs text-slate-600 block leading-relaxed font-normal">Sledijo sodobnim trendom, sveži, napredni in dinamični.</span>
+                  </div>
+                </button>
+
+                <button type="button" class="interactive-chip p-4 rounded-2xl border border-slate-200 bg-white text-left hover:border-purple-400 flex flex-col justify-between">
+                  <div>
+                    <span class="text-xl mb-1.5 block">🏛️</span>
+                    <strong class="text-xs sm:text-sm font-bold block mb-1">Tradicionalno z izkušnjami</strong>
+                    <span class="chip-desc text-xs text-slate-600 block leading-relaxed font-normal">Stabilnost, tradicija, preverjena kakovost skozi leta.</span>
+                  </div>
+                </button>
+
+                <button type="button" class="interactive-chip p-4 rounded-2xl border border-slate-200 bg-white text-left hover:border-purple-400 flex flex-col justify-between">
+                  <div>
+                    <span class="text-xl mb-1.5 block">🎉</span>
+                    <strong class="text-xs sm:text-sm font-bold block mb-1">Sproščeno in zabavno</strong>
+                    <span class="chip-desc text-xs text-slate-600 block leading-relaxed font-normal">Pozitivna energija, humor, navdihujoče vsebine z nasmehom.</span>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q18_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Dodaten opis želenega vtisa:</label>
+                <textarea id="q18_text" rows="2" placeholder="Opišite vtis z lastnimi besedami..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 bg-white transition"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- VPRAŠANJE 19: TON IN VZDUŠJE (VIBE) -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold flex items-center justify-center shrink-0">19</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Kakšen ton in vzdušje želite, da predstavlja vaša blagovna znamka?</label>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 ml-8">Kako naj podjetje komunicira z ljudmi in kakšen občutek naj ustvarja pri spremljevalcih?</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- Način nagovora -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Glavni način nagovora občinstva:</span>
+                <div class="flex flex-wrap gap-2" data-group="q19_address_form">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-purple-400">
+                    🤝 Tikanje ("Hej, poglej si to...", "Pri nas dobiš...")
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-purple-400">
+                    👔 Vikanje ("Spoštovani, vabimo vas...", "Za vas pripravljamo...")
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-purple-400">
+                    🔀 Odvisno od kanala (spletna stran vikanje, družbena omrežja tikanje)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tonalni čipi -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Ton komunikacije (izberite več):</span>
+                <div class="flex flex-wrap gap-2" data-group="q19_tone_chips">
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-purple-400">
+                    ⚖️ Resno, strokovno in avtoritativno
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-purple-400">
+                    ☕ Sproščeno, prijateljsko in toplo
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-purple-400">
+                    ✨ Elegantno, prefinjeno in minimalistično
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-purple-400">
+                    ⚡ Energično, drzno in samozavestno
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-purple-400">
+                    😄 Humorno, zabavno in igrivo
+                  </button>
+                  <button type="button" class="interactive-chip text-xs px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-purple-400">
+                    📚 Izobraževalno, informativno in poučno
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q19_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Dodatne smernice za besedišče ali fraze, ki jih radi uporabljate:</label>
+                <textarea id="q19_text" rows="2" placeholder="Primeri besed, ki jih želite slišati v objavah, ali specifičen slog..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 bg-white transition"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- VPRAŠANJE 20: RDEČE ZASTAVICE (NO-GO) -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-rose-50/50 border border-rose-200/80">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center shrink-0">20</span>
+              <label class="text-sm sm:text-base font-bold text-slate-900">Ali obstajajo teme, vsebine ali načini komunikacije, s katerimi se NE ŽELITE povezovati?</label>
+            </div>
+            <p class="text-xs text-rose-700 font-medium mb-4 ml-8">Stvari, ki jih nikakor ne želite vključevati v predstavitev podjetja (No-Go cone):</p>
+
+            <div class="ml-0 sm:ml-8 space-y-4">
+              <!-- No-Go čipi -->
+              <div>
+                <span class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Označite prepovedane vsebine:</span>
+                <div class="flex flex-wrap gap-2" data-group="q20_nogo">
+                  <button type="button" class="interactive-chip danger-chip text-xs px-3.5 py-2 rounded-xl border border-rose-200 bg-white text-slate-700 font-medium hover:border-rose-400 flex items-center gap-1.5">
+                    🚫 Politične ali verske vsebine
+                  </button>
+                  <button type="button" class="interactive-chip danger-chip text-xs px-3.5 py-2 rounded-xl border border-rose-200 bg-white text-slate-700 font-medium hover:border-rose-400 flex items-center gap-1.5">
+                    🚫 Provokativne ali kontroverzne teme
+                  </button>
+                  <button type="button" class="interactive-chip danger-chip text-xs px-3.5 py-2 rounded-xl border border-rose-200 bg-white text-slate-700 font-medium hover:border-rose-400 flex items-center gap-1.5">
+                    🚫 Vulgaren jezik ali cenen humor
+                  </button>
+                  <button type="button" class="interactive-chip danger-chip text-xs px-3.5 py-2 rounded-xl border border-rose-200 bg-white text-slate-700 font-medium hover:border-rose-400 flex items-center gap-1.5">
+                    🚫 Pretirano agresivna ("Hard-sell") prodaja
+                  </button>
+                  <button type="button" class="interactive-chip danger-chip text-xs px-3.5 py-2 rounded-xl border border-rose-200 bg-white text-slate-700 font-medium hover:border-rose-400 flex items-center gap-1.5">
+                    🚫 Zavajajoče obljube ("uspeh čez noč")
+                  </button>
+                  <button type="button" class="interactive-chip danger-chip text-xs px-3.5 py-2 rounded-xl border border-rose-200 bg-white text-slate-700 font-medium hover:border-rose-400 flex items-center gap-1.5">
+                    🚫 Neposredno primerjanje ali blatenje konkurence
+                  </button>
+                  <button type="button" class="interactive-chip danger-chip text-xs px-3.5 py-2 rounded-xl border border-rose-200 bg-white text-slate-700 font-medium hover:border-rose-400 flex items-center gap-1.5">
+                    🚫 Uporaba generičnih brezosebnih fotografij (stock)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tekst -->
+              <div>
+                <label for="q20_text" class="block text-xs font-semibold text-slate-700 mb-1.5">Druge specifične omejitve, osebe ali teme, ki se jim moramo izogniti:</label>
+                <textarea id="q20_text" rows="2" placeholder="Napišite morebitne dodatne prepovedi ali posebne smernice..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 bg-white transition"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- ZAKLJUČEK & SHRANJEVANJE / IZVOZ -->
+      <!-- ========================================== -->
+      <section class="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl card-print">
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-emerald-400 bg-emerald-950/60 px-3.5 py-1.5 rounded-full mb-3 border border-emerald-500/30">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> Hvala za vaš čas in odgovore!
+          </div>
+          
+          <h4 class="text-xl sm:text-2xl font-bold mb-2">Vaši odgovori so neprecenljiva osnova za strategijo.</h4>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
+            Na podlagi pridobljenih informacij bomo pripravili celovito strategijo za predstavitev vašega podjetja, določili ključne komunikacijske smernice in pripravili vsebinski načrt, usmerjen v doseganje vaših poslovnih ciljev.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3 no-print">
+            <button type="button" onclick="submitToSupabase()" class="inline-flex items-center gap-2 px-6 py-3.5 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg transition-all active:scale-95 shadow-emerald-600/30">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>Shrani</span>
+            </button>
+
+            <button type="button" onclick="printReport()" class="inline-flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition-all active:scale-95 shadow-indigo-600/30">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              <span>Natisni ali Shrani kot PDF</span>
+            </button>
+
+            <button type="button" onclick="downloadJSON()" class="inline-flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-semibold text-slate-300 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/15">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Prenesi .JSON</span>
+            </button>
+          </div>
         </div>
       </section>
 
     </form>
   </main>
 
-  <!-- CUSTOM RESET CONFIRMATION MODAL -->
-  <div id="resetModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 hidden no-print">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-200">
-      <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
-        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+  <!-- FOOTER -->
+  <footer class="mt-auto py-8 text-center text-xs text-slate-400 border-t border-slate-200/80 bg-white no-print">
+    <p>© 2026 • Vprašalnik za Spoznavanje Podjetja in Načrtovanje Marketinške Strategije</p>
+    <p class="mt-1 text-slate-400">Vsi odgovori se varno shranjujejo neposredno v bazo Supabase.</p>
+  </footer>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs sm:text-sm font-semibold border border-slate-700">
+      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+      <span id="toastMsg">Uspešno shranjeno!</span>
+    </div>
+  </div>
+
+  <!-- RESET CONFIRMATION MODAL -->
+  <div id="resetModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-slate-800">
+      <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
       </div>
-      <h3 class="font-bold text-stone-900 text-base mb-1">Počisti vsa polja?</h3>
-      <p class="text-xs text-stone-500 mb-5 leading-relaxed">
-        Ali ste prepričani, da želite počistiti vprašalnik? Vsi vaši dosedanji odgovori bodo izbrisani.
+      <h3 class="text-lg font-bold text-slate-900 mb-2">Želite ponastaviti celoten vprašalnik?</h3>
+      <p class="text-xs sm:text-sm text-slate-500 mb-6 leading-relaxed">
+        S tem boste izbrisali vse vnesene odgovore in izbire v vprašalniku. Tega dejanja ni mogoče razveljaviti.
       </p>
-      <div class="flex gap-2 justify-end">
-        <button type="button" onclick="closeResetModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 border border-stone-200 transition">
+      <div class="flex items-center justify-end gap-3">
+        <button type="button" onclick="closeResetModal()" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">
           Prekliči
         </button>
-        <button type="button" onclick="confirmReset()" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition">
-          Da, počisti
+        <button type="button" onclick="confirmReset()" class="px-4 py-2.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-sm transition">
+          Da, izbriši vse
         </button>
       </div>
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <footer class="bg-white border-t border-stone-200 py-6 mt-12 text-center text-xs text-stone-400 no-print">
-    <p>O’ Sole Mio – Delikatesa z mediteransko dušo • <a href="https://www.osolemio.si" target="_blank" class="text-med-terracotta hover:underline">www.osolemio.si</a></p>
-  </footer>
-
-  <!-- APPLICATION LOGIC -->
+  <!-- JAVASCRIPT LOGIC (SUPABASE DATABASE INTEGRATION) -->
   <script>
-    // Initialize Lucide icons
-    lucide.createIcons();
+    // Supabase Project Configuration
+    const SUPABASE_URL = 'https://rsoxueewmheusurlhuyj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_HrIwwiu-aS7HFegM1zw1bw_9H4fhWaM';
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-    const STORAGE_KEY = 'osolemio_brand_workbook_v2';
-    let selectedVibes = new Set();
-    let selectedRegions = new Set();
+    let currentSubmissionId = new URLSearchParams(window.location.search).get('id') || null;
 
-    // Elements to track for calculation and auto-saving
-    const formFields = [
-      'q_story_why', 'q_story_team', 'hero_prod_1', 'hero_prod_2', 'hero_prod_3',
-      'hero_prod_4', 'hero_prod_5', 'q_regions_details', 'q_target_description',
-      'q_advantage_supermarket', 'q_faq_customer', 'q_forbidden_elements',
-      'q_longterm_goal', 'q_filming_logistics', 'cfg_url', 'cfg_contact'
+    // Form inputs and textareas
+    const textFields = [
+      'client_company', 'client_contact', 'client_email', 'client_website',
+      'q1_text', 'q2_text', 'q3_text', 'q4_text',
+      'q5_text', 'q6_top1', 'q6_top2', 'q6_top3', 'q6_top4', 'q6_top5',
+      'q7_text', 'q8_competitors', 'q8_inspiration', 'q9_text',
+      'q10_text', 'q11_text', 'q12_text', 'q13_text',
+      'q14_text', 'q15_text',
+      'q17_word1', 'q17_word2', 'q17_word3',
+      'q18_text', 'q19_text', 'q20_text'
     ];
 
-    const checkboxFields = [
-      'srv_narezek', 'srv_sendvic', 'srv_degustacija', 'srv_darila',
-      'target_foodies', 'target_parties', 'target_gifts'
+    // Groups of interactive chips
+    const chipGroups = [
+      'q1_business_type', 'q1_reach',
+      'q2_origins', 'q3_vision_tags', 'q4_values',
+      'q5_price_range', 'q7_advantages', 'q9_feelings',
+      'q10_audience_type', 'q10_age_group',
+      'q11_painpoints', 'q12_questions', 'q12_converters',
+      'q13_future_clients', 'q14_short_goals', 'q15_long_goals',
+      'q18_impressions', 'q19_address_form',
+      'q19_tone_chips', 'q20_nogo'
     ];
 
-    const radioGroups = [
-      'camera_presence', 'sound_style', 'address_style', 'italian_phrases', 'main_goal'
-    ];
+    document.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      setupChipListeners();
+      setupInputListeners();
+      setupScrollSpy();
 
-    // Load saved data on startup
-    window.addEventListener('DOMContentLoaded', () => {
-      loadSavedData();
+      if (currentSubmissionId) {
+        await loadFromSupabase(currentSubmissionId);
+      } else {
+        initProducts16(['', '', '']);
+        updateSaveStatus('ready');
+      }
+
       calculateProgress();
-      attachAutoSaveListeners();
     });
 
-    function toggleVibeChip(btn) {
-      const text = btn.innerText.trim();
-      if (selectedVibes.has(text)) {
-        selectedVibes.delete(text);
-        btn.classList.remove('bg-amber-100', 'border-amber-500', 'text-amber-900', 'font-semibold', 'shadow-2xs');
-        btn.classList.add('border-stone-200', 'text-stone-700');
+    function updateSaveStatus(state) {
+      const statusEl = document.getElementById('saveStatus');
+      const dotEl = document.getElementById('saveDot');
+      if (!statusEl) return;
+
+      if (state === 'saving') {
+        statusEl.innerText = 'Shranjevanje v bazo...';
+        statusEl.className = 'text-amber-600 font-semibold text-xs';
+        if (dotEl) dotEl.className = 'inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+      } else if (state === 'saved') {
+        statusEl.innerText = 'Varno shranjeno v Supabase';
+        statusEl.className = 'text-emerald-700 font-semibold text-xs';
+        if (dotEl) dotEl.className = 'inline-block w-2 h-2 rounded-full bg-emerald-500';
+      } else if (state === 'error') {
+        statusEl.innerText = 'Napaka pri povezavi z bazo';
+        statusEl.className = 'text-rose-600 font-semibold text-xs';
+        if (dotEl) dotEl.className = 'inline-block w-2 h-2 rounded-full bg-rose-500';
+      } else if (state === 'loading') {
+        statusEl.innerText = 'Nalaganje odgovorov iz baze...';
+        statusEl.className = 'text-indigo-600 font-semibold text-xs';
+        if (dotEl) dotEl.className = 'inline-block w-2 h-2 rounded-full bg-indigo-500 animate-pulse';
       } else {
-        selectedVibes.add(text);
-        btn.classList.add('bg-amber-100', 'border-amber-500', 'text-amber-900', 'font-semibold', 'shadow-2xs');
-        btn.classList.remove('border-stone-200', 'text-stone-700');
+        statusEl.innerText = 'Povezano s Supabase';
+        statusEl.className = 'text-emerald-700 font-semibold text-xs';
+        if (dotEl) dotEl.className = 'inline-block w-2 h-2 rounded-full bg-emerald-500';
       }
-      triggerSave();
     }
 
-    function toggleRegion(btn, regionName) {
-      if (selectedRegions.has(regionName)) {
-        selectedRegions.delete(regionName);
-        btn.classList.remove('bg-emerald-50', 'border-emerald-600', 'text-emerald-900', 'font-bold', 'shadow-2xs');
-        btn.classList.add('border-stone-200', 'text-stone-600');
-      } else {
-        selectedRegions.add(regionName);
-        btn.classList.add('bg-emerald-50', 'border-emerald-600', 'text-emerald-900', 'font-bold', 'shadow-2xs');
-        btn.classList.remove('border-stone-200', 'text-stone-600');
+    function setupScrollSpy() {
+      const sections = ['podatki-narocnika', 'sklop-1', 'sklop-2', 'sklop-3', 'sklop-4', 'sklop-5'];
+      const links = document.querySelectorAll('.nav-section-link');
+
+      function updateActive() {
+        let current = '';
+        const scrollPos = window.scrollY + 180;
+
+        sections.forEach(id => {
+          const el = document.getElementById(id);
+          if (el && el.offsetTop <= scrollPos) {
+            current = id;
+          }
+        });
+
+        links.forEach(link => {
+          const href = link.getAttribute('href').replace('#', '');
+          if (href === current) {
+            link.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-xs');
+            link.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+          } else {
+            link.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-xs');
+            link.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+          }
+        });
       }
-      triggerSave();
+
+      window.addEventListener('scroll', updateActive, { passive: true });
+      updateActive();
     }
 
-    function attachAutoSaveListeners() {
-      // Inputs and textareas
-      formFields.forEach(id => {
+    // Chip click handler
+    function setupChipListeners() {
+      document.querySelectorAll('.interactive-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const group = btn.closest('[data-group]');
+          
+          if (group && (group.dataset.group === 'q1_reach' || group.dataset.group === 'q5_price_range' || group.dataset.group === 'q19_address_form')) {
+            const wasActive = btn.classList.contains('active');
+            group.querySelectorAll('.interactive-chip').forEach(c => c.classList.remove('active'));
+            if (!wasActive) btn.classList.add('active');
+          } else {
+            btn.classList.toggle('active');
+          }
+
+          triggerSave();
+        });
+      });
+    }
+
+    // Auto-save listeners on inputs
+    function setupInputListeners() {
+      textFields.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           el.addEventListener('input', () => {
@@ -636,167 +1571,936 @@
           });
         }
       });
+    }
 
-      // Checkboxes
-      checkboxFields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.addEventListener('change', () => {
-            triggerSave();
-          });
+    // Question 16: Dynamic Products Management
+    function initProducts16(items = ['', '', '']) {
+      const container = document.getElementById('q16_products_list');
+      if (!container) return;
+      container.innerHTML = '';
+      const list = (!items || items.length === 0) ? ['', '', ''] : items;
+      list.forEach((val, idx) => {
+        const row = createProductRow16(idx + 1, val);
+        container.appendChild(row);
+      });
+      lucide.createIcons({ root: container });
+    }
+
+    function createProductRow16(index, value = '') {
+      const row = document.createElement('div');
+      row.className = 'q16-product-row flex items-center gap-2.5 group';
+      const safeVal = value ? value.replace(/"/g, '&quot;') : '';
+      row.innerHTML = `
+        <span class="q16-product-index w-7 h-7 rounded-xl bg-blue-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">${index}</span>
+        <input type="text" value="${safeVal}" class="q16-product-input w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 bg-white transition" placeholder="Izdelek ali storitev #${index}...">
+        <button type="button" onclick="removeProduct16(this)" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition shrink-0" title="Odstrani">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      `;
+
+      const input = row.querySelector('.q16-product-input');
+      input.addEventListener('input', () => {
+        triggerSave();
+      });
+
+      return row;
+    }
+
+    function addProduct16(value = '') {
+      const container = document.getElementById('q16_products_list');
+      if (!container) return;
+      const count = container.querySelectorAll('.q16-product-row').length + 1;
+      const row = createProductRow16(count, value);
+      container.appendChild(row);
+      lucide.createIcons({ root: row });
+      renumberProducts16();
+      triggerSave();
+      const input = row.querySelector('.q16-product-input');
+      if (input) input.focus();
+    }
+
+    function removeProduct16(btn) {
+      const container = document.getElementById('q16_products_list');
+      const rows = container.querySelectorAll('.q16-product-row');
+      if (rows.length <= 1) {
+        const input = rows[0].querySelector('.q16-product-input');
+        if (input) input.value = '';
+      } else {
+        const row = btn.closest('.q16-product-row');
+        if (row) row.remove();
+        renumberProducts16();
+      }
+      triggerSave();
+    }
+
+    function renumberProducts16() {
+      const container = document.getElementById('q16_products_list');
+      if (!container) return;
+      const rows = container.querySelectorAll('.q16-product-row');
+      rows.forEach((r, idx) => {
+        const badge = r.querySelector('.q16-product-index');
+        if (badge) badge.innerText = idx + 1;
+        const input = r.querySelector('.q16-product-input');
+        if (input && !input.value) {
+          input.placeholder = `Izdelek ali storitev #${idx + 1}...`;
         }
       });
+    }
 
-      // Radios
-      radioGroups.forEach(name => {
-        const radios = document.querySelectorAll(`input[name="${name}"]`);
-        radios.forEach(r => {
-          r.addEventListener('change', () => {
-            triggerSave();
-          });
-        });
+    function getProducts16() {
+      const inputs = document.querySelectorAll('.q16-product-input');
+      const list = [];
+      inputs.forEach(inp => {
+        const val = inp.value.trim();
+        if (val) list.push(val);
       });
+      return list;
     }
 
-    let saveTimeout = null;
+    // Helper for inserting words in Question 17
+    function insertWord(btn, word) {
+      const w1 = document.getElementById('q17_word1');
+      const w2 = document.getElementById('q17_word2');
+      const w3 = document.getElementById('q17_word3');
+
+      if (!w1.value.trim()) {
+        w1.value = word;
+      } else if (!w2.value.trim()) {
+        w2.value = word;
+      } else if (!w3.value.trim()) {
+        w3.value = word;
+      } else {
+        w3.value = word;
+      }
+
+      btn.classList.add('bg-purple-100', 'text-purple-800', 'border-purple-400');
+      setTimeout(() => {
+        btn.classList.remove('bg-purple-100', 'text-purple-800', 'border-purple-400');
+      }, 500);
+
+      triggerSave();
+    }
+
+    // Debounced Auto-Save
+    let saveTimer = null;
     function triggerSave() {
-      if (saveTimeout) clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(() => {
+      updateSaveStatus('saving');
+      calculateProgress();
+
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
         saveData();
-        calculateProgress();
-      }, 250);
+      }, 600);
     }
 
-    function saveData() {
+    function collectData() {
       const data = {
         fields: {},
-        checkboxes: {},
-        radios: {},
-        vibes: Array.from(selectedVibes),
-        regions: Array.from(selectedRegions),
-        lastUpdated: new Date().toISOString()
+        chips: {},
+        q16_products: getProducts16(),
+        timestamp: new Date().toISOString()
       };
 
-      formFields.forEach(id => {
+      textFields.forEach(id => {
         const el = document.getElementById(id);
         if (el) data.fields[id] = el.value;
       });
 
-      checkboxFields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) data.checkboxes[id] = el.checked;
+      chipGroups.forEach(grpName => {
+        const groupEl = document.querySelector(`[data-group="${grpName}"]`);
+        if (groupEl) {
+          const activeChips = Array.from(groupEl.querySelectorAll('.interactive-chip.active')).map(btn => btn.innerText.trim());
+          data.chips[grpName] = activeChips;
+        }
       });
 
-      radioGroups.forEach(name => {
-        const checked = document.querySelector(`input[name="${name}"]:checked`);
-        data.radios[name] = checked ? checked.value : '';
-      });
+      return data;
+    }
+
+    // SUPABASE SAVE LOGIC (Replaces LocalStorage completely)
+    let isSaving = false;
+    let pendingSave = false;
+
+    async function saveData() {
+      if (!supabaseClient) {
+        console.warn('Supabase klient ni na voljo.');
+        updateSaveStatus('error');
+        return;
+      }
+
+      if (isSaving) {
+        pendingSave = true;
+        return;
+      }
+
+      isSaving = true;
+      pendingSave = false;
+      updateSaveStatus('saving');
+
+      const collected = collectData();
+
+      const hasContent = Object.values(collected.fields).some(v => v && v.trim().length > 0) ||
+                         Object.values(collected.chips).some(arr => arr && arr.length > 0) ||
+                         collected.q16_products.length > 0;
+
+      if (!hasContent && !currentSubmissionId) {
+        isSaving = false;
+        updateSaveStatus('ready');
+        return;
+      }
+
+      const payload = {
+        company_name: collected.fields.client_company || 'Neimenovano podjetje',
+        contact_person: collected.fields.client_contact || '',
+        email: collected.fields.client_email || '',
+        website: collected.fields.client_website || '',
+        answers: collected,
+        updated_at: new Date().toISOString()
+      };
 
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      } catch (e) {
-        // Storage fallback if private browsing limits it
+        if (currentSubmissionId) {
+          const { error } = await supabaseClient
+            .from('marketing_questionnaires')
+            .update(payload)
+            .eq('id', currentSubmissionId);
+
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabaseClient
+            .from('marketing_questionnaires')
+            .insert([payload])
+            .select();
+
+          if (error) throw error;
+          if (data && data[0]) {
+            currentSubmissionId = data[0].id;
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('id', currentSubmissionId);
+            window.history.replaceState({}, '', newUrl.toString());
+          }
+        }
+
+        updateSaveStatus('saved');
+      } catch (err) {
+        console.error('Napaka pri shranjevanju v Supabase:', err);
+        updateSaveStatus('error');
+      } finally {
+        isSaving = false;
+        if (pendingSave) {
+          saveData();
+        }
       }
     }
 
-    function loadSavedData() {
+    // SUPABASE LOAD LOGIC (Loads by ID in URL)
+    async function loadFromSupabase(id) {
+      if (!supabaseClient) return;
+      updateSaveStatus('loading');
+
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-        const data = JSON.parse(raw);
+        const { data, error } = await supabaseClient
+          .from('marketing_questionnaires')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-        // Populate fields
-        if (data.fields) {
-          Object.keys(data.fields).forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = data.fields[id];
-          });
-        }
-
-        // Populate checkboxes
-        if (data.checkboxes) {
-          Object.keys(data.checkboxes).forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.checked = data.checkboxes[id];
-          });
-        }
-
-        // Populate radios
-        if (data.radios) {
-          Object.keys(data.radios).forEach(name => {
-            const val = data.radios[name];
-            if (val) {
-              const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
-              if (el) el.checked = true;
-            }
-          });
-        }
-
-        // Populate vibes
-        if (data.vibes && Array.isArray(data.vibes)) {
-          selectedVibes = new Set(data.vibes);
-          document.querySelectorAll('.vibe-tag').forEach(btn => {
-            if (selectedVibes.has(btn.innerText.trim())) {
-              btn.classList.add('bg-amber-100', 'border-amber-500', 'text-amber-900', 'font-semibold', 'shadow-2xs');
-              btn.classList.remove('border-stone-200', 'text-stone-700');
-            }
-          });
-        }
-
-        // Populate regions
-        if (data.regions && Array.isArray(data.regions)) {
-          selectedRegions = new Set(data.regions);
-          document.querySelectorAll('.region-chip').forEach(btn => {
-            const match = Array.from(selectedRegions).some(r => btn.innerText.includes(r.split(' ')[0]));
-            if (match) {
-              btn.classList.add('bg-emerald-50', 'border-emerald-600', 'text-emerald-900', 'font-bold', 'shadow-2xs');
-              btn.classList.remove('border-stone-200', 'text-stone-600');
-            }
-          });
+        if (error) throw error;
+        if (data && data.answers) {
+          applyDataToForm(data.answers, data);
+          updateSaveStatus('saved');
+          showToast('Odgovori so naloženi iz baze!');
         }
       } catch (err) {
-        console.error('Napaka pri nalaganju podatkov:', err);
+        console.error('Napaka pri branju iz Supabase:', err);
+        updateSaveStatus('error');
+        initProducts16(['', '', '']);
       }
     }
 
-    function calculateProgress() {
-      const totalPoints = formFields.length + radioGroups.length + 2;
-      let filledPoints = 0;
+    function applyDataToForm(answers, record = null) {
+      if (answers.fields) {
+        Object.keys(answers.fields).forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = answers.fields[id];
+        });
+      }
 
-      formFields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.value.trim().length > 1) filledPoints++;
-      });
+      if (record) {
+        if (record.company_name && document.getElementById('client_company')) {
+          document.getElementById('client_company').value = record.company_name;
+        }
+        if (record.contact_person && document.getElementById('client_contact')) {
+          document.getElementById('client_contact').value = record.contact_person;
+        }
+        if (record.email && document.getElementById('client_email')) {
+          document.getElementById('client_email').value = record.email;
+        }
+        if (record.website && document.getElementById('client_website')) {
+          document.getElementById('client_website').value = record.website;
+        }
+      }
 
-      radioGroups.forEach(name => {
-        if (document.querySelector(`input[name="${name}"]:checked`)) filledPoints++;
-      });
+      if (answers.chips) {
+        Object.keys(answers.chips).forEach(grpName => {
+          const activeList = answers.chips[grpName] || [];
+          const groupEl = document.querySelector(`[data-group="${grpName}"]`);
+          if (groupEl && activeList.length > 0) {
+            groupEl.querySelectorAll('.interactive-chip').forEach(btn => {
+              if (activeList.includes(btn.innerText.trim())) {
+                btn.classList.add('active');
+              } else {
+                btn.classList.remove('active');
+              }
+            });
+          }
+        });
+      }
 
-      if (selectedVibes.size > 0) filledPoints++;
-      if (selectedRegions.size > 0) filledPoints++;
+      if (answers.q16_products && Array.isArray(answers.q16_products) && answers.q16_products.length > 0) {
+        initProducts16(answers.q16_products);
+      } else {
+        initProducts16(['', '', '']);
+      }
 
-      const pct = Math.min(100, Math.round((filledPoints / totalPoints) * 100));
-      const progressBar = document.getElementById('progressBar');
-      const progressPercent = document.getElementById('progressPercent');
-
-      if (progressBar) progressBar.style.width = pct + '%';
-      if (progressPercent) progressPercent.innerText = pct + '%';
+      calculateProgress();
     }
 
+    // Explicit Submit button handler
+    async function submitToSupabase() {
+      updateSaveStatus('saving');
+      await saveData();
+      showToast('🎉 Vprašalnik je uspešno shranjen v bazo!');
+      const statusEl = document.getElementById('saveStatus');
+      if (statusEl) statusEl.innerText = 'Varno shranjeno v Supabase';
+    }
+
+    // Progress Bar Calculation
+    function calculateProgress() {
+      let totalQuestions = 20;
+      let filledQuestions = 0;
+
+      // Q1
+      if (document.getElementById('q1_text')?.value.trim().length > 2 || getGroupCount('q1_business_type') > 0) filledQuestions++;
+      // Q2
+      if (document.getElementById('q2_text')?.value.trim().length > 2 || getGroupCount('q2_origins') > 0) filledQuestions++;
+      // Q3
+      if (document.getElementById('q3_text')?.value.trim().length > 2 || getGroupCount('q3_vision_tags') > 0) filledQuestions++;
+      // Q4
+      if (document.getElementById('q4_text')?.value.trim().length > 2 || getGroupCount('q4_values') > 0) filledQuestions++;
+
+      // Q5
+      if (document.getElementById('q5_text')?.value.trim().length > 2 || getGroupCount('q5_price_range') > 0) filledQuestions++;
+      // Q6
+      if (document.getElementById('q6_top1')?.value.trim().length > 1 || document.getElementById('q6_top2')?.value.trim().length > 1) filledQuestions++;
+      // Q7
+      if (document.getElementById('q7_text')?.value.trim().length > 2 || getGroupCount('q7_advantages') > 0) filledQuestions++;
+      // Q8
+      if (document.getElementById('q8_competitors')?.value.trim().length > 1 || document.getElementById('q8_inspiration')?.value.trim().length > 1) filledQuestions++;
+      // Q9
+      if (document.getElementById('q9_text')?.value.trim().length > 2 || getGroupCount('q9_feelings') > 0) filledQuestions++;
+
+      // Q10
+      if (document.getElementById('q10_text')?.value.trim().length > 2 || getGroupCount('q10_audience_type') > 0) filledQuestions++;
+      // Q11
+      if (document.getElementById('q11_text')?.value.trim().length > 2 || getGroupCount('q11_painpoints') > 0) filledQuestions++;
+      // Q12
+      if (document.getElementById('q12_text')?.value.trim().length > 2 || getGroupCount('q12_questions') > 0) filledQuestions++;
+      // Q13
+      if (document.getElementById('q13_text')?.value.trim().length > 2 || getGroupCount('q13_future_clients') > 0) filledQuestions++;
+
+      // Q14
+      if (document.getElementById('q14_text')?.value.trim().length > 2 || getGroupCount('q14_short_goals') > 0) filledQuestions++;
+      // Q15
+      if (document.getElementById('q15_text')?.value.trim().length > 2 || getGroupCount('q15_long_goals') > 0) filledQuestions++;
+      // Q16
+      if (getProducts16().length > 0) filledQuestions++;
+
+      // Q17
+      if (document.getElementById('q17_word1')?.value.trim().length > 0) filledQuestions++;
+      // Q18
+      if (document.getElementById('q18_text')?.value.trim().length > 2 || getGroupCount('q18_impressions') > 0) filledQuestions++;
+      // Q19
+      if (document.getElementById('q19_text')?.value.trim().length > 2 || getGroupCount('q19_tone_chips') > 0) filledQuestions++;
+      // Q20
+      if (document.getElementById('q20_text')?.value.trim().length > 2 || getGroupCount('q20_nogo') > 0) filledQuestions++;
+
+      const pct = Math.min(100, Math.round((filledQuestions / totalQuestions) * 100));
+      const pb = document.getElementById('progressBar');
+      const pp = document.getElementById('progressPercent');
+
+      if (pb) pb.style.width = pct + '%';
+      if (pp) pp.innerText = pct + '%';
+    }
+
+    function getGroupCount(grpName) {
+      const el = document.querySelector(`[data-group="${grpName}"]`);
+      if (!el) return 0;
+      return el.querySelectorAll('.interactive-chip.active').length;
+    }
+
+    // Modal logic & Reset
     function openResetModal() {
       document.getElementById('resetModal').classList.remove('hidden');
     }
-
     function closeResetModal() {
       document.getElementById('resetModal').classList.add('hidden');
     }
-
     function confirmReset() {
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch (e) {}
-      location.reload();
+      textFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.querySelectorAll('.interactive-chip.active').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      initProducts16(['', '', '']);
+      currentSubmissionId = null;
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+      updateSaveStatus('ready');
+      calculateProgress();
+      closeResetModal();
+      showToast('Vprašalnik je bil ponastavljen.');
+    }
+
+    // Toast notification
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      if (toast && toastMsg) {
+        toastMsg.innerText = msg;
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        setTimeout(() => {
+          toast.classList.add('translate-y-20', 'opacity-0');
+        }, 2800);
+      }
+    }
+
+    // Copy formatted summary for email / Slack
+    function copyFormattedSummary() {
+      const data = collectData();
+      let text = `# ODGOVORI: VPRAŠALNIK ZA MARKETINŠKO STRATEGIJO\n\n`;
+      text += `**Podjetje:** ${data.fields.client_company || '/'}\n`;
+      text += `**Kontakt:** ${data.fields.client_contact || '/'}\n`;
+      text += `**E-pošta:** ${data.fields.client_email || '/'}\n`;
+      text += `**Splet/Omrežja:** ${data.fields.client_website || '/'}\n\n`;
+
+      text += `## 1. PREDSTAVITEV PODJETJA\n`;
+      text += `1. Predstavitev podjetja: ${data.fields.q1_text || '/'}\n`;
+      if (data.chips.q1_business_type?.length) text += `   - Tip: ${data.chips.q1_business_type.join(', ')}\n`;
+      if (data.chips.q1_reach?.length) text += `   - Doseg: ${data.chips.q1_reach.join(', ')}\n`;
+
+      text += `2. Zgodba in začetek: ${data.fields.q2_text || '/'}\n`;
+      if (data.chips.q2_origins?.length) text += `   - Motivi: ${data.chips.q2_origins.join(', ')}\n`;
+
+      text += `3. Dolgoročna vizija: ${data.fields.q3_text || '/'}\n`;
+      if (data.chips.q3_vision_tags?.length) text += `   - Smeri vizije: ${data.chips.q3_vision_tags.join(', ')}\n`;
+
+      text += `4. Vrednote: ${data.fields.q4_text || '/'}\n`;
+      if (data.chips.q4_values?.length) text += `   - Izbrane vrednote: ${data.chips.q4_values.join(', ')}\n\n`;
+
+      text += `## 2. PONUDBA IN KONKURENČNA PREDNOST\n`;
+      text += `5. Ponudba: ${data.fields.q5_text || '/'}\n`;
+      if (data.chips.q5_price_range?.length) text += `   - Cenovni rang: ${data.chips.q5_price_range.join(', ')}\n`;
+
+      text += `6. Top 5 prodajanih:\n`;
+      text += `   1. ${data.fields.q6_top1 || '/'}\n`;
+      text += `   2. ${data.fields.q6_top2 || '/'}\n`;
+      text += `   3. ${data.fields.q6_top3 || '/'}\n`;
+      text += `   4. ${data.fields.q6_top4 || '/'}\n`;
+      text += `   5. ${data.fields.q6_top5 || '/'}\n`;
+
+      text += `7. Zakaj stranke izberejo vas: ${data.fields.q7_text || '/'}\n`;
+      if (data.chips.q7_advantages?.length) text += `   - Prednosti: ${data.chips.q7_advantages.join(', ')}\n`;
+
+      text += `8. Konkurenti in vzorniki:\n`;
+      text += `   - Konkurenti: ${data.fields.q8_competitors || '/'}\n`;
+      text += `   - Navdih: ${data.fields.q8_inspiration || '/'}\n`;
+
+      text += `9. Želena izkušnja stranke: ${data.fields.q9_text || '/'}\n`;
+      if (data.chips.q9_feelings?.length) text += `   - Občutki: ${data.chips.q9_feelings.join(', ')}\n\n`;
+
+      text += `## 3. VAŠE STRANKE\n`;
+      text += `10. Najpogostejše stranke: ${data.fields.q10_text || '/'}\n`;
+      if (data.chips.q10_audience_type?.length) text += `    - Tip: ${data.chips.q10_audience_type.join(', ')}\n`;
+      if (data.chips.q10_age_group?.length) text += `    - Starost: ${data.chips.q10_age_group.join(', ')}\n`;
+
+      text += `11. Potrebe in težave strank: ${data.fields.q11_text || '/'}\n`;
+      if (data.chips.q11_painpoints?.length) text += `    - Motivi: ${data.chips.q11_painpoints.join(', ')}\n`;
+
+      text += `12. Kaj stranke zanima pred nakupom: ${data.fields.q12_text || '/'}\n`;
+      if (data.chips.q12_questions?.length) text += `    - Vprašanja: ${data.chips.q12_questions.join(', ')}\n`;
+      if (data.chips.q12_converters?.length) text += `    - Prepriča jih: ${data.chips.q12_converters.join(', ')}\n`;
+
+      text += `13. Želene stranke v prihodnje: ${data.fields.q13_text || '/'}\n`;
+      if (data.chips.q13_future_clients?.length) text += `    - Smer: ${data.chips.q13_future_clients.join(', ')}\n\n`;
+
+      text += `## 4. POSLOVNI IN MARKETINŠKI CILJI\n`;
+      text += `14. Cilji v 3 mesecih: ${data.fields.q14_text || '/'}\n`;
+      if (data.chips.q14_short_goals?.length) text += `    - Prednosti: ${data.chips.q14_short_goals.join(', ')}\n`;
+
+      text += `15. Cilji v 1–2 letih: ${data.fields.q15_text || '/'}\n`;
+      if (data.chips.q15_long_goals?.length) text += `    - Mejniki: ${data.chips.q15_long_goals.join(', ')}\n`;
+
+      text += `16. Izdelki / storitve za izpostavitev:\n`;
+      const q16Items = getProducts16();
+      if (q16Items.length > 0) {
+        q16Items.forEach((item, idx) => {
+          text += `   ${idx + 1}. ${item}\n`;
+        });
+      } else {
+        text += `   /\n`;
+      }
+      text += `\n`;
+
+      text += `## 5. IDENTITETA IN KOMUNIKACIJA BLAGOVNE ZNAMKE\n`;
+      text += `17. Podjetje v 3 besedah: 1. ${data.fields.q17_word1 || '/'}, 2. ${data.fields.q17_word2 || '/'}, 3. ${data.fields.q17_word3 || '/'}\n`;
+      text += `18. Želeni vtis: ${data.fields.q18_text || '/'}\n`;
+      if (data.chips.q18_impressions?.length) text += `    - Vtisi: ${data.chips.q18_impressions.join(', ')}\n`;
+
+      text += `19. Ton in vzdušje: ${data.fields.q19_text || '/'}\n`;
+      if (data.chips.q19_address_form?.length) text += `    - Nagovor: ${data.chips.q19_address_form.join(', ')}\n`;
+      if (data.chips.q19_tone_chips?.length) text += `    - Ton: ${data.chips.q19_tone_chips.join(', ')}\n`;
+
+      text += `20. Prepovedane vsebine (No-Go): ${data.fields.q20_text || '/'}\n`;
+      if (data.chips.q20_nogo?.length) text += `    - Prepovedano: ${data.chips.q20_nogo.join(', ')}\n`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Povzetek odgovorov je skopiran v odložišče!');
+      }).catch(() => {
+        showToast('Napaka pri kopiranju. Poskusite ponovno.');
+      });
+    }
+
+    // Download JSON export
+    function downloadJSON() {
+      const data = collectData();
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `marketinska_strategija_${(data.fields.client_company || 'odgovori').toLowerCase().replace(/\s+/g, '_')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Datoteka JSON je prenesena!');
+    }
+
+    // =======================================================
+    // DEDICATED PDF PRINT REPORT GENERATOR
+    // (Only includes main questions and answered / selected fields)
+    // =======================================================
+    function printReport() {
+      buildPrintReport();
+      window.print();
+    }
+
+    window.addEventListener('beforeprint', () => {
+      buildPrintReport();
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function buildPrintReport() {
+      const container = document.getElementById('printReportContainer');
+      if (!container) return;
+
+      const company = document.getElementById('client_company')?.value.trim();
+      const contact = document.getElementById('client_contact')?.value.trim();
+      const email = document.getElementById('client_email')?.value.trim();
+      const website = document.getElementById('client_website')?.value.trim();
+      const printDate = new Date().toLocaleDateString('sl-SI', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      function getActiveChips(groupName) {
+        const groupEl = document.querySelector(`[data-group="${groupName}"]`);
+        if (!groupEl) return [];
+        return Array.from(groupEl.querySelectorAll('.interactive-chip.active')).map(b => b.innerText.trim());
+      }
+
+      function renderStandardQA(text, chipGroups = []) {
+        let out = '';
+        if (text) {
+          out += `<div style="font-size: 10.5pt; color: #1e293b; background: #f8fafc; border-left: 3px solid #6366f1; padding: 8px 12px; margin-top: 4px; border-radius: 4px; line-height: 1.5; white-space: pre-wrap;">${escapeHtml(text)}</div>`;
+        }
+        chipGroups.forEach(cg => {
+          if (cg.items && cg.items.length > 0) {
+            const bg = cg.isDanger ? '#fef2f2' : '#eef2ff';
+            const color = cg.isDanger ? '#991b1b' : '#3730a3';
+            const border = cg.isDanger ? '#fecaca' : '#c7d2fe';
+            out += `<div style="margin-top: 6px;">
+              <div style="font-size: 8.5pt; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px;">${escapeHtml(cg.label)}:</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                ${cg.items.map(it => `<span style="display: inline-block; font-size: 9pt; font-weight: 600; background: ${bg}; color: ${color}; border: 1px solid ${border}; padding: 2px 8px; border-radius: 5px;">✓ ${escapeHtml(it)}</span>`).join('')}
+              </div>
+            </div>`;
+          }
+        });
+        return out;
+      }
+
+      const sections = [
+        {
+          title: "1. PREDSTAVITEV PODJETJA",
+          questions: [
+            {
+              title: "1. Kako bi na kratko predstavili svoje podjetje nekomu, ki zanj še nikoli ni slišal?",
+              render: () => {
+                const text = document.getElementById('q1_text')?.value.trim();
+                const bTypes = getActiveChips('q1_business_type');
+                const reach = getActiveChips('q1_reach');
+                if (!text && bTypes.length === 0 && reach.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Tip poslovanja", items: bTypes },
+                  { label: "Doseg", items: reach }
+                ]);
+              }
+            },
+            {
+              title: "2. Kako in zakaj se je začela zgodba vašega podjetja?",
+              render: () => {
+                const text = document.getElementById('q2_text')?.value.trim();
+                const origins = getActiveChips('q2_origins');
+                if (!text && origins.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Ključni elementi zgodbe", items: origins }
+                ]);
+              }
+            },
+            {
+              title: "3. Kakšna je vaša dolgoročna vizija za podjetje?",
+              render: () => {
+                const text = document.getElementById('q3_text')?.value.trim();
+                const vision = getActiveChips('q3_vision_tags');
+                if (!text && vision.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Smeri vizije", items: vision }
+                ]);
+              }
+            },
+            {
+              title: "4. Katere so ključne vrednote vašega podjetja?",
+              render: () => {
+                const text = document.getElementById('q4_text')?.value.trim();
+                const vals = getActiveChips('q4_values');
+                if (!text && vals.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Izbrane vrednote", items: vals }
+                ]);
+              }
+            }
+          ]
+        },
+        {
+          title: "2. PONUDBA IN KONKURENČNA PREDNOST",
+          questions: [
+            {
+              title: "5. Kateri so vaši glavni izdelki ali storitve?",
+              render: () => {
+                const text = document.getElementById('q5_text')?.value.trim();
+                const price = getActiveChips('q5_price_range');
+                if (!text && price.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Cenovni rang", items: price }
+                ]);
+              }
+            },
+            {
+              title: "6. Katerih 5 izdelkov ali storitev trenutno prodate največ?",
+              render: () => {
+                const items = [];
+                for (let i = 1; i <= 5; i++) {
+                  const val = document.getElementById(`q6_top${i}`)?.value.trim();
+                  if (val) items.push(val);
+                }
+                if (items.length === 0) return null;
+                return `<ol style="margin: 4px 0 0 20px; padding: 0; list-style-type: decimal; color: #1e293b; font-size: 10.5pt; line-height: 1.6;">
+                  ${items.map(it => `<li style="margin-bottom: 3px;"><strong>${escapeHtml(it)}</strong></li>`).join('')}
+                </ol>`;
+              }
+            },
+            {
+              title: "7. Zakaj stranke izberejo ravno vas in ne konkurence?",
+              render: () => {
+                const text = document.getElementById('q7_text')?.value.trim();
+                const adv = getActiveChips('q7_advantages');
+                if (!text && adv.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Konkurenčne prednosti", items: adv }
+                ]);
+              }
+            },
+            {
+              title: "8. Kdo so vaši glavni konkurenti in ali obstajajo podjetja, ki so vam za vzor?",
+              render: () => {
+                const comp = document.getElementById('q8_competitors')?.value.trim();
+                const insp = document.getElementById('q8_inspiration')?.value.trim();
+                if (!comp && !insp) return null;
+                let html = '';
+                if (comp) {
+                  html += `<div style="margin-bottom: 6px;"><div style="font-size: 8.5pt; font-weight: 700; color: #64748b; text-transform: uppercase;">Glavni konkurenti:</div><div style="font-size: 10.5pt; color: #1e293b; background: #f8fafc; border-left: 3px solid #cbd5e1; padding: 6px 10px; margin-top: 2px; border-radius: 4px;">${escapeHtml(comp)}</div></div>`;
+                }
+                if (insp) {
+                  html += `<div><div style="font-size: 8.5pt; font-weight: 700; color: #64748b; text-transform: uppercase;">Vzorniki / navdih:</div><div style="font-size: 10.5pt; color: #1e293b; background: #f8fafc; border-left: 3px solid #cbd5e1; padding: 6px 10px; margin-top: 2px; border-radius: 4px;">${escapeHtml(insp)}</div></div>`;
+                }
+                return html;
+              }
+            },
+            {
+              title: "9. Kakšno izkušnjo ali občutek želite, da ima stranka ob sodelovanju z vami?",
+              render: () => {
+                const text = document.getElementById('q9_text')?.value.trim();
+                const feelings = getActiveChips('q9_feelings');
+                if (!text && feelings.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Želeni občutki", items: feelings }
+                ]);
+              }
+            }
+          ]
+        },
+        {
+          title: "3. VAŠE STRANKE",
+          questions: [
+            {
+              title: "10. Kdo so vaše najpogostejše stranke?",
+              render: () => {
+                const text = document.getElementById('q10_text')?.value.trim();
+                const aud = getActiveChips('q10_audience_type');
+                const age = getActiveChips('q10_age_group');
+                if (!text && aud.length === 0 && age.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Tip strank", items: aud },
+                  { label: "Starostna skupina", items: age }
+                ]);
+              }
+            },
+            {
+              title: "11. S kakšnimi težavami, potrebami ali željami se stranke najpogosteje obračajo na vas?",
+              render: () => {
+                const text = document.getElementById('q11_text')?.value.trim();
+                const pains = getActiveChips('q11_painpoints');
+                if (!text && pains.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Glavni razlogi in težave", items: pains }
+                ]);
+              }
+            },
+            {
+              title: "12. Kaj stranke pred nakupom ali sodelovanjem najbolj zanima ali jih morda bega?",
+              render: () => {
+                const text = document.getElementById('q12_text')?.value.trim();
+                const questions = getActiveChips('q12_questions');
+                const converters = getActiveChips('q12_converters');
+                if (!text && questions.length === 0 && converters.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Pogosta vprašanja / dvomi", items: questions },
+                  { label: "Kaj jih najbolj prepriča", items: converters }
+                ]);
+              }
+            },
+            {
+              title: "13. Kakšne stranke bi si najbolj želeli v prihodnje?",
+              render: () => {
+                const text = document.getElementById('q13_text')?.value.trim();
+                const future = getActiveChips('q13_future_clients');
+                if (!text && future.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Želeni fokus strank", items: future }
+                ]);
+              }
+            }
+          ]
+        },
+        {
+          title: "4. POSLOVNI IN MARKETINŠKI CILJI",
+          questions: [
+            {
+              title: "14. Kateri so vaši glavni poslovni cilji v naslednjih 3 mesecih?",
+              render: () => {
+                const text = document.getElementById('q14_text')?.value.trim();
+                const goals = getActiveChips('q14_short_goals');
+                if (!text && goals.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Cilji v 3 mesecih", items: goals }
+                ]);
+              }
+            },
+            {
+              title: "15. Kje vidite podjetje čez 1 do 2 leti?",
+              render: () => {
+                const text = document.getElementById('q15_text')?.value.trim();
+                const longGoals = getActiveChips('q15_long_goals');
+                if (!text && longGoals.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Dolgoročni mejniki", items: longGoals }
+                ]);
+              }
+            },
+            {
+              title: "16. Kateri izdelki ali storitve so trenutno v ospredju in jih želite najbolj izpostaviti?",
+              render: () => {
+                const prods = getProducts16();
+                if (!prods || prods.length === 0) return null;
+                return `<ol style="margin: 4px 0 0 20px; padding: 0; list-style-type: decimal; color: #1e293b; font-size: 10.5pt; line-height: 1.6;">
+                  ${prods.map(p => `<li style="margin-bottom: 3px;"><strong>${escapeHtml(p)}</strong></li>`).join('')}
+                </ol>`;
+              }
+            }
+          ]
+        },
+        {
+          title: "5. IDENTITETA IN KOMUNIKACIJA BLAGOVNE ZNAMKE",
+          questions: [
+            {
+              title: "17. Katere 3 besede po vašem mnenju najbolje opišejo vaše podjetje?",
+              render: () => {
+                const w1 = document.getElementById('q17_word1')?.value.trim();
+                const w2 = document.getElementById('q17_word2')?.value.trim();
+                const w3 = document.getElementById('q17_word3')?.value.trim();
+                const words = [w1, w2, w3].filter(Boolean);
+                if (words.length === 0) return null;
+                return `<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">
+                  ${words.map((w, idx) => `<span style="display: inline-flex; align-items: center; gap: 4px; font-size: 10pt; font-weight: 700; background: #f5f3ff; color: #6b21a8; border: 1px solid #ddd6fe; padding: 4px 10px; border-radius: 6px;"><span style="color: #9333ea; font-size: 8.5pt;">#${idx + 1}</span> ${escapeHtml(w)}</span>`).join('')}
+                </div>`;
+              }
+            },
+            {
+              title: "18. Kakšen vtis želite pustiti pri ljudeh, ko pomislijo na vašo blagovno znamko?",
+              render: () => {
+                const text = document.getElementById('q18_text')?.value.trim();
+                const impressions = getActiveChips('q18_impressions');
+                if (!text && impressions.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Želeni vtisi", items: impressions }
+                ]);
+              }
+            },
+            {
+              title: "19. Kakšen ton komunikacije in vzdušje želite na družbenih omrežjih?",
+              render: () => {
+                const text = document.getElementById('q19_text')?.value.trim();
+                const address = getActiveChips('q19_address_form');
+                const tones = getActiveChips('q19_tone_chips');
+                if (!text && address.length === 0 && tones.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Oblika nagovora", items: address },
+                  { label: "Ton in vzdušje", items: tones }
+                ]);
+              }
+            },
+            {
+              title: "20. Ali obstajajo teme, sporočila ali načini komunikacije, ki jih v nobenem primeru ne želite uporabljati (t.i. 'no-go')?",
+              render: () => {
+                const text = document.getElementById('q20_text')?.value.trim();
+                const nogo = getActiveChips('q20_nogo');
+                if (!text && nogo.length === 0) return null;
+                return renderStandardQA(text, [
+                  { label: "Prepovedane vsebine (No-Go)", items: nogo, isDanger: true }
+                ]);
+              }
+            }
+          ]
+        }
+      ];
+
+      const hasMeta = Boolean(company || contact || email || website);
+      let sectionsHtml = '';
+      let totalAnswered = 0;
+
+      sections.forEach(sec => {
+        let secQuestionsHtml = '';
+        sec.questions.forEach(q => {
+          const res = q.render();
+          if (res) {
+            totalAnswered++;
+            secQuestionsHtml += `
+              <div class="print-no-break" style="margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">
+                <div style="font-size: 11pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">
+                  ${escapeHtml(q.title)}
+                </div>
+                ${res}
+              </div>
+            `;
+          }
+        });
+
+        if (secQuestionsHtml) {
+          sectionsHtml += `
+            <div class="print-no-break" style="margin-bottom: 22px;">
+              <div class="print-section-header" style="font-size: 11.5pt; font-weight: 800; color: #1e1b4b; background: #f8fafc; border-left: 4px solid #4f46e5; border-radius: 4px; padding: 6px 10px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em;">
+                ${escapeHtml(sec.title)}
+              </div>
+              ${secQuestionsHtml}
+            </div>
+          `;
+        }
+      });
+
+      let docHtml = `
+        <div style="font-family: 'Montserrat', system-ui, -apple-system, sans-serif; color: #0f172a; line-height: 1.5;">
+          <!-- Header -->
+          <div style="border-bottom: 2px solid #4f46e5; padding-bottom: 12px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <h1 style="font-size: 16pt; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2;">
+                  Marketinška Strategija — Odgovori
+                </h1>
+                <p style="font-size: 9.5pt; color: #64748b; margin: 4px 0 0 0;">
+                  Povzetek odgovorov na strateški vprašalnik
+                </p>
+              </div>
+              <div style="text-align: right; font-size: 8.5pt; color: #64748b;">
+                <div>Datum izpisa: <strong>${escapeHtml(printDate)}</strong></div>
+                ${company ? `<div style="font-weight: 700; color: #4f46e5; font-size: 9.5pt; margin-top: 2px;">${escapeHtml(company)}</div>` : ''}
+              </div>
+            </div>
+          </div>
+      `;
+
+      if (hasMeta) {
+        docHtml += `
+          <div class="print-no-break" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 9.5pt;">
+            ${company ? `<div><span style="font-size: 8pt; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Podjetje / Blagovna znamka:</span><strong style="color: #0f172a;">${escapeHtml(company)}</strong></div>` : ''}
+            ${contact ? `<div><span style="font-size: 8pt; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Kontaktna oseba:</span><strong style="color: #0f172a;">${escapeHtml(contact)}</strong></div>` : ''}
+            ${email ? `<div><span style="font-size: 8pt; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">E-pošta:</span><strong style="color: #0f172a;">${escapeHtml(email)}</strong></div>` : ''}
+            ${website ? `<div><span style="font-size: 8pt; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Spletna stran / profili:</span><strong style="color: #0f172a;">${escapeHtml(website)}</strong></div>` : ''}
+          </div>
+        `;
+      }
+
+      if (totalAnswered === 0) {
+        docHtml += `
+          <div style="padding: 24px; text-align: center; color: #64748b; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; margin-top: 20px;">
+            <p style="font-size: 11pt; font-weight: 600; margin: 0;">V vprašalniku še ni izpolnjenih odgovorov.</p>
+            <p style="font-size: 9pt; margin-top: 4px;">Pred tiskanjem ali shranjevanjem v PDF izpolnite vsaj nekaj vprašanj ali označite ustrezne možnosti.</p>
+          </div>
+        `;
+      } else {
+        docHtml += sectionsHtml;
+      }
+
+      docHtml += `
+          <!-- Footer -->
+          <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #94a3b8; text-align: center;">
+            Vprašalnik za spoznavanje podjetja in načrtovanje marketinške strategije • ${escapeHtml(company || 'Podjetje')}
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = docHtml;
     }
   </script>
+
+  <!-- DEDICATED PRINT REPORT CONTAINER (Visible only during printing / PDF export) -->
+  <div id="printReportContainer" class="p-6"></div>
 </body>
 </html>
