@@ -2197,39 +2197,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Progress Overview Bar in Header -->
-        <div class="mt-5 pt-4 border-t border-slate-800/80 grid grid-cols-3 gap-3 text-xs">
-          <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 flex items-center justify-between">
-            <div>
-              <span class="text-[10px] text-slate-400 uppercase font-bold block">1. Vprašalnik</span>
-              <span class="font-bold text-white text-sm">${client.stats.percent}% (${client.stats.answeredCount}/20)</span>
-            </div>
-            <div class="w-2 h-8 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-              <div class="bg-indigo-500 h-full rounded-full" style="height: ${client.stats.percent}%"></div>
-            </div>
-          </div>
-
-          <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 flex items-center justify-between">
-            <div>
-              <span class="text-[10px] text-slate-400 uppercase font-bold block">2. Strategija</span>
-              <span class="font-bold text-emerald-400 text-sm">${client.strategyStats.percent}% (${client.strategyStats.completedModules}/5 modulov)</span>
-            </div>
-            <div class="w-2 h-8 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-              <div class="bg-emerald-500 h-full rounded-full" style="height: ${client.strategyStats.percent}%"></div>
-            </div>
-          </div>
-
-          <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 flex items-center justify-between">
-            <div>
-              <span class="text-[10px] text-slate-400 uppercase font-bold block">3. Koledar vsebin</span>
-              <span class="font-bold text-sky-400 text-sm">${postsCount} načrtovanih objav</span>
-            </div>
-            <button onclick="switchWorkspaceTab('client_calendar')" class="text-xs font-bold text-indigo-400 hover:underline">
-              Prikaži →
-            </button>
-          </div>
-        </div>
       `;
 
       // Update To-Do sidebar and subtabs status
