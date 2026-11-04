@@ -315,37 +315,41 @@
   </section>
 
   <!-- MAIN FORM -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
-    <form id="marketingForm" class="space-y-8" onsubmit="event.preventDefault()">
+  <main class="w-full flex-1">
+    <form id="marketingForm" class="w-full" onsubmit="event.preventDefault()">
 
       <!-- OSNOVNI PODATKI O PODJETJU / NAROČNIKU -->
-      <section id="podatki-narocnika" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
-        <div class="flex items-center gap-3.5 mb-6 pb-4 border-b border-slate-100">
-          <div class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-            <i data-lucide="user-check" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <span class="text-xs font-bold text-indigo-600 tracking-wider uppercase">Začetek</span>
-            <h3 class="text-lg sm:text-xl font-bold text-slate-900">Podatki o naročniku in podjetju</h3>
-          </div>
-        </div>
+      <section id="podatki-narocnika" class="w-full py-8 sm:py-12 card-print" style="background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 60%, #eef2ff 100%);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
+            <div class="flex items-center gap-3.5 mb-6 pb-4 border-b border-slate-100">
+              <div class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-indigo-600 tracking-wider uppercase">Začetek</span>
+                <h3 class="text-lg sm:text-xl font-bold text-slate-900">Podatki o naročniku in podjetju</h3>
+              </div>
+            </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_company">Naziv podjetja / znamke *</label>
-            <input type="text" id="client_company" placeholder="npr. Moje Podjetje d.o.o." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_contact">Kontaktna oseba *</label>
-            <input type="text" id="client_contact" placeholder="Ime in priimek" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_email">E-poštni naslov *</label>
-            <input type="email" id="client_email" placeholder="vas@podjetje.si" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_website">Spletna stran / družbena omrežja</label>
-            <input type="text" id="client_website" placeholder="www.podjetje.si, @instagram" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_company">Naziv podjetja / znamke *</label>
+                <input type="text" id="client_company" placeholder="npr. Moje Podjetje d.o.o." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_contact">Kontaktna oseba *</label>
+                <input type="text" id="client_contact" placeholder="Ime in priimek" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_email">E-poštni naslov *</label>
+                <input type="email" id="client_email" placeholder="vas@podjetje.si" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5" for="client_website">Spletna stran / družbena omrežja</label>
+                <input type="text" id="client_website" placeholder="www.podjetje.si, @instagram" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 bg-slate-50/50 transition">
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -353,24 +357,27 @@
       <!-- ========================================== -->
       <!-- 1. SKLOP: PREDSTAVITEV PODJETJA -->
       <!-- ========================================== -->
-      <section id="sklop-1" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
-        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
-          <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-xs">
-            <i data-lucide="building-2" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-indigo-600 tracking-wider uppercase bg-indigo-50 px-2.5 py-0.5 rounded-full">1. Sklop</span>
-              <span class="text-xs text-slate-400">Vprašanja 1 – 4</span>
+      <section id="sklop-1" class="w-full py-10 sm:py-14 card-print" style="background: linear-gradient(180deg, #eef2ff 0%, #e0e7ff 40%, #eef2ff 75%, #fef3c7 100%);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <!-- Naslov sklopa (Belo polje) -->
+          <div class="bg-white rounded-3xl border border-indigo-100 p-6 sm:p-8 shadow-xs mb-8 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-xs">
+              <i data-lucide="building-2" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Predstavitev Podjetja</h3>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kdo ste, kaj je vaše bistvo, zakaj ste začeli in kam potujete.</p>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-indigo-600 tracking-wider uppercase bg-indigo-50 px-2.5 py-0.5 rounded-full">1. Sklop</span>
+                <span class="text-xs text-slate-400">Vprašanja 1 – 4</span>
+              </div>
+              <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Predstavitev Podjetja</h3>
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kdo ste, kaj je vaše bistvo, zakaj ste začeli in kam potujete.</p>
+            </div>
           </div>
-        </div>
 
-        <div class="space-y-8">
+          <div class="space-y-8">
           <!-- VPRAŠANJE 1 -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kako bi na kratko predstavili svoje podjetje nekomu, ki zanj še nikoli ni slišal?</label>
@@ -437,7 +444,7 @@
           </div>
 
           <!-- VPRAŠANJE 2 -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kako in zakaj se je začela zgodba vašega podjetja?</label>
@@ -479,7 +486,7 @@
           </div>
 
           <!-- VPRAŠANJE 3 -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kakšna je vaša dolgoročna vizija podjetja?</label>
@@ -521,7 +528,7 @@
           </div>
 
           <!-- VPRAŠANJE 4 -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">4</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Katere vrednote so za vaše podjetje najpomembnejše?</label>
@@ -577,29 +584,33 @@
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <!-- ========================================== -->
       <!-- 2. SKLOP: PONUDBA IN KONKURENČNA PREDNOST -->
       <!-- ========================================== -->
-      <section id="sklop-2" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
-        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
-          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 shadow-xs">
-            <i data-lucide="award" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-amber-600 tracking-wider uppercase bg-amber-50 px-2.5 py-0.5 rounded-full">2. Sklop</span>
-              <span class="text-xs text-slate-400">Vprašanja 5 – 9</span>
+      <section id="sklop-2" class="w-full py-10 sm:py-14 card-print" style="background: linear-gradient(180deg, #fef3c7 0%, #fef9c3 40%, #fef3c7 75%, #ecfdf5 100%);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <!-- Naslov sklopa (Belo polje) -->
+          <div class="bg-white rounded-3xl border border-amber-100 p-6 sm:p-8 shadow-xs mb-8 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 shadow-xs">
+              <i data-lucide="award" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Ponudba in Konkurenčna Prednost</h3>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kaj prodajate, kateri so vaši aduti, zakaj stranke izberejo prav vas in koga spoštujete.</p>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-amber-600 tracking-wider uppercase bg-amber-50 px-2.5 py-0.5 rounded-full">2. Sklop</span>
+                <span class="text-xs text-slate-400">Vprašanja 5 – 9</span>
+              </div>
+              <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Ponudba in Konkurenčna Prednost</h3>
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kaj prodajate, kateri so vaši aduti, zakaj stranke izberejo prav vas in koga spoštujete.</p>
+            </div>
           </div>
-        </div>
 
-        <div class="space-y-8">
+          <div class="space-y-8">
           <!-- VPRAŠANJE 5 -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">5</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Katere izdelke ali storitve trenutno ponujate?</label>
@@ -635,7 +646,7 @@
           </div>
 
           <!-- VPRAŠANJE 6: 5 NAJBOLJE PRODAJANIH IZDELKOV -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">6</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Katerih je vaših 5 najbolje prodajanih izdelkov oziroma storitev?</label>
@@ -667,7 +678,7 @@
           </div>
 
           <!-- VPRAŠANJE 7: ZAKAJ STRANKE IZBEREJO PRAV VAS -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">7</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Zakaj stranke izberejo prav vaše podjetje? (Konkurenčna prednost)</label>
@@ -718,7 +729,7 @@
           </div>
 
           <!-- VPRAŠANJE 8: KONKURENTI & VZORNIKI -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">8</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kdo so vaši največji konkurenti oziroma podjetja, ki jih najbolj spoštujete?</label>
@@ -745,7 +756,7 @@
           </div>
 
           <!-- VPRAŠANJE 9: IZKUŠNJA STRANKE -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center justify-center shrink-0">9</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kakšno izkušnjo želite zagotoviti svojim strankam?</label>
@@ -786,29 +797,33 @@
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <!-- ========================================== -->
       <!-- 3. SKLOP: VAŠE STRANKE -->
       <!-- ========================================== -->
-      <section id="sklop-3" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
-        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-xs">
-            <i data-lucide="users" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-emerald-600 tracking-wider uppercase bg-emerald-50 px-2.5 py-0.5 rounded-full">3. Sklop</span>
-              <span class="text-xs text-slate-400">Vprašanja 10 – 13</span>
+      <section id="sklop-3" class="w-full py-10 sm:py-14 card-print" style="background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 40%, #ecfdf5 75%, #eff6ff 100%);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <!-- Naslov sklopa (Belo polje) -->
+          <div class="bg-white rounded-3xl border border-emerald-100 p-6 sm:p-8 shadow-xs mb-8 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-xs">
+              <i data-lucide="users" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Vaše Stranke</h3>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kdo so, kaj potrebujejo, katera vprašanja si zastavljajo in kakšne stranke si želite v prihodnje.</p>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-emerald-600 tracking-wider uppercase bg-emerald-50 px-2.5 py-0.5 rounded-full">3. Sklop</span>
+                <span class="text-xs text-slate-400">Vprašanja 10 – 13</span>
+              </div>
+              <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Vaše Stranke</h3>
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kdo so, kaj potrebujejo, katera vprašanja si zastavljajo in kakšne stranke si želite v prihodnje.</p>
+            </div>
           </div>
-        </div>
 
-        <div class="space-y-8">
+          <div class="space-y-8">
           <!-- VPRAŠANJE 10: KDO SO STRANKE -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0">10</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kdo so vaše najpogostejše stranke?</label>
@@ -875,7 +890,7 @@
           </div>
 
           <!-- VPRAŠANJE 11: POTREBE, TEŽAVE IN ŽELJE -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0">11</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Katere potrebe, težave ali želje imajo vaše stranke, zaradi katerih se obrnejo na vas?</label>
@@ -920,7 +935,7 @@
           </div>
 
           <!-- VPRAŠANJE 12: KAJ STRANKE NAJBOLJ ZANIMA / SKRBI -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0">12</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kaj stranke najpogosteje zanima, preden se odločijo za nakup?</label>
@@ -978,7 +993,7 @@
           </div>
 
           <!-- VPRAŠANJE 13: STRANKE V PRIHODNOSTI -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0">13</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Katere stranke si želite pridobiti v prihodnosti?</label>
@@ -1016,29 +1031,33 @@
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <!-- ========================================== -->
       <!-- 4. SKLOP: POSLOVNI IN MARKETINŠKI CILJI -->
       <!-- ========================================== -->
-      <section id="sklop-4" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
-        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
-          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-xs">
-            <i data-lucide="target" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-blue-600 tracking-wider uppercase bg-blue-50 px-2.5 py-0.5 rounded-full">4. Sklop</span>
-              <span class="text-xs text-slate-400">Vprašanja 14 – 16</span>
+      <section id="sklop-4" class="w-full py-10 sm:py-14 card-print" style="background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 40%, #eff6ff 75%, #faf5ff 100%);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <!-- Naslov sklopa (Belo polje) -->
+          <div class="bg-white rounded-3xl border border-blue-100 p-6 sm:p-8 shadow-xs mb-8 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-xs">
+              <i data-lucide="target" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Poslovni in Marketinški Cilji</h3>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kaj želite doseči v naslednjih 3 mesecih, kje želite biti čez 1–2 leti in katere produkte izpostaviti.</p>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-blue-600 tracking-wider uppercase bg-blue-50 px-2.5 py-0.5 rounded-full">4. Sklop</span>
+                <span class="text-xs text-slate-400">Vprašanja 14 – 16</span>
+              </div>
+              <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Poslovni in Marketinški Cilji</h3>
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kaj želite doseči v naslednjih 3 mesecih, kje želite biti čez 1–2 leti in katere produkte izpostaviti.</p>
+            </div>
           </div>
-        </div>
 
-        <div class="space-y-8">
+          <div class="space-y-8">
           <!-- VPRAŠANJE 14: CILJI V NASLEDNJIH 3 MESECIH -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">14</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kaj želite doseči s predstavitvijo na družbenih omrežjih v naslednjih 3 mesecih?</label>
@@ -1086,7 +1105,7 @@
           </div>
 
           <!-- VPRAŠANJE 15: CILJI V 1-2 LETIH -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">15</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kakšne cilje želite doseči v naslednjih 1–2 letih?</label>
@@ -1128,7 +1147,7 @@
           </div>
 
           <!-- VPRAŠANJE 16: IZDELKI ZA IZPOSTAVITEV -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">16</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Katere izdelke ali storitve želite trenutno najbolj izpostaviti?</label>
@@ -1151,29 +1170,33 @@
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <!-- ========================================== -->
       <!-- 5. SKLOP: IDENTITETA IN KOMUNIKACIJA -->
       <!-- ========================================== -->
-      <section id="sklop-5" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs card-print">
-        <div class="flex items-start gap-4 mb-8 pb-5 border-b border-slate-100">
-          <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 shadow-xs">
-            <i data-lucide="sparkle" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-purple-600 tracking-wider uppercase bg-purple-50 px-2.5 py-0.5 rounded-full">5. Sklop</span>
-              <span class="text-xs text-slate-400">Vprašanja 17 – 20</span>
+      <section id="sklop-5" class="w-full py-10 sm:py-14 card-print" style="background: linear-gradient(180deg, #faf5ff 0%, #f3e8ff 40%, #faf5ff 75%, #1e1b4b 100%);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <!-- Naslov sklopa (Belo polje) -->
+          <div class="bg-white rounded-3xl border border-purple-100 p-6 sm:p-8 shadow-xs mb-8 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 shadow-xs">
+              <i data-lucide="sparkle" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Identiteta in Komunikacija Blagovne Znamke</h3>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Osebnost znamke, vtisi, ton komunikacije in stvari, ki so strogo prepovedane (No-Go).</p>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-purple-600 tracking-wider uppercase bg-purple-50 px-2.5 py-0.5 rounded-full">5. Sklop</span>
+                <span class="text-xs text-slate-400">Vprašanja 17 – 20</span>
+              </div>
+              <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Identiteta in Komunikacija Blagovne Znamke</h3>
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Osebnost znamke, vtisi, ton komunikacije in stvari, ki so strogo prepovedane (No-Go).</p>
+            </div>
           </div>
-        </div>
 
-        <div class="space-y-8">
+          <div class="space-y-8">
           <!-- VPRAŠANJE 17: PODJETJE V 3 BESEDAH -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold flex items-center justify-center shrink-0">17</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Če bi morali svoje podjetje opisati s tremi besedami, katere bi izbrali?</label>
@@ -1219,7 +1242,7 @@
           </div>
 
           <!-- VPRAŠANJE 18: VTIS PRI LJUDEH -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold flex items-center justify-center shrink-0">18</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kakšen vtis želite pustiti pri ljudeh, ko pridejo v stik z vašo blagovno znamko?</label>
@@ -1287,7 +1310,7 @@
           </div>
 
           <!-- VPRAŠANJE 19: TON IN VZDUŠJE (VIBE) -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold flex items-center justify-center shrink-0">19</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Kakšen ton in vzdušje želite, da predstavlja vaša blagovna znamka?</label>
@@ -1345,7 +1368,7 @@
           </div>
 
           <!-- VPRAŠANJE 20: RDEČE ZASTAVICE (NO-GO) -->
-          <div class="p-5 sm:p-6 rounded-2xl bg-rose-50/50 border border-rose-200/80">
+          <div class="p-5 sm:p-6 rounded-2xl bg-white border-2 border-rose-200 shadow-xs">
             <div class="flex items-center gap-2 mb-2">
               <span class="w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center shrink-0">20</span>
               <label class="text-sm sm:text-base font-bold text-slate-900">Ali obstajajo teme, vsebine ali načini komunikacije, s katerimi se NE ŽELITE povezovati?</label>
@@ -1389,27 +1412,32 @@
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <!-- ========================================== -->
       <!-- ZAKLJUČEK & SHRANJEVANJE / IZVOZ -->
       <!-- ========================================== -->
-      <section class="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl card-print">
-        <div class="max-w-3xl">
-          <div class="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-emerald-400 bg-emerald-950/60 px-3.5 py-1.5 rounded-full mb-3 border border-emerald-500/30">
-            <i data-lucide="check-circle" class="w-4 h-4"></i> Hvala za vaš čas in odgovore!
-          </div>
-          
-          <h4 class="text-xl sm:text-2xl font-bold mb-2">Vaši odgovori so neprecenljiva osnova za strategijo.</h4>
-          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
-            Na podlagi pridobljenih informacij bomo pripravili celovito strategijo za predstavitev vašega podjetja, določili ključne komunikacijske smernice in pripravili vsebinski načrt, usmerjen v doseganje vaših poslovnih ciljev. <strong class="text-white font-bold">Svoje odgovore si lahko spodaj natisnete ali shranite kot PDF za svojo osebno evidenco ali nadaljnje namene.</strong>
-          </p>
+      <section class="w-full py-12 sm:py-16 card-print" style="background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl border border-indigo-500/20">
+            <div class="max-w-3xl">
+              <div class="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-emerald-400 bg-emerald-950/60 px-3.5 py-1.5 rounded-full mb-3 border border-emerald-500/30">
+                <i data-lucide="check-circle" class="w-4 h-4"></i> Hvala za vaš čas in odgovore!
+              </div>
+              
+              <h4 class="text-xl sm:text-2xl font-bold mb-2">Vaši odgovori so neprecenljiva osnova za strategijo.</h4>
+              <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
+                Na podlagi pridobljenih informacij bomo pripravili celovito strategijo za predstavitev vašega podjetja, določili ključne komunikacijske smernice in pripravili vsebinski načrt, usmerjen v doseganje vaših poslovnih ciljev. <strong class="text-white font-bold">Svoje odgovore si lahko spodaj natisnete ali shranite kot PDF za svojo osebno evidenco ali nadaljnje namene.</strong>
+              </p>
 
-          <div class="flex flex-wrap items-center gap-3 no-print">
-            <button type="button" onclick="printReport()" class="inline-flex items-center gap-2 px-5 py-3 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition-all active:scale-95 shadow-indigo-600/30">
-              <i data-lucide="printer" class="w-4 h-4"></i>
-              <span>Natisni ali Shrani kot PDF</span>
-            </button>
+              <div class="flex flex-wrap items-center gap-3 no-print">
+                <button type="button" onclick="printReport()" class="inline-flex items-center gap-2 px-5 py-3 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition-all active:scale-95 shadow-indigo-600/30">
+                  <i data-lucide="printer" class="w-4 h-4"></i>
+                  <span>Natisni ali Shrani kot PDF</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1418,9 +1446,9 @@
   </main>
 
   <!-- FOOTER -->
-  <footer class="mt-auto py-8 text-center text-xs text-slate-400 border-t border-slate-200/80 bg-white no-print">
+  <footer class="mt-auto py-8 text-center text-xs text-slate-500 bg-slate-950 border-t border-slate-800 no-print">
     <p>© 2026 • Vprašalnik za Spoznavanje Podjetja in Načrtovanje Marketinške Strategije</p>
-    <p class="mt-1 text-slate-400">Vsi odgovori se samodejno varno shranjujejo.</p>
+    <p class="mt-1 text-slate-500">Vsi odgovori se samodejno varno shranjujejo.</p>
   </footer>
 
   <!-- TOAST NOTIFICATION -->
