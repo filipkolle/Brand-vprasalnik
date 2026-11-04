@@ -100,7 +100,7 @@
     .smart-field-wrapper {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      min-height: 100%;
     }
     .smart-field-textarea {
       box-sizing: border-box;
@@ -108,7 +108,8 @@
       min-height: 84px;
       resize: none;
       overflow-y: hidden !important;
-      line-height: 1.5;
+      line-height: 1.6;
+      flex: 1 0 auto !important;
     }
   </style>
 </head>
@@ -2783,17 +2784,18 @@
 
       const prevScrollY = window.scrollY;
 
-      // 1. Temporarily reset each textarea inline height to auto so scrollHeight reflects true content height
+      // 1. Reset each textarea inline height to auto and clear any internal scroll offset
       textareas.forEach(ta => {
         ta.style.height = 'auto';
+        ta.scrollTop = 0;
       });
 
-      // 2. Measure required height for each textarea (minimum 84px, plus borders)
+      // 2. Measure required height for each textarea (+ 8px safety padding for descenders and emojis)
       const items = textareas.map(ta => {
         const style = window.getComputedStyle(ta);
         const borderTop = parseFloat(style.borderTopWidth) || 0;
-        const borderBottom = parseFloat(style.borderBottomWidth) || 0;
-        const requiredHeight = Math.max(84, Math.ceil(ta.scrollHeight + borderTop + borderBottom));
+        // Measure required height with generous buffer (+ 36px) to ensure all text and emojis are completely visible without cropping
+        const requiredHeight = Math.max(100, Math.ceil(ta.scrollHeight + borderTop + borderBottom + 36));
         const wrapper = ta.closest('.smart-field-wrapper') || ta;
         const rect = wrapper.getBoundingClientRect();
         return {
@@ -2805,10 +2807,10 @@
         };
       });
 
-      // 3. Group textareas in the same parent container and same row (top within 20px)
+      // 3. Group textareas in the same parent container and same row (top within 30px)
       const rowGroups = [];
       items.forEach(item => {
-        const group = rowGroups.find(g => g.parent === item.parent && Math.abs(g.top - item.top) <= 20);
+        const group = rowGroups.find(g => g.parent === item.parent && Math.abs(g.top - item.top) <= 30);
         if (group) {
           group.items.push(item);
         } else {
@@ -2825,6 +2827,7 @@
         const maxHeight = Math.max(...group.items.map(i => i.requiredHeight));
         group.items.forEach(i => {
           i.ta.style.height = maxHeight + 'px';
+          i.ta.scrollTop = 0;
         });
       });
 
@@ -2835,6 +2838,7 @@
 
     function handleSmartFieldInput(textarea) {
       if (!textarea) return;
+      textarea.scrollTop = 0;
       const scope = textarea.closest('.grid') || textarea.closest('.smart-field-wrapper')?.parentElement || document;
       autoResizeAllTextareas(scope);
     }
