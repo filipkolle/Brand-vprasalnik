@@ -1488,6 +1488,7 @@
     const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     let currentSubmissionId = new URLSearchParams(window.location.search).get('id') || null;
+    let existingCrmAnswers = null;
 
     // Form inputs and textareas
     const textFields = [
@@ -1877,6 +1878,9 @@
       updateSaveStatus('saving');
 
       const collected = collectData();
+      if (existingCrmAnswers) {
+        collected.crm = existingCrmAnswers;
+      }
 
       const hasContent = Object.values(collected.fields).some(v => v && v.trim().length > 0) ||
                          Object.values(collected.chips).some(arr => arr && arr.length > 0) ||
@@ -1946,6 +1950,9 @@
 
         if (error) throw error;
         if (data && data.answers) {
+          if (data.answers.crm) {
+            existingCrmAnswers = data.answers.crm;
+          }
           applyDataToForm(data.answers, data);
           updateSaveStatus('saved');
           showToast('Odgovori so naloženi iz baze!');
@@ -2115,6 +2122,9 @@
       if (currentSubmissionId && supabaseClient) {
         try {
           const emptyAnswers = collectData();
+          if (existingCrmAnswers) {
+            emptyAnswers.crm = existingCrmAnswers;
+          }
           const { error } = await supabaseClient
             .from('marketing_questionnaires')
             .update({
