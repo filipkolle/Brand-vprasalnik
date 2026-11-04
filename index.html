@@ -2068,6 +2068,8 @@
       document.getElementById('resetModal').classList.add('hidden');
     }
     async function confirmReset() {
+      if (saveTimer) clearTimeout(saveTimer);
+
       // Clear question text fields
       textFields.forEach(id => {
         const el = document.getElementById(id);
