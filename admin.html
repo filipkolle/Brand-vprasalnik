@@ -2229,6 +2229,118 @@
         </div>
       `;
     }
+    // -------------------------------------------------------------
+    // QUESTIONNAIRE DATA PRE-FILLING & SMART CRM FORM FIELDS
+    // -------------------------------------------------------------
+    function getCrmFieldState(client, parentPath, fieldName, defaultFn) {
+      if (!client) return { value: '', isCustom: false, isFromQ: false };
+      
+      const parts = parentPath.split('.');
+      let target = client.crm || {};
+      for (const p of parts) {
+        if (!target || !target[p]) { target = null; break; }
+        target = target[p];
+      }
+      
+      const isCustom = target ? target[fieldName + '_custom'] === true : false;
+      const crmVal = target ? target[fieldName] : undefined;
+
+      // 1. If explicitly edited by user, use that value (even if blank)
+      if (isCustom && crmVal !== undefined && crmVal !== null) {
+        return {
+          value: crmVal,
+          isCustom: true,
+          isFromQ: false
+        };
+      }
+
+      // 2. If crm has an existing non-empty value that was saved previously
+      if (!isCustom && crmVal !== undefined && crmVal !== null && typeof crmVal === 'string' && crmVal.trim().length > 0) {
+        return {
+          value: crmVal,
+          isCustom: true,
+          isFromQ: false
+        };
+      }
+
+      // 3. Fallback to client's questionnaire answer
+      const qVal = defaultFn ? defaultFn(client.answers || {}) : '';
+      if (qVal && typeof qVal === 'string' && qVal.trim().length > 0) {
+        return {
+          value: qVal.trim(),
+          isCustom: false,
+          isFromQ: true
+        };
+      }
+
+      return {
+        value: '',
+        isCustom: false,
+        isFromQ: false
+      };
+    }
+
+    function renderCrmSmartField({
+      client,
+      parentPath,
+      fieldName,
+      label,
+      description = '',
+      placeholder = '',
+      rows = 3,
+      type = 'textarea',
+      defaultFn,
+      focusRing = 'focus:ring-indigo-500/30'
+    }) {
+      const { value, isCustom, isFromQ } = getCrmFieldState(client, parentPath, fieldName, defaultFn);
+      const qHasAnswer = defaultFn ? Boolean(defaultFn(client.answers || '')?.trim()) : false;
+
+      let badgeContent = '';
+      if (isFromQ) {
+        badgeContent = `
+          <span class="text-[10px] text-indigo-300 font-semibold px-2 py-0.5 rounded-md bg-indigo-950/80 border border-indigo-500/30 inline-flex items-center gap-1 shadow-xs" title="Ta odgovor je bil samodejno prevzet iz vprašalnika naročnika">
+            <i data-lucide="sparkles" class="w-3 h-3 text-indigo-400"></i> Prevzeto iz vprašalnika
+          </span>
+        `;
+      } else if (isCustom && qHasAnswer) {
+        badgeContent = `
+          <span class="text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/30 inline-flex items-center gap-1" title="Podatek ste prilagodili v CRM-ju">
+            <i data-lucide="check" class="w-3 h-3"></i> Prilagojeno
+          </span>
+        `;
+      }
+
+      const resetBtnContent = (isCustom && qHasAnswer) ? `
+        <button type="button" onclick="restoreQuestionnaireAnswer('${parentPath}', '${fieldName}')" class="text-[10px] text-slate-400 hover:text-indigo-300 transition inline-flex items-center gap-1 font-medium">
+          <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Ponastavi na originalen odgovor naročnika
+        </button>
+      ` : '';
+
+      return `
+        <div class="smart-field-wrapper" data-has-q-answer="${qHasAnswer ? '1' : '0'}" data-parent-path="${parentPath}" data-field-name="${fieldName}">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <label class="block font-bold uppercase tracking-wider text-slate-300 text-xs">${label}</label>
+            <div class="smart-field-badge">${badgeContent}</div>
+          </div>
+          ${description ? `<p class="text-[11px] text-slate-400 mb-1.5">${description}</p>` : ''}
+          ${type === 'textarea' ? `
+            <textarea 
+              oninput="handleAutoSaveCrmSubfield('${parentPath}', '${fieldName}', this.value)" 
+              rows="${rows}" 
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 ${focusRing} transition leading-relaxed placeholder:text-slate-600" 
+              placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>
+          ` : `
+            <input 
+              type="text" 
+              oninput="handleAutoSaveCrmSubfield('${parentPath}', '${fieldName}', this.value)" 
+              value="${escapeHtml(value)}" 
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-2 ${focusRing} transition placeholder:text-slate-600" 
+              placeholder="${escapeHtml(placeholder)}">
+          `}
+          <div class="smart-field-reset mt-1 flex justify-end">${resetBtnContent}</div>
+        </div>
+      `;
+    }
 
     // -------------------------------------------------------------
     // WORKSPACE MODULE 3: MARKET RESEARCH
@@ -2237,8 +2349,11 @@
       const crm = client.crm || {};
       const research = crm.market_research || {};
       const competitors = research.competitors || [];
-      const opps = research.opportunities || {};
-      const insights = research.customer_insights || {};
+      const answers = client.answers || {};
+      const fields = answers.fields || {};
+
+      const hasQ8Competitors = fields.q8_competitors && fields.q8_competitors.trim().length > 0;
+      const hasQ8Inspiration = fields.q8_inspiration && fields.q8_inspiration.trim().length > 0;
 
       return `
         <div class="space-y-6">
@@ -2252,10 +2367,30 @@
                 </h3>
                 <p class="text-xs text-slate-400 mt-0.5">Sledenje glavnim konkurentom, njihovim prednostim in vsebinskemu pristopu.</p>
               </div>
-              <button onclick="openAddCompetitorModal()" class="px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5">
+              <button onclick="openAddCompetitorModal()" class="px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5 shadow-xs">
                 <i data-lucide="plus" class="w-3.5 h-3.5"></i> Dodaj konkurenta
               </button>
             </div>
+
+            ${(hasQ8Competitors || hasQ8Inspiration) ? `
+              <div class="p-3.5 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="space-y-0.5">
+                  <div class="flex items-center gap-1.5 text-indigo-300 font-bold">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i> Odgovor naročnika iz 8. vprašanja:
+                  </div>
+                  <div class="text-slate-200">
+                    ${hasQ8Competitors ? `<span><strong>Navedeni konkurenti:</strong> ${escapeHtml(fields.q8_competitors)}</span>` : ''}
+                    ${(hasQ8Competitors && hasQ8Inspiration) ? '<span class="text-slate-500 mx-1">•</span>' : ''}
+                    ${hasQ8Inspiration ? `<span><strong>Vzorniki:</strong> ${escapeHtml(fields.q8_inspiration)}</span>` : ''}
+                  </div>
+                </div>
+                ${hasQ8Competitors ? `
+                  <button type="button" onclick="addCompetitorFromQuestionnaire('${escapeHtml(fields.q8_competitors).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Dodaj kot kartico konkurenta
+                  </button>
+                ` : ''}
+              </div>
+            ` : ''}
 
             <!-- Competitor cards list -->
             ${competitors.length > 0 ? `
@@ -2268,7 +2403,7 @@
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                       </button>
                     </div>
-                    <p class="text-xs text-indigo-400 font-mono">${escapeHtml(comp.website || '')}</p>
+                    ${comp.website ? `<p class="text-xs text-indigo-400 font-mono">${escapeHtml(comp.website)}</p>` : ''}
                     <div class="text-xs text-slate-300 space-y-1 pt-1">
                       <p><strong class="text-slate-400">Pozicioniranje:</strong> ${escapeHtml(comp.positioning || 'Ni opisa')}</p>
                       <p><strong class="text-slate-400">Prednosti:</strong> ${escapeHtml(comp.strengths || '/')}</p>
@@ -2290,25 +2425,59 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1">Tržni trendi v panogi</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('market_research.opportunities', 'trends', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Kaj je trenutno v vzponu v tej panogi?">${escapeHtml(opps.trends || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'market_research.opportunities',
+                fieldName: 'trends',
+                label: 'Tržni trendi v panogi',
+                placeholder: 'Kaj je trenutno v vzponu v tej panogi?',
+                rows: 3,
+                defaultFn: () => ''
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1">Nezadovoljene potrebe kupcev</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('market_research.opportunities', 'customer_needs', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Kje konkurenti razočarajo kupce?">${escapeHtml(opps.customer_needs || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'market_research.opportunities',
+                fieldName: 'customer_needs',
+                label: 'Nezadovoljene potrebe kupcev',
+                placeholder: 'Kje konkurenti razočarajo kupce?',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q11_text) parts.push(f.q11_text);
+                  if (c.q11_painpoints?.length) parts.push('Težave in bolečine strank: ' + c.q11_painpoints.join(', '));
+                  return parts.join('\n\n');
+                }
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1">Vsebinske priložnosti (Content Gaps)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('market_research.opportunities', 'content_opps', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Katere teme nihče ne pokriva dobro?">${escapeHtml(opps.content_opps || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'market_research.opportunities',
+                fieldName: 'content_opps',
+                label: 'Vsebinske priložnosti (Content Gaps)',
+                placeholder: 'Katere teme nihče ne pokriva dobro?',
+                rows: 3,
+                defaultFn: () => ''
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1">Potencial za diferenciacijo</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('market_research.opportunities', 'differentiation', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Kje smo lahko 10x boljši ali drugačni?">${escapeHtml(opps.differentiation || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'market_research.opportunities',
+                fieldName: 'differentiation',
+                label: 'Potencial za diferenciacijo',
+                placeholder: 'Kje smo lahko 10x boljši ali drugačni?',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q7_text) parts.push(f.q7_text);
+                  if (c.q7_advantages?.length) parts.push('Konkurenčne prednosti podjetja: ' + c.q7_advantages.join(', '));
+                  return parts.join('\n\n');
+                }
+              })}
             </div>
           </div>
 
@@ -2319,15 +2488,38 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1">Pogosta vprašanja kupcev</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('market_research.customer_insights', 'questions', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Kaj se stranke vedno znova sprašujejo?">${escapeHtml(insights.questions || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'market_research.customer_insights',
+                fieldName: 'questions',
+                label: 'Pogosta vprašanja kupcev',
+                placeholder: 'Kaj se stranke vedno znova sprašujejo?',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q12_text) parts.push(f.q12_text);
+                  if (c.q12_questions?.length) parts.push('Pogosta vprašanja:\n• ' + c.q12_questions.join('\n• '));
+                  return parts.join('\n\n');
+                }
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1">Glavni nakupni ugovori (Objections)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('market_research.customer_insights', 'objections', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Kaj jih zadržuje pred nakupom (cena, zaupanje...)?">${escapeHtml(insights.objections || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'market_research.customer_insights',
+                fieldName: 'objections',
+                label: 'Glavni nakupni ugovori (Objections)',
+                placeholder: 'Kaj jih zadržuje pred nakupom (cena, zaupanje...)?',
+                rows: 3,
+                defaultFn: (a) => {
+                  const c = a.chips || {};
+                  if (c.q12_converters?.length) {
+                    return 'Dejavniki, ki premagajo ugovore:\n• ' + c.q12_converters.join('\n• ');
+                  }
+                  return '';
+                }
+              })}
             </div>
           </div>
 
@@ -2339,11 +2531,6 @@
     // WORKSPACE MODULE 4: BRAND STRATEGY
     // -------------------------------------------------------------
     function renderWsBrandStrategy(client) {
-      const crm = client.crm || {};
-      const strat = crm.brand_strategy || {};
-      const audience = strat.target_audience || {};
-      const tone = strat.tone_of_voice || {};
-
       return `
         <div class="space-y-6">
           
@@ -2354,24 +2541,71 @@
             </h3>
 
             <div class="space-y-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Tržno pozicioniranje znamke (Brand Positioning) *</label>
-                <p class="text-[11px] text-slate-400 mb-1.5">Kako točno naj bo podjetje prepoznano v mislih kupca?</p>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy', 'positioning', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Npr. Vodilni butični specialist za...">${escapeHtml(strat.positioning || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy',
+                fieldName: 'positioning',
+                label: 'Tržno pozicioniranje znamke (Brand Positioning) *',
+                description: 'Kako točno naj bo podjetje prepoznano v mislih kupca?',
+                placeholder: 'Npr. Vodilni butični specialist za...',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q1_text) parts.push(f.q1_text);
+                  if (c.q1_business_type?.length) parts.push('Panoga / tip: ' + c.q1_business_type.join(', '));
+                  if (c.q1_reach?.length) parts.push('Doseg: ' + c.q1_reach.join(', '));
+                  if (f.q5_text || c.q5_price_range?.length) {
+                    const p5 = [c.q5_price_range?.join(', '), f.q5_text].filter(Boolean).join(' - ');
+                    parts.push('Cenovni razred in pozicioniranje: ' + p5);
+                  }
+                  return parts.join('\n\n');
+                }
+              })}
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Poslanstvo & Namen (Brand Purpose) *</label>
-                  <p class="text-[11px] text-slate-400 mb-1.5">Zakaj znamka obstaja, razen za ustvarjanje profita?</p>
-                  <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy', 'purpose', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Npr. Vrniti pristnost in kakovost v vsakdanje prehranjevanje...">${escapeHtml(strat.purpose || '')}</textarea>
-                </div>
+                ${renderCrmSmartField({
+                  client,
+                  parentPath: 'brand_strategy',
+                  fieldName: 'purpose',
+                  label: 'Poslanstvo & Namen (Brand Purpose) *',
+                  description: 'Zakaj znamka obstaja, razen za ustvarjanje profita?',
+                  placeholder: 'Npr. Vrniti pristnost in kakovost v vsakdanje prehranjevanje...',
+                  rows: 3,
+                  defaultFn: (a) => {
+                    const f = a.fields || {};
+                    const c = a.chips || {};
+                    const parts = [];
+                    if (f.q3_text || c.q3_vision_tags?.length) {
+                      const v = [c.q3_vision_tags?.join(', '), f.q3_text].filter(Boolean).join(' - ');
+                      parts.push('Poslanstvo in vizija: ' + v);
+                    }
+                    if (f.q2_text || c.q2_origins?.length) {
+                      const o = [c.q2_origins?.join(', '), f.q2_text].filter(Boolean).join(' - ');
+                      parts.push('Izvor in razlog nastanka: ' + o);
+                    }
+                    return parts.join('\n\n');
+                  }
+                })}
 
-                <div>
-                  <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Edinstvena prodajna prednost (USP) *</label>
-                  <p class="text-[11px] text-slate-400 mb-1.5">Kaj nas neizpodbitno loči od vsake alternative?</p>
-                  <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy', 'usp', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Npr. 100% lokalne sestavine z garancijo svežine...">${escapeHtml(strat.usp || '')}</textarea>
-                </div>
+                ${renderCrmSmartField({
+                  client,
+                  parentPath: 'brand_strategy',
+                  fieldName: 'usp',
+                  label: 'Edinstvena prodajna prednost (USP) *',
+                  description: 'Kaj nas neizpodbitno loči od vsake alternative?',
+                  placeholder: 'Npr. 100% lokalne sestavine z garancijo svežine...',
+                  rows: 3,
+                  defaultFn: (a) => {
+                    const f = a.fields || {};
+                    const c = a.chips || {};
+                    const parts = [];
+                    if (f.q7_text) parts.push(f.q7_text);
+                    if (c.q7_advantages?.length) parts.push('Prednosti: ' + c.q7_advantages.join(', '));
+                    return parts.join('\n\n');
+                  }
+                })}
               </div>
             </div>
           </div>
@@ -2383,25 +2617,77 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Primarna ciljna skupina (Idealni kupec)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy.target_audience', 'primary', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Demografija, starost, življenjski slog...">${escapeHtml(audience.primary || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy.target_audience',
+                fieldName: 'primary',
+                label: 'Primarna ciljna skupina (Idealni kupec)',
+                placeholder: 'Demografija, starost, življenjski slog...',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q10_text) parts.push(f.q10_text);
+                  const dem = [c.q10_audience_type?.join(', '), c.q10_age_group?.join(', ')].filter(Boolean).join(' | Starost: ');
+                  if (dem) parts.push('Demografija: ' + dem);
+                  return parts.join('\n\n');
+                }
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Sekundarna ciljna skupina</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy.target_audience', 'secondary', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="B2B partnerji, darila, posebni dogodki...">${escapeHtml(audience.secondary || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy.target_audience',
+                fieldName: 'secondary',
+                label: 'Sekundarna / Bodoča ciljna skupina',
+                placeholder: 'B2B partnerji, darila, posebni dogodki...',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q13_text) parts.push(f.q13_text);
+                  if (c.q13_future_clients?.length) parts.push('Želeni bodoči segmenti: ' + c.q13_future_clients.join(', '));
+                  return parts.join('\n\n');
+                }
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Glavne bolečine in težave (Pain points)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy.target_audience', 'problems', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Pomanjkanje časa, slaba kakovost drugje...">${escapeHtml(audience.problems || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy.target_audience',
+                fieldName: 'problems',
+                label: 'Glavne bolečine in težave (Pain points)',
+                placeholder: 'Pomanjkanje časa, slaba kakovost drugje...',
+                rows: 2,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q11_text) parts.push(f.q11_text);
+                  if (c.q11_painpoints?.length) parts.push('Težave in izzivi: ' + c.q11_painpoints.join(', '));
+                  return parts.join('\n\n');
+                }
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Nakupni motivi (Zakaj kupijo)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy.target_audience', 'motivations', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Status, zanesljivost, zdravje, užitek...">${escapeHtml(audience.motivations || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy.target_audience',
+                fieldName: 'motivations',
+                label: 'Nakupni motivi (Zakaj kupijo)',
+                placeholder: 'Status, zanesljivost, zdravje, užitek...',
+                rows: 2,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (c.q12_converters?.length) parts.push('Ključni dejavniki odločitve: ' + c.q12_converters.join(', '));
+                  if (f.q9_text || c.q9_feelings?.length) {
+                    const feel = [f.q9_text, c.q9_feelings?.join(', ')].filter(Boolean).join(' - ');
+                    parts.push('Želeni občutki ob nakupu: ' + feel);
+                  }
+                  return parts.join('\n\n');
+                }
+              })}
             </div>
           </div>
 
@@ -2412,15 +2698,48 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Osebnost znamke (Brand Personality)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy', 'personality', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Npr. Prijazna, topla, strokovna, a ne vzvišena; sodobna tradicija...">${escapeHtml(strat.personality || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy',
+                fieldName: 'personality',
+                label: 'Osebnost znamke (Brand Personality)',
+                placeholder: 'Npr. Prijazna, topla, strokovna, a ne vzvišena; sodobna tradicija...',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const words = [f.q17_word1, f.q17_word2, f.q17_word3].filter(Boolean).join(', ');
+                  const parts = [];
+                  if (words) parts.push('3 ključne besede: ' + words);
+                  if (f.q18_text || c.q18_impressions?.length) {
+                    const imp = [c.q18_impressions?.join('; '), f.q18_text].filter(Boolean).join(' - ');
+                    parts.push('Želeni vtis: ' + imp);
+                  }
+                  if (f.q4_text || c.q4_values?.length) {
+                    const val = [c.q4_values?.join(', '), f.q4_text].filter(Boolean).join(' - ');
+                    parts.push('Vrednote: ' + val);
+                  }
+                  return parts.join('\n\n');
+                }
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Glavna sporočila (Key Messaging)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy', 'messaging', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Sporočila, ki jih morajo vsebine neprestano utrjevati...">${escapeHtml(strat.messaging || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy',
+                fieldName: 'messaging',
+                label: 'Glavna sporočila (Key Messaging)',
+                placeholder: 'Sporočila, ki jih morajo vsebine neprestano utrjevati...',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q7_text) parts.push('Glavna obljuba / prednost: ' + f.q7_text);
+                  if (c.q4_values?.length) parts.push('Temeljna načela: ' + c.q4_values.join(', '));
+                  if (f.q3_text) parts.push('Vizija: ' + f.q3_text);
+                  return parts.join('\n\n');
+                }
+              })}
             </div>
           </div>
 
@@ -2431,20 +2750,53 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-emerald-400 mb-1">Besede in izrazi za UPORABO</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy.tone_of_voice', 'words_to_use', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30" placeholder="sveže, ročno izdelano, domače...">${escapeHtml(tone.words_to_use || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy.tone_of_voice',
+                fieldName: 'words_to_use',
+                label: 'Besede in izrazi za UPORABO',
+                placeholder: 'sveže, ročno izdelano, domače...',
+                rows: 3,
+                focusRing: 'focus:ring-emerald-500/30',
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (c.q19_address_form?.length) parts.push('Nagovor: ' + c.q19_address_form.join(', '));
+                  if (c.q19_tone_chips?.length) parts.push('Slog in ton: ' + c.q19_tone_chips.join(', '));
+                  if (f.q19_text) parts.push(f.q19_text);
+                  return parts.join('\n\n');
+                }
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-rose-400 mb-1">Besede in izrazi za IZOGIBANJE</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy.tone_of_voice', 'words_to_avoid', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/30" placeholder="poceni, akcija, generično...">${escapeHtml(tone.words_to_avoid || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy.tone_of_voice',
+                fieldName: 'words_to_avoid',
+                label: 'Besede in izrazi za IZOGIBANJE',
+                placeholder: 'poceni, akcija, generično...',
+                rows: 3,
+                focusRing: 'focus:ring-rose-500/30',
+                defaultFn: () => ''
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-rose-400 mb-1">Prepovedane teme (No-Go cone)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('brand_strategy', 'restrictions', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/30" placeholder="Strogo prepovedane vsebine, politika...">${escapeHtml(strat.restrictions || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'brand_strategy',
+                fieldName: 'restrictions',
+                label: 'Prepovedane teme (No-Go cone)',
+                placeholder: 'Strogo prepovedane vsebine, politika...',
+                rows: 3,
+                focusRing: 'focus:ring-rose-500/30',
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (c.q20_nogo?.length) parts.push(c.q20_nogo.join(', '));
+                  if (f.q20_text) parts.push(f.q20_text);
+                  return parts.join('\n\n');
+                }
+              })}
             </div>
           </div>
 
@@ -2523,15 +2875,39 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Kratkoročni cilji (Prvi 3 meseci)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('social_media_strategy', 'objectives_short', this.value)" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Npr. Vzpostaviti profesionalen videz profila, doseči 50.000 mesečnega dosega...">${escapeHtml(strat.objectives_short || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'social_media_strategy',
+                fieldName: 'objectives_short',
+                label: 'Kratkoročni cilji (Prvi 3 meseci)',
+                placeholder: 'Npr. Vzpostaviti profesionalen videz profila, doseči 50.000 mesečnega dosega...',
+                rows: 4,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q14_text) parts.push(f.q14_text);
+                  if (c.q14_short_goals?.length) parts.push('Kratkoročni cilji (3 meseci):\n• ' + c.q14_short_goals.join('\n• '));
+                  return parts.join('\n\n');
+                }
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Dolgoročni cilji (1–2 leti)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('social_media_strategy', 'objectives_long', this.value)" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" placeholder="Npr. Postati prva izbira za... Dvig mesečnih naročil za 30%...">${escapeHtml(strat.objectives_long || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'social_media_strategy',
+                fieldName: 'objectives_long',
+                label: 'Dolgoročni cilji (1–2 leti)',
+                placeholder: 'Npr. Postati prva izbira za... Dvig mesečnih naročil za 30%...',
+                rows: 4,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q15_text) parts.push(f.q15_text);
+                  if (c.q15_long_goals?.length) parts.push('Dolgoročni cilji (1–2 leti):\n• ' + c.q15_long_goals.join('\n• '));
+                  return parts.join('\n\n');
+                }
+              })}
             </div>
           </div>
 
@@ -2634,25 +3010,61 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Glavne komunikacijske teme</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('content_strategy.content_direction', 'themes', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Npr. Tradicija v sodobnosti, edukacija o naravnih sestavinah...">${escapeHtml(direction.themes || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'content_strategy.content_direction',
+                fieldName: 'themes',
+                label: 'Glavne komunikacijske teme',
+                placeholder: 'Npr. Tradicija v sodobnosti, edukacija o naravnih sestavinah...',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const prods = (a.q16_products && a.q16_products.length > 0)
+                    ? a.q16_products
+                    : [f.q6_top1, f.q6_top2, f.q6_top3, f.q6_top4, f.q6_top5].filter(Boolean);
+                  const parts = [];
+                  if (prods.length > 0) parts.push('TOP ponudba / produkti: ' + prods.join(', '));
+                  if (f.q1_text) parts.push('Primarna dejavnost: ' + f.q1_text);
+                  return parts.join('\n\n');
+                }
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Ponavljajoče se rubrike (Recurring formats)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('content_strategy.content_direction', 'recurring_topics', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Npr. 'Petkov nasvet mojstra', 'Za kulisami ponedeljka'...">${escapeHtml(direction.recurring_topics || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'content_strategy.content_direction',
+                fieldName: 'recurring_topics',
+                label: 'Ponavljajoče se rubrike (Recurring formats)',
+                placeholder: 'Npr. \'Petkov nasvet mojstra\', \'Za kulisami ponedeljka\'...',
+                rows: 3,
+                defaultFn: () => ''
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Izobraževalni pristop (Educational)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('content_strategy.content_direction', 'educational_approach', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Kako podajamo koristne nasvete, da ne izpademo preveč tehnični...">${escapeHtml(direction.educational_approach || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'content_strategy.content_direction',
+                fieldName: 'educational_approach',
+                label: 'Izobraževalni pristop (Educational)',
+                placeholder: 'Kako podajamo koristne nasvete, da ne izpademo preveč tehnični...',
+                rows: 3,
+                defaultFn: () => ''
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Prodajni pristop (Promotional)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('content_strategy.content_direction', 'promotional_approach', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Kako subtilno in privlačno predstavljamo izdelke brez agresivnosti...">${escapeHtml(direction.promotional_approach || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'content_strategy.content_direction',
+                fieldName: 'promotional_approach',
+                label: 'Prodajni pristop (Promotional)',
+                placeholder: 'Kako subtilno in privlačno predstavljamo izdelke brez agresivnosti...',
+                rows: 3,
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q7_text) parts.push('Ključna prednost pri promociji: ' + f.q7_text);
+                  if (c.q5_price_range?.length) parts.push('Pozicioniranje cene: ' + c.q5_price_range.join(', '));
+                  return parts.join('\n\n');
+                }
+              })}
             </div>
           </div>
 
@@ -2680,25 +3092,46 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Osebe za snemanje (Kdo nastopa?)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('production_guidelines.resources', 'people', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Npr. Lastnik Marko, slaščičarka Ana...">${escapeHtml(res.people || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'production_guidelines.resources',
+                fieldName: 'people',
+                label: 'Osebe za snemanje (Kdo nastopa?)',
+                placeholder: 'Npr. Lastnik Marko, slaščičarka Ana...',
+                rows: 2,
+                defaultFn: () => ''
+              })}
+
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'production_guidelines.resources',
+                fieldName: 'locations',
+                label: 'Lokacije za snemanje',
+                placeholder: 'Npr. Delavnica ob 6:00 zjutraj, prodajalna v centru...',
+                rows: 2,
+                defaultFn: () => ''
+              })}
 
               <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Lokacije za snemanje</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('production_guidelines.resources', 'locations', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Npr. Delavnica ob 6:00 zjutraj, prodajalna v centru...">${escapeHtml(res.locations || '')}</textarea>
-              </div>
-
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Povezava do baze fotografij in videov (Drive)</label>
+                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1 text-xs">Povezava do baze fotografij in videov (Drive)</label>
                 <input type="url" oninput="handleAutoSaveCrmSubfield('production_guidelines.resources', 'assets_link', this.value)" value="${escapeHtml(res.assets_link || '')}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="https://drive.google.com/drive/folders/...">
               </div>
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Izdelki in rekviziti na voljo</label>
-                <input type="text" oninput="handleAutoSaveCrmSubfield('production_guidelines.resources', 'products', this.value)" value="${escapeHtml(res.products || '')}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Sveži kruh, surovine, embalaža...">
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'production_guidelines.resources',
+                fieldName: 'products',
+                label: 'Izdelki in rekviziti na voljo',
+                placeholder: 'Sveži kruh, surovine, embalaža...',
+                type: 'input',
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const prods = (a.q16_products && a.q16_products.length > 0)
+                    ? a.q16_products
+                    : [f.q6_top1, f.q6_top2, f.q6_top3, f.q6_top4, f.q6_top5].filter(Boolean);
+                  return prods.join(', ');
+                }
+              })}
             </div>
           </div>
 
@@ -2709,25 +3142,53 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Video slog (Koti, dinamika, svetloba)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('production_guidelines.rules', 'video_style', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Npr. Bližnji posnetki (macro), tople barve, naravna svetloba, hiter ritem...">${escapeHtml(rules.video_style || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'production_guidelines.rules',
+                fieldName: 'video_style',
+                label: 'Video slog (Koti, dinamika, svetloba)',
+                placeholder: 'Npr. Bližnji posnetki (macro), tople barve, naravna svetloba, hiter ritem...',
+                rows: 3,
+                defaultFn: () => ''
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Navodila za montažo & podnapise</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('production_guidelines.rules', 'editing', this.value)" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Npr. Dinamični podnapisi s poudarki, minimalistična tipografija...">${escapeHtml(rules.editing || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'production_guidelines.rules',
+                fieldName: 'editing',
+                label: 'Navodila za montažo & podnapise',
+                placeholder: 'Npr. Dinamični podnapisi s poudarki, minimalistična tipografija...',
+                rows: 3,
+                defaultFn: () => ''
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Glasba in zvok (Audio smernice)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('production_guidelines.rules', 'sound', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Npr. ASMR zvoki priprave, trendovski nevsiljivi ritmi...">${escapeHtml(rules.sound || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'production_guidelines.rules',
+                fieldName: 'sound',
+                label: 'Glasba in zvok (Audio smernice)',
+                placeholder: 'Npr. ASMR zvoki priprave, trendovski nevsiljivi ritmi...',
+                rows: 2,
+                defaultFn: () => ''
+              })}
 
-              <div>
-                <label class="block font-bold uppercase tracking-wider text-rose-400 mb-1">Omejitve pri snemanju (Kaj je prepovedano?)</label>
-                <textarea oninput="handleAutoSaveCrmSubfield('production_guidelines.restrictions', 'cannot_film', this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="Npr. Prepovedano snemanje receptur, obrazov določenih zaposlenih...">${escapeHtml(rest.cannot_film || '')}</textarea>
-              </div>
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'production_guidelines.restrictions',
+                fieldName: 'cannot_film',
+                label: 'Omejitve pri snemanju (Kaj je prepovedano?)',
+                placeholder: 'Npr. Prepovedano snemanje receptur, obrazov določenih zaposlenih...',
+                rows: 2,
+                focusRing: 'focus:ring-rose-500/30',
+                defaultFn: (a) => {
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (c.q20_nogo?.length) parts.push(c.q20_nogo.join(', '));
+                  if (f.q20_text) parts.push(f.q20_text);
+                  return parts.join('\n\n');
+                }
+              })}
             </div>
           </div>
 
@@ -2912,7 +3373,82 @@
         target = target[p];
       }
       target[fieldName] = value;
+      target[fieldName + '_custom'] = true;
+
+      // Update badge & reset button in real time
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'INPUT')) {
+        const wrapper = activeEl.closest('.smart-field-wrapper');
+        if (wrapper) {
+          const hasQ = wrapper.getAttribute('data-has-q-answer') === '1';
+          const badgeSlot = wrapper.querySelector('.smart-field-badge');
+          if (badgeSlot && hasQ) {
+            badgeSlot.innerHTML = `<span class="text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/30 inline-flex items-center gap-1 shadow-xs"><i data-lucide="check" class="w-3 h-3"></i> Prilagojeno</span>`;
+            lucide.createIcons({ root: badgeSlot });
+          }
+          const resetSlot = wrapper.querySelector('.smart-field-reset');
+          if (resetSlot && hasQ && !resetSlot.innerHTML.trim()) {
+            resetSlot.innerHTML = `
+              <button type="button" onclick="restoreQuestionnaireAnswer('${parentPath}', '${fieldName}')" class="text-[10px] text-slate-400 hover:text-indigo-300 transition inline-flex items-center gap-1 font-medium">
+                <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Ponastavi na originalen odgovor naročnika
+              </button>
+            `;
+            lucide.createIcons({ root: resetSlot });
+          }
+        }
+      }
+
       scheduleAutoSave();
+    }
+
+    function restoreQuestionnaireAnswer(parentPath, fieldName) {
+      const client = clients.find(c => c.id === currentClientId);
+      if (!client) return;
+      if (!client.crm) client.crm = {};
+
+      const parts = parentPath.split('.');
+      let target = client.crm;
+      for (const p of parts) {
+        if (!target[p]) target[p] = {};
+        target = target[p];
+      }
+      delete target[fieldName];
+      delete target[fieldName + '_custom'];
+
+      scheduleAutoSave();
+      renderWorkspaceTabContent();
+      showToast('Polje je ponastavljeno na izvirni odgovor naročnika.');
+    }
+
+    function addCompetitorFromQuestionnaire(compText) {
+      const client = clients.find(c => c.id === currentClientId);
+      if (!client) return;
+      if (!client.crm) client.crm = {};
+      if (!client.crm.market_research) client.crm.market_research = {};
+      if (!client.crm.market_research.competitors) client.crm.market_research.competitors = [];
+
+      const names = compText.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+      let added = 0;
+      names.forEach(n => {
+        if (!client.crm.market_research.competitors.some(c => c.name.toLowerCase() === n.toLowerCase())) {
+          client.crm.market_research.competitors.push({
+            name: n,
+            website: '',
+            positioning: 'Navedeno v vprašalniku naročnika (vpr. 8)',
+            strengths: '',
+            weaknesses: '',
+            content_approach: ''
+          });
+          added++;
+        }
+      });
+      if (added > 0) {
+        scheduleAutoSave();
+        renderWorkspaceTabContent();
+        showToast(`Dodano ${added} konkurentov iz vprašalnika!`);
+      } else {
+        showToast('Vsi navedeni konkurenti so že na seznamu.');
+      }
     }
 
     function scheduleAutoSave() {
