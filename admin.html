@@ -950,23 +950,48 @@
     ];
 
     // INITIALIZATION
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
-      fetchClients();
 
       // Check if URL specifies client ID
       const urlParams = new URLSearchParams(window.location.search);
       const urlClientId = urlParams.get('client') || urlParams.get('id');
+
+      // Await data fetch before attempting to open workspace to avoid race conditions
+      await fetchClients();
+
       if (urlClientId) {
-        setTimeout(() => {
-          openClientWorkspace(urlClientId);
-        }, 600);
+        openClientWorkspace(urlClientId);
       }
     });
 
     // -------------------------------------------------------------
     // DATA FETCHING & SYNCHRONIZATION
     // -------------------------------------------------------------
+    function formatClientRecord(record) {
+      const answers = record.answers || {};
+      const stats = calculateQuestionnaireStats(answers);
+      const crm = answers.crm || {};
+      const strategyStats = calculateStrategyStats(crm);
+      
+      // Determine status
+      let status = crm.status;
+      if (!status) {
+        if (stats.percent >= 80) status = 'questionnaire_completed';
+        else if (stats.answeredCount > 0) status = 'questionnaire_in_progress';
+        else status = 'new';
+      }
+
+      return {
+        ...record,
+        answers,
+        crm,
+        stats,
+        strategyStats,
+        status
+      };
+    }
+
     async function fetchClients(showNotification = false) {
       const refreshIcon = document.getElementById('refreshIcon');
       if (refreshIcon) refreshIcon.classList.add('animate-spin');
@@ -981,36 +1006,20 @@
 
         if (error) throw error;
 
-        clients = (data || []).map(record => {
-          const answers = record.answers || {};
-          const stats = calculateQuestionnaireStats(answers);
-          const crm = answers.crm || {};
-          const strategyStats = calculateStrategyStats(crm);
-          
-          // Determine status
-          let status = crm.status;
-          if (!status) {
-            if (stats.percent >= 80) status = 'questionnaire_completed';
-            else if (stats.answeredCount > 0) status = 'questionnaire_in_progress';
-            else status = 'new';
-          }
-
-          return {
-            ...record,
-            answers,
-            crm,
-            stats,
-            strategyStats,
-            status
-          };
-        });
-
+        clients = (data || []).map(formatClientRecord);
         document.getElementById('topClientCount').innerText = clients.length;
 
         // Render current active view
         updateTopLevelView();
 
-        if (showNotification) showToast('Podatki so posodobljeni iz baze!');
+        if (showNotification) {
+          if (activeTopTab === 'workspace' && currentClientId) {
+            const cur = clients.find(c => c.id === currentClientId);
+            showToast(`Podatki za ${cur ? cur.company_name : 'naročnika'} so osveženi (${cur ? cur.stats.answeredCount : 0}/20)!`);
+          } else {
+            showToast('Podatki so posodobljeni iz baze!');
+          }
+        }
       } catch (err) {
         console.error('Napaka pri branju iz Supabase:', err);
         showToast('Napaka pri osveževanju podatkov');
@@ -1019,37 +1028,117 @@
       }
     }
 
-    // Calculate questionnaire completion
+    // Dedicated refresh handler for client workspace discovery
+    async function refreshClientAnswers(clientId, btnEl = null) {
+      let originalBtnHtml = '';
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.classList.add('opacity-70');
+        originalBtnHtml = btnEl.innerHTML;
+        btnEl.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 animate-spin text-indigo-400"></i> Osvežujem...`;
+        lucide.createIcons({ root: btnEl });
+      }
+
+      const refreshIcon = document.getElementById('refreshIcon');
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      try {
+        if (!supabaseClient) throw new Error('Supabase klient ni inicializiran');
+
+        const { data, error } = await supabaseClient
+          .from('marketing_questionnaires')
+          .select('*')
+          .order('updated_at', { ascending: false });
+
+        if (error) throw error;
+
+        clients = (data || []).map(formatClientRecord);
+        document.getElementById('topClientCount').innerText = clients.length;
+
+        const targetClient = clients.find(c => c.id === clientId);
+        if (targetClient) {
+          renderWorkspace();
+          showToast(`Odgovori za ${targetClient.company_name || 'naročnika'} so uspešno osveženi (${targetClient.stats.answeredCount}/20)!`);
+        } else {
+          updateTopLevelView();
+          showToast('Podatki so osveženi iz baze!');
+        }
+      } catch (err) {
+        console.error('Napaka pri osveževanju odgovorov:', err);
+        showToast('Napaka pri osveževanju podatkov naročnika');
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.classList.remove('opacity-70');
+          btnEl.innerHTML = originalBtnHtml || `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-400"></i> Osveži odgovore`;
+          lucide.createIcons({ root: btnEl });
+        }
+      }
+    }
+
+    // Calculate questionnaire completion accurately for every client
     function calculateQuestionnaireStats(answers) {
-      if (!answers) return { answeredCount: 0, percent: 0 };
+      if (!answers) return { answeredCount: 0, percent: 0, answeredList: [], missingList: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], qStatus: {} };
       const fields = answers.fields || {};
       const chips = answers.chips || {};
       const prods = answers.q16_products || [];
 
-      let answered = 0;
-      if ((fields.q1_text && fields.q1_text.trim().length > 2) || (chips.q1_business_type?.length > 0) || (chips.q1_reach?.length > 0)) answered++;
-      if ((fields.q2_text && fields.q2_text.trim().length > 2) || (chips.q2_origins?.length > 0)) answered++;
-      if ((fields.q3_text && fields.q3_text.trim().length > 2) || (chips.q3_vision_tags?.length > 0)) answered++;
-      if ((fields.q4_text && fields.q4_text.trim().length > 2) || (chips.q4_values?.length > 0)) answered++;
-      if ((fields.q5_text && fields.q5_text.trim().length > 2) || (chips.q5_price_range?.length > 0)) answered++;
-      if (fields.q6_top1 || fields.q6_top2 || fields.q6_top3 || fields.q6_top4 || fields.q6_top5) answered++;
-      if ((fields.q7_text && fields.q7_text.trim().length > 2) || (chips.q7_advantages?.length > 0)) answered++;
-      if ((fields.q8_competitors && fields.q8_competitors.trim().length > 2) || (fields.q8_inspiration && fields.q8_inspiration.trim().length > 2)) answered++;
-      if ((fields.q9_text && fields.q9_text.trim().length > 2) || (chips.q9_feelings?.length > 0)) answered++;
-      if ((fields.q10_text && fields.q10_text.trim().length > 2) || (chips.q10_age_group?.length > 0) || (chips.q10_audience_type?.length > 0)) answered++;
-      if ((fields.q11_text && fields.q11_text.trim().length > 2) || (chips.q11_painpoints?.length > 0)) answered++;
-      if ((fields.q12_text && fields.q12_text.trim().length > 2) || (chips.q12_questions?.length > 0) || (chips.q12_converters?.length > 0)) answered++;
-      if ((fields.q13_text && fields.q13_text.trim().length > 2) || (chips.q13_future_clients?.length > 0)) answered++;
-      if ((fields.q14_text && fields.q14_text.trim().length > 2) || (chips.q14_short_goals?.length > 0)) answered++;
-      if ((fields.q15_text && fields.q15_text.trim().length > 2) || (chips.q15_long_goals?.length > 0)) answered++;
-      if (prods && prods.length > 0) answered++;
-      if (fields.q17_word1 || fields.q17_word2 || fields.q17_word3) answered++;
-      if ((fields.q18_text && fields.q18_text.trim().length > 2) || (chips.q18_impressions?.length > 0)) answered++;
-      if ((fields.q19_text && fields.q19_text.trim().length > 2) || (chips.q19_address_form?.length > 0) || (chips.q19_tone_chips?.length > 0)) answered++;
-      if ((fields.q20_text && fields.q20_text.trim().length > 2) || (chips.q20_nogo?.length > 0)) answered++;
+      const hasText = (val) => Boolean(val && typeof val === 'string' && val.trim().length > 0);
+      const hasChips = (arr) => Boolean(Array.isArray(arr) && arr.length > 0);
 
+      const qStatus = {};
+      // Q1: Poslovni model & doseg
+      qStatus[1] = hasText(fields.q1_text) || hasChips(chips.q1_business_type) || hasChips(chips.q1_reach);
+      // Q2: Izvor in razlog za nastanek
+      qStatus[2] = hasText(fields.q2_text) || hasChips(chips.q2_origins);
+      // Q3: Vizija
+      qStatus[3] = hasText(fields.q3_text) || hasChips(chips.q3_vision_tags);
+      // Q4: Vrednote
+      qStatus[4] = hasText(fields.q4_text) || hasChips(chips.q4_values);
+      // Q5: Cenovni rang
+      qStatus[5] = hasText(fields.q5_text) || hasChips(chips.q5_price_range);
+      // Q6: Glavni produkti / storitve (top 1-5)
+      qStatus[6] = [fields.q6_top1, fields.q6_top2, fields.q6_top3, fields.q6_top4, fields.q6_top5].some(hasText);
+      // Q7: Prednosti in USP
+      qStatus[7] = hasText(fields.q7_text) || hasChips(chips.q7_advantages);
+      // Q8: Konkurenti in vzorniki
+      qStatus[8] = hasText(fields.q8_competitors) || hasText(fields.q8_inspiration);
+      // Q9: Občutki kupcev
+      qStatus[9] = hasText(fields.q9_text) || hasChips(chips.q9_feelings);
+      // Q10: Ciljna publika (demografija + starost)
+      qStatus[10] = hasText(fields.q10_text) || hasChips(chips.q10_audience_type) || hasChips(chips.q10_age_group);
+      // Q11: Težave in želje kupcev
+      qStatus[11] = hasText(fields.q11_text) || hasChips(chips.q11_painpoints);
+      // Q12: Vprašanja in odločilni dejavniki
+      qStatus[12] = hasText(fields.q12_text) || hasChips(chips.q12_questions) || hasChips(chips.q12_converters);
+      // Q13: Bodoče / idealne stranke
+      qStatus[13] = hasText(fields.q13_text) || hasChips(chips.q13_future_clients);
+      // Q14: Kratkoročni cilji
+      qStatus[14] = hasText(fields.q14_text) || hasChips(chips.q14_short_goals);
+      // Q15: Dolgoročni cilji
+      qStatus[15] = hasText(fields.q15_text) || hasChips(chips.q15_long_goals);
+      // Q16: Seznam izdelkov za promocijo
+      qStatus[16] = Array.isArray(prods) && prods.some(p => (typeof p === 'string' ? hasText(p) : hasText(p?.name)));
+      // Q17: Tri besede za opis znamke
+      qStatus[17] = [fields.q17_word1, fields.q17_word2, fields.q17_word3].some(hasText);
+      // Q18: Želeni vtis znamke
+      qStatus[18] = hasText(fields.q18_text) || hasChips(chips.q18_impressions);
+      // Q19: Nagovor in ton komunikacije
+      qStatus[19] = hasText(fields.q19_text) || hasChips(chips.q19_address_form) || hasChips(chips.q19_tone_chips);
+      // Q20: Prepovedane teme (No-Go)
+      qStatus[20] = hasText(fields.q20_text) || hasChips(chips.q20_nogo);
+
+      const answeredList = [];
+      const missingList = [];
+      for (let i = 1; i <= 20; i++) {
+        if (qStatus[i]) answeredList.push(i);
+        else missingList.push(i);
+      }
+
+      const answered = answeredList.length;
       const percent = Math.round((answered / 20) * 100);
-      return { answeredCount: answered, percent };
+      return { answeredCount: answered, percent, answeredList, missingList, qStatus };
     }
 
     // Calculate strategy completion (based on completed CRM modules)
@@ -2065,6 +2154,21 @@
       const chips = answers.chips || {};
       const prods = answers.q16_products || [];
       const notes = client.crm?.discovery_notes || {};
+      const clientUrl = `${window.location.origin}/index.html?id=${client.id}`;
+
+      // Evaluate complex questions accurately
+      const q6Items = [fields.q6_top1, fields.q6_top2, fields.q6_top3, fields.q6_top4, fields.q6_top5].filter(t => t && t.trim().length > 0);
+      const q6Text = q6Items.length > 0 ? q6Items.map((t, idx) => `${idx+1}. ${t}`).join('\n') : '';
+
+      const hasComp = fields.q8_competitors && fields.q8_competitors.trim().length > 0;
+      const hasInsp = fields.q8_inspiration && fields.q8_inspiration.trim().length > 0;
+      const q8Text = (hasComp || hasInsp) ? `Konkurenti:\n${fields.q8_competitors || '/'}\n\nVzorniki in navdihi:\n${fields.q8_inspiration || '/'}` : '';
+
+      const validProds = Array.isArray(prods) ? prods.filter(p => typeof p === 'string' ? p.trim().length > 0 : (p?.name && p.name.trim().length > 0)) : [];
+      const q16Text = validProds.length > 0 ? validProds.map((p, idx) => `${idx+1}. ${typeof p === 'string' ? p : p.name}`).join('\n') : '';
+
+      const q17Words = [fields.q17_word1, fields.q17_word2, fields.q17_word3].filter(w => w && w.trim().length > 0);
+      const q17Text = q17Words.length > 0 ? q17Words.join(' • ') : '';
 
       return `
         <div class="space-y-6">
@@ -2072,18 +2176,27 @@
           <!-- Banner -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
             <div>
-              <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                <i data-lucide="file-question" class="w-4 h-4 text-indigo-400"></i> Odgovori naročnika iz vprašalnika
-              </h3>
-              <p class="text-xs text-slate-400 mt-0.5">Sinhronizirani odgovori z možnostjo dodajanja internih opomb agencije.</p>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-2.5 h-2.5 rounded-full ${client.stats.percent === 100 ? 'bg-emerald-400 animate-pulse' : (client.stats.answeredCount > 0 ? 'bg-indigo-400' : 'bg-slate-500')}"></span>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  <i data-lucide="file-question" class="w-4 h-4 text-indigo-400"></i> Odgovori naročnika: <span class="text-indigo-300 font-extrabold">${escapeHtml(client.company_name || 'Neimenovano podjetje')}</span>
+                </h3>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">
+                ${client.stats.percent === 100 ? 
+                  '<span class="text-emerald-400 font-bold">✓ Vsa vprašanja (20/20) so v celoti izpolnjena!</span>' : 
+                  `Izpolnjenih je <strong class="text-white">${client.stats.answeredCount} od 20</strong> vprašanj (${client.stats.percent}%). ` + 
+                  (client.stats.missingList?.length > 0 ? `<span class="text-amber-400/90 block sm:inline sm:ml-1">Manjkajoča vprašanja: ${client.stats.missingList.map(n => `V${n}`).join(', ')}</span>` : '')
+                }
+              </p>
             </div>
             
-            <div class="flex items-center gap-2 text-xs">
-              <span class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 font-semibold">
-                Odgovorjeno: <strong class="text-white">${client.stats.answeredCount} / 20</strong> (${client.stats.percent}%)
-              </span>
-              <button onclick="fetchClients(true)" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition">
-                Osveži odgovore
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <a href="${clientUrl}" target="_blank" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center gap-1.5 shadow-md shadow-indigo-600/25 active:scale-95">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Odpri vprašalnik
+              </a>
+              <button onclick="refreshClientAnswers('${client.id}', this)" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition border border-slate-700/80 flex items-center gap-1.5 active:scale-95">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-400"></i> Osveži odgovore
               </button>
             </div>
           </div>
@@ -2110,11 +2223,11 @@
             renderDiscoveryQA(5, fields.q5_text, [
               { label: "Cenovni rang", items: chips.q5_price_range }
             ], notes[5]),
-            renderDiscoveryQA(6, [fields.q6_top1, fields.q6_top2, fields.q6_top3, fields.q6_top4, fields.q6_top5].filter(Boolean).map((t, idx) => `${idx+1}. ${t}`).join('\n'), [], notes[6]),
+            renderDiscoveryQA(6, q6Text, [], notes[6]),
             renderDiscoveryQA(7, fields.q7_text, [
               { label: "Prednosti", items: chips.q7_advantages }
             ], notes[7]),
-            renderDiscoveryQA(8, `Konkurenti: ${fields.q8_competitors || 'Ni podatka'}\n\nVzorniki: ${fields.q8_inspiration || 'Ni podatka'}`, [], notes[8]),
+            renderDiscoveryQA(8, q8Text, [], notes[8]),
             renderDiscoveryQA(9, fields.q9_text, [
               { label: "Želeni občutki", items: chips.q9_feelings }
             ], notes[9])
@@ -2146,12 +2259,12 @@
             renderDiscoveryQA(15, fields.q15_text, [
               { label: "Cilji v 1-2 letih", items: chips.q15_long_goals }
             ], notes[15]),
-            renderDiscoveryQA(16, prods && prods.length > 0 ? prods.map((p, idx) => `${idx+1}. ${p}`).join('\n') : '', [], notes[16])
+            renderDiscoveryQA(16, q16Text, [], notes[16])
           ])}
 
           <!-- SKLOP 5 -->
           ${renderDiscoverySklop(5, "5. Sklop: Identiteta in Komunikacija", [
-            renderDiscoveryQA(17, [fields.q17_word1, fields.q17_word2, fields.q17_word3].filter(Boolean).join(', '), [], notes[17]),
+            renderDiscoveryQA(17, q17Text, [], notes[17]),
             renderDiscoveryQA(18, fields.q18_text, [
               { label: "Vtisi", items: chips.q18_impressions }
             ], notes[18]),
@@ -2184,19 +2297,22 @@
 
     function renderDiscoveryQA(qNum, textAnswer, chipGroups = [], existingAgencyNote = '') {
       const qTitle = QUESTION_LABELS[qNum] || `Vprašanje ${qNum}`;
-      const hasAnswer = (textAnswer && textAnswer.trim().length > 0) || chipGroups.some(g => g.items && g.items.length > 0);
+      const hasText = Boolean(textAnswer && textAnswer.trim().length > 0);
+      const hasChips = Boolean(chipGroups.some(g => g.items && g.items.length > 0));
+      const hasAnswer = hasText || hasChips;
 
       return `
-        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-3">
+        <div class="p-4 rounded-2xl ${hasAnswer ? 'bg-slate-950 border-slate-800/80' : 'bg-slate-950/50 border-slate-800/40'} border space-y-3 transition">
           <div class="flex items-start justify-between gap-3">
-            <h5 class="text-xs sm:text-sm font-bold text-white">${qTitle}</h5>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${hasAnswer ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-500'}">
+            <h5 class="text-xs sm:text-sm font-bold ${hasAnswer ? 'text-white' : 'text-slate-400'}">${qTitle}</h5>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${hasAnswer ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800/80 text-slate-500 border border-slate-700/50'}">
+              <i data-lucide="${hasAnswer ? 'check-circle' : 'circle'}" class="w-3 h-3"></i>
               ${hasAnswer ? 'Odgovorjeno' : 'Neodgovorjeno'}
             </span>
           </div>
 
           <!-- Original Client Answer Text -->
-          ${textAnswer && textAnswer.trim().length > 0 ? `
+          ${hasText ? `
             <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs text-slate-200 whitespace-pre-line leading-relaxed">
               ${escapeHtml(textAnswer)}
             </div>

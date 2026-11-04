@@ -1489,6 +1489,7 @@
 
     let currentSubmissionId = new URLSearchParams(window.location.search).get('id') || null;
     let existingCrmAnswers = null;
+    let isInitialLoading = false;
 
     // Form inputs and textareas
     const textFields = [
@@ -1824,6 +1825,7 @@
     // Debounced Auto-Save
     let saveTimer = null;
     function triggerSave() {
+      if (isInitialLoading) return;
       updateSaveStatus('saving');
       calculateProgress();
 
@@ -1862,6 +1864,7 @@
     let pendingSave = false;
 
     async function saveData() {
+      if (isInitialLoading) return;
       if (!supabaseClient) {
         console.warn('Supabase klient ni na voljo.');
         updateSaveStatus('error');
@@ -1903,12 +1906,30 @@
 
       try {
         if (currentSubmissionId) {
-          const { error } = await supabaseClient
+          const { data, error } = await supabaseClient
             .from('marketing_questionnaires')
             .update(payload)
-            .eq('id', currentSubmissionId);
+            .eq('id', currentSubmissionId)
+            .select();
 
           if (error) throw error;
+
+          // If no row was matched (e.g. record was deleted or non-existent ID in URL), insert as new record
+          if (!data || data.length === 0) {
+            console.warn('Zapis s tem ID ne obstaja v bazi. Ustvarjam nov zapis...', currentSubmissionId);
+            const { data: insertData, error: insertError } = await supabaseClient
+              .from('marketing_questionnaires')
+              .insert([payload])
+              .select();
+
+            if (insertError) throw insertError;
+            if (insertData && insertData[0]) {
+              currentSubmissionId = insertData[0].id;
+              const newUrl = new URL(window.location.href);
+              newUrl.searchParams.set('id', currentSubmissionId);
+              window.history.replaceState({}, '', newUrl.toString());
+            }
+          }
         } else {
           const { data, error } = await supabaseClient
             .from('marketing_questionnaires')
@@ -1939,6 +1960,7 @@
     // SUPABASE LOAD LOGIC (Loads by ID in URL)
     async function loadFromSupabase(id) {
       if (!supabaseClient) return;
+      isInitialLoading = true;
       updateSaveStatus('loading');
 
       try {
@@ -1946,7 +1968,7 @@
           .from('marketing_questionnaires')
           .select('*')
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         if (data && data.answers) {
@@ -1956,11 +1978,22 @@
           applyDataToForm(data.answers, data);
           updateSaveStatus('saved');
           showToast('Odgovori so naloženi iz baze!');
+        } else {
+          console.warn('Vprašalnik s tem ID ne obstaja v bazi:', id);
+          currentSubmissionId = null;
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete('id');
+          window.history.replaceState({}, '', newUrl.toString());
+          initProducts16(['', '', '']);
+          updateSaveStatus('ready');
         }
       } catch (err) {
         console.error('Napaka pri branju iz Supabase:', err);
         updateSaveStatus('error');
         initProducts16(['', '', '']);
+      } finally {
+        isInitialLoading = false;
+        calculateProgress();
       }
     }
 
@@ -2023,53 +2056,60 @@
 
     // Progress Bar Calculation
     function calculateProgress() {
-      let totalQuestions = 20;
+      const totalQuestions = 20;
       let filledQuestions = 0;
 
-      // Q1
-      if (document.getElementById('q1_text')?.value.trim().length > 2 || getGroupCount('q1_business_type') > 0) filledQuestions++;
-      // Q2
-      if (document.getElementById('q2_text')?.value.trim().length > 2 || getGroupCount('q2_origins') > 0) filledQuestions++;
-      // Q3
-      if (document.getElementById('q3_text')?.value.trim().length > 2 || getGroupCount('q3_vision_tags') > 0) filledQuestions++;
-      // Q4
-      if (document.getElementById('q4_text')?.value.trim().length > 2 || getGroupCount('q4_values') > 0) filledQuestions++;
+      const hasText = (id) => {
+        const el = document.getElementById(id);
+        return Boolean(el && el.value && el.value.trim().length > 0);
+      };
+      const hasGroup = (grp) => getGroupCount(grp) > 0;
 
-      // Q5
-      if (document.getElementById('q5_text')?.value.trim().length > 2 || getGroupCount('q5_price_range') > 0) filledQuestions++;
-      // Q6
-      if (document.getElementById('q6_top1')?.value.trim().length > 1 || document.getElementById('q6_top2')?.value.trim().length > 1) filledQuestions++;
-      // Q7
-      if (document.getElementById('q7_text')?.value.trim().length > 2 || getGroupCount('q7_advantages') > 0) filledQuestions++;
-      // Q8
-      if (document.getElementById('q8_competitors')?.value.trim().length > 1 || document.getElementById('q8_inspiration')?.value.trim().length > 1) filledQuestions++;
-      // Q9
-      if (document.getElementById('q9_text')?.value.trim().length > 2 || getGroupCount('q9_feelings') > 0) filledQuestions++;
+      const qStatus = {};
+      // Q1: Poslovni model & doseg
+      qStatus[1] = hasText('q1_text') || hasGroup('q1_business_type') || hasGroup('q1_reach');
+      // Q2: Izvor in razlog za nastanek
+      qStatus[2] = hasText('q2_text') || hasGroup('q2_origins');
+      // Q3: Vizija
+      qStatus[3] = hasText('q3_text') || hasGroup('q3_vision_tags');
+      // Q4: Vrednote
+      qStatus[4] = hasText('q4_text') || hasGroup('q4_values');
+      // Q5: Cenovni rang
+      qStatus[5] = hasText('q5_text') || hasGroup('q5_price_range');
+      // Q6: Glavni produkti / storitve (top 1-5)
+      qStatus[6] = ['q6_top1', 'q6_top2', 'q6_top3', 'q6_top4', 'q6_top5'].some(hasText);
+      // Q7: Prednosti in USP
+      qStatus[7] = hasText('q7_text') || hasGroup('q7_advantages');
+      // Q8: Konkurenti in vzorniki
+      qStatus[8] = hasText('q8_competitors') || hasText('q8_inspiration');
+      // Q9: Občutki kupcev
+      qStatus[9] = hasText('q9_text') || hasGroup('q9_feelings');
+      // Q10: Ciljna publika (demografija + starost)
+      qStatus[10] = hasText('q10_text') || hasGroup('q10_audience_type') || hasGroup('q10_age_group');
+      // Q11: Težave in želje kupcev
+      qStatus[11] = hasText('q11_text') || hasGroup('q11_painpoints');
+      // Q12: Vprašanja in odločilni dejavniki
+      qStatus[12] = hasText('q12_text') || hasGroup('q12_questions') || hasGroup('q12_converters');
+      // Q13: Bodoče / idealne stranke
+      qStatus[13] = hasText('q13_text') || hasGroup('q13_future_clients');
+      // Q14: Kratkoročni cilji
+      qStatus[14] = hasText('q14_text') || hasGroup('q14_short_goals');
+      // Q15: Dolgoročni cilji
+      qStatus[15] = hasText('q15_text') || hasGroup('q15_long_goals');
+      // Q16: Seznam izdelkov za promocijo
+      qStatus[16] = getProducts16().length > 0;
+      // Q17: Tri besede za opis znamke
+      qStatus[17] = ['q17_word1', 'q17_word2', 'q17_word3'].some(hasText);
+      // Q18: Želeni vtis znamke
+      qStatus[18] = hasText('q18_text') || hasGroup('q18_impressions');
+      // Q19: Nagovor in ton komunikacije
+      qStatus[19] = hasText('q19_text') || hasGroup('q19_address_form') || hasGroup('q19_tone_chips');
+      // Q20: Prepovedane teme (No-Go)
+      qStatus[20] = hasText('q20_text') || hasGroup('q20_nogo');
 
-      // Q10
-      if (document.getElementById('q10_text')?.value.trim().length > 2 || getGroupCount('q10_audience_type') > 0) filledQuestions++;
-      // Q11
-      if (document.getElementById('q11_text')?.value.trim().length > 2 || getGroupCount('q11_painpoints') > 0) filledQuestions++;
-      // Q12
-      if (document.getElementById('q12_text')?.value.trim().length > 2 || getGroupCount('q12_questions') > 0) filledQuestions++;
-      // Q13
-      if (document.getElementById('q13_text')?.value.trim().length > 2 || getGroupCount('q13_future_clients') > 0) filledQuestions++;
-
-      // Q14
-      if (document.getElementById('q14_text')?.value.trim().length > 2 || getGroupCount('q14_short_goals') > 0) filledQuestions++;
-      // Q15
-      if (document.getElementById('q15_text')?.value.trim().length > 2 || getGroupCount('q15_long_goals') > 0) filledQuestions++;
-      // Q16
-      if (getProducts16().length > 0) filledQuestions++;
-
-      // Q17
-      if (document.getElementById('q17_word1')?.value.trim().length > 0) filledQuestions++;
-      // Q18
-      if (document.getElementById('q18_text')?.value.trim().length > 2 || getGroupCount('q18_impressions') > 0) filledQuestions++;
-      // Q19
-      if (document.getElementById('q19_text')?.value.trim().length > 2 || getGroupCount('q19_tone_chips') > 0) filledQuestions++;
-      // Q20
-      if (document.getElementById('q20_text')?.value.trim().length > 2 || getGroupCount('q20_nogo') > 0) filledQuestions++;
+      for (let i = 1; i <= totalQuestions; i++) {
+        if (qStatus[i]) filledQuestions++;
+      }
 
       const pct = Math.min(100, Math.round((filledQuestions / totalQuestions) * 100));
       const pb = document.getElementById('progressBar');
@@ -2077,6 +2117,11 @@
 
       if (pb) pb.style.width = pct + '%';
       if (pp) pp.innerText = pct + '%';
+      
+      const countEl = document.getElementById('progressCount');
+      if (countEl) countEl.innerText = `${filledQuestions}/20 vprašanj`;
+
+      return { filledQuestions, pct };
     }
 
     function getGroupCount(grpName) {
