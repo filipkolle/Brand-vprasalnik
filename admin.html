@@ -102,7 +102,7 @@
 
   <!-- TOP HEADER / CRM NAVIGATION -->
   <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-4">
+    <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-4">
       
       <!-- Brand & Title -->
       <div class="flex items-center gap-3 cursor-pointer" onclick="navigateHome()">
@@ -161,7 +161,7 @@
 
   <!-- WORKSPACE BREADCRUMB / TOP NOTIFICATION BAR (Visible when in Workspace) -->
   <div id="workspaceTopBar" class="hidden bg-indigo-950/70 border-b border-indigo-500/20 py-2.5 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+    <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
       <div class="flex items-center gap-2 text-slate-300">
         <button onclick="closeWorkspace()" class="text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1">
           <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Vsi naročniki
@@ -183,7 +183,7 @@
   </div>
 
   <!-- MAIN APPLICATION CONTENT AREA -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col">
+  <main class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col">
     
     <!-- ============================================================ -->
     <!-- VIEW A: DASHBOARD -->
@@ -509,61 +509,193 @@
         <!-- Injected dynamically by JS -->
       </div>
 
-      <!-- Workspace Step / Section Navigation Bar (9 Modules) -->
-      <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-1.5 overflow-x-auto scrollbar-none shadow-lg">
-        <div class="flex items-center gap-1 text-xs whitespace-nowrap min-w-max">
-          <button onclick="switchWorkspaceTab('overview')" id="wsTabBtn-overview" class="ws-nav-btn px-3.5 py-2 rounded-xl font-bold bg-indigo-600 text-white flex items-center gap-1.5 transition">
-            <i data-lucide="layout" class="w-3.5 h-3.5"></i>
-            <span>1. Pregled</span>
-          </button>
+      <!-- Workspace 2-Column Workflow Layout: Left To-Do Steps Sidebar + Right Tab Content -->
+      <div class="flex flex-col lg:flex-row items-start gap-6">
 
-          <button onclick="switchWorkspaceTab('discovery')" id="wsTabBtn-discovery" class="ws-nav-btn px-3.5 py-2 rounded-xl font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
-            <i data-lucide="file-question" class="w-3.5 h-3.5 text-indigo-400"></i>
-            <span>2. Spoznavanje znamke</span>
-            <span id="wsBadge-discovery" class="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-950 border border-indigo-500/30 text-indigo-300">0/20</span>
-          </button>
+        <!-- LEFT SIDEBAR: TO-DO LIST PO KORAKIH (Sticky Workflow Menu) -->
+        <aside id="workspaceSidebar" class="w-full lg:w-80 xl:w-84 shrink-0 lg:sticky lg:top-20 space-y-4">
+          
+          <!-- To-Do Card -->
+          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-4 sm:p-5 shadow-xl">
+            
+            <!-- Sidebar Header with Progress -->
+            <div class="pb-3.5 mb-3 border-b border-slate-800">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center shrink-0">
+                    <i data-lucide="check-square" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Potek dela (To-Do)</h3>
+                    <p class="text-[10px] text-slate-400">9 korakov strategije</p>
+                  </div>
+                </div>
+                <span id="wsTodoOverallCount" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                  0/9 opravljeno
+                </span>
+              </div>
 
-          <button onclick="switchWorkspaceTab('research')" id="wsTabBtn-research" class="ws-nav-btn px-3.5 py-2 rounded-xl font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
-            <i data-lucide="search" class="w-3.5 h-3.5 text-amber-400"></i>
-            <span>3. Tržna raziskava</span>
-          </button>
+              <!-- Mini Progress Bar -->
+              <div class="mt-2.5 bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-800 p-0.5">
+                <div id="wsTodoProgressBar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 10%;"></div>
+              </div>
+              <div class="flex items-center justify-between text-[10px] text-slate-400 mt-1.5 font-medium">
+                <span>Skupni napredek</span>
+                <span id="wsTodoProgressPercent" class="font-bold text-white">0%</span>
+              </div>
+            </div>
 
-          <button onclick="switchWorkspaceTab('brand_strategy')" id="wsTabBtn-brand_strategy" class="ws-nav-btn px-3.5 py-2 rounded-xl font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
-            <i data-lucide="award" class="w-3.5 h-3.5 text-emerald-400"></i>
-            <span>4. Strategija znamke</span>
-          </button>
+            <!-- Steps List (Vertical To-Do List Ordered From Top to Bottom) -->
+            <nav class="space-y-1.5" aria-label="Koraki strategije">
+              
+              <!-- Korak 1: Pregled -->
+              <button onclick="switchWorkspaceTab('overview')" id="wsTabBtn-overview" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                <div id="wsTodoCheck-overview" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                  <span>1</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-bold block truncate ws-step-title">1. Pregled</span>
+                    <span id="wsBadge-overview" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                  </div>
+                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Splošni pregled naročnika</span>
+                </div>
+              </button>
 
-          <button onclick="switchWorkspaceTab('social_strategy')" id="wsTabBtn-social_strategy" class="ws-nav-btn px-3.5 py-2 rounded-xl font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
-            <i data-lucide="share-2" class="w-3.5 h-3.5 text-blue-400"></i>
-            <span>5. Strategija omrežij</span>
-          </button>
+              <!-- Korak 2: Spoznavanje znamke -->
+              <button onclick="switchWorkspaceTab('discovery')" id="wsTabBtn-discovery" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                <div id="wsTodoCheck-discovery" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                  <span>2</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-bold block truncate ws-step-title">2. Spoznavanje znamke</span>
+                    <span id="wsBadge-discovery" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-950 border border-indigo-500/30 text-indigo-300">0/20</span>
+                  </div>
+                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Vprašalnik naročnika</span>
+                </div>
+              </button>
 
-          <button onclick="switchWorkspaceTab('content_strategy')" id="wsTabBtn-content_strategy" class="ws-nav-btn px-3.5 py-2 rounded-xl font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
-            <i data-lucide="layers" class="w-3.5 h-3.5 text-purple-400"></i>
-            <span>6. Vsebinska strategija</span>
-          </button>
+              <!-- Korak 3: Tržna raziskava -->
+              <button onclick="switchWorkspaceTab('research')" id="wsTabBtn-research" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                <div id="wsTodoCheck-research" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                  <span>3</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-bold block truncate ws-step-title">3. Tržna raziskava</span>
+                    <span id="wsBadge-research" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                  </div>
+                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Trg, publika & konkurenca</span>
+                </div>
+              </button>
 
-          <button onclick="switchWorkspaceTab('production_guidelines')" id="wsTabBtn-production_guidelines" class="ws-nav-btn px-3.5 py-2 rounded-xl font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
-            <i data-lucide="video" class="w-3.5 h-3.5 text-teal-400"></i>
-            <span>7. Smernice produkcije</span>
-          </button>
+              <!-- Korak 4: Strategija znamke -->
+              <button onclick="switchWorkspaceTab('brand_strategy')" id="wsTabBtn-brand_strategy" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                <div id="wsTodoCheck-brand_strategy" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                  <span>4</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-bold block truncate ws-step-title">4. Strategija znamke</span>
+                    <span id="wsBadge-brand_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                  </div>
+                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Pozicioniranje, ton & USP</span>
+                </div>
+              </button>
 
-          <button onclick="switchWorkspaceTab('client_calendar')" id="wsTabBtn-client_calendar" class="ws-nav-btn px-3.5 py-2 rounded-xl font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
-            <i data-lucide="calendar" class="w-3.5 h-3.5 text-sky-400"></i>
-            <span>8. Koledar objav</span>
-            <span id="wsBadge-calendar" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-800 text-slate-300">0</span>
-          </button>
+              <!-- Korak 5: Strategija omrežij -->
+              <button onclick="switchWorkspaceTab('social_strategy')" id="wsTabBtn-social_strategy" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                <div id="wsTodoCheck-social_strategy" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                  <span>5</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-bold block truncate ws-step-title">5. Strategija omrežij</span>
+                    <span id="wsBadge-social_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                  </div>
+                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Kanali, cilji & taktika</span>
+                </div>
+              </button>
 
-          <button onclick="switchWorkspaceTab('performance')" id="wsTabBtn-performance" class="ws-nav-btn px-3.5 py-2 rounded-xl font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
-            <i data-lucide="trending-up" class="w-3.5 h-3.5 text-rose-400"></i>
-            <span>9. Uspešnost</span>
-          </button>
+              <!-- Korak 6: Vsebinska strategija -->
+              <button onclick="switchWorkspaceTab('content_strategy')" id="wsTabBtn-content_strategy" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                <div id="wsTodoCheck-content_strategy" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                  <span>6</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-bold block truncate ws-step-title">6. Vsebinska strategija</span>
+                    <span id="wsBadge-content_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                  </div>
+                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Vsebinski stebri & formati</span>
+                </div>
+              </button>
+
+              <!-- Korak 7: Smernice produkcije -->
+              <button onclick="switchWorkspaceTab('production_guidelines')" id="wsTabBtn-production_guidelines" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                <div id="wsTodoCheck-production_guidelines" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                  <span>7</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-bold block truncate ws-step-title">7. Smernice produkcije</span>
+                    <span id="wsBadge-production_guidelines" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                  </div>
+                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Snemanje, video & copy vodnik</span>
+                </div>
+              </button>
+
+              <!-- Korak 8: Koledar objav -->
+              <button onclick="switchWorkspaceTab('client_calendar')" id="wsTabBtn-client_calendar" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                <div id="wsTodoCheck-client_calendar" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                  <span>8</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-bold block truncate ws-step-title">8. Koledar objav</span>
+                    <span id="wsBadge-calendar" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300">0</span>
+                  </div>
+                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Mesečni načrt & statusi</span>
+                </div>
+              </button>
+
+              <!-- Korak 9: Uspešnost -->
+              <button onclick="switchWorkspaceTab('performance')" id="wsTabBtn-performance" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                <div id="wsTodoCheck-performance" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                  <span>9</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-xs font-bold block truncate ws-step-title">9. Uspešnost</span>
+                    <span id="wsBadge-performance" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                  </div>
+                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Analitika, rezultati & KPI</span>
+                </div>
+              </button>
+
+            </nav>
+
+          </div>
+
+          <!-- Quick Tip / Workflow Helper Card -->
+          <div class="bg-gradient-to-br from-indigo-950/40 to-slate-900/80 border border-indigo-500/20 rounded-3xl p-4 hidden sm:block">
+            <div class="flex items-center gap-2 mb-1.5 text-indigo-300">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span class="text-xs font-bold">Priporočen naslednji korak</span>
+            </div>
+            <p id="wsTodoNextStepPrompt" class="text-[11px] text-slate-400 leading-relaxed">
+              Preglejte odgovore vprašalnika in nadaljujte z vnosom tržne raziskave.
+            </p>
+          </div>
+
+        </aside>
+
+        <!-- Workspace Dynamic Active Section Content -->
+        <div id="workspaceTabContent" class="flex-1 min-w-0 space-y-6">
+          <!-- Rendered dynamically by switchWorkspaceTab() -->
         </div>
-      </div>
 
-      <!-- Workspace Dynamic Active Section Content -->
-      <div id="workspaceTabContent" class="space-y-6">
-        <!-- Rendered dynamically by switchWorkspaceTab() -->
       </div>
 
     </section>
@@ -1817,16 +1949,183 @@
       switchTopTab('clients');
     }
 
+    // Update the vertical To-Do sidebar status, checkmarks, counters and active step
+    function updateWorkspaceTodoStatus(client) {
+      if (!client) return;
+      const crm = client.crm || {};
+      const stats = client.stats || { answeredCount: 0, percent: 0 };
+      const postsCount = crm.content_calendar?.length || 0;
+
+      const steps = [
+        {
+          id: 'overview',
+          num: 1,
+          completed: true,
+          badgeText: 'Pripravljeno',
+          badgeClass: 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30'
+        },
+        {
+          id: 'discovery',
+          num: 2,
+          completed: stats.answeredCount === 20,
+          badgeText: `${stats.answeredCount}/20`,
+          badgeClass: stats.answeredCount === 20 
+            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+            : (stats.answeredCount > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700')
+        },
+        {
+          id: 'research',
+          num: 3,
+          completed: Boolean((crm.market_research?.competitors?.length > 0) || (crm.market_research?.opportunities?.trends?.trim()) || (crm.market_research?.target_audience?.demographics?.trim())),
+          badgeText: (crm.market_research?.competitors?.length > 0) ? `${crm.market_research.competitors.length} konk.` : ((crm.market_research?.target_audience?.demographics?.trim()) ? 'V teku' : 'Čaka'),
+          badgeClass: Boolean((crm.market_research?.competitors?.length > 0) || (crm.market_research?.opportunities?.trends?.trim())) 
+            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+        },
+        {
+          id: 'brand_strategy',
+          num: 4,
+          completed: Boolean(crm.brand_strategy?.positioning?.trim() || crm.brand_strategy?.usp?.trim() || crm.brand_strategy?.purpose?.trim()),
+          badgeText: Boolean(crm.brand_strategy?.positioning?.trim() || crm.brand_strategy?.usp?.trim()) ? 'Opravljeno' : 'Čaka',
+          badgeClass: Boolean(crm.brand_strategy?.positioning?.trim() || crm.brand_strategy?.usp?.trim() || crm.brand_strategy?.purpose?.trim())
+            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+        },
+        {
+          id: 'social_strategy',
+          num: 5,
+          completed: Boolean(crm.social_media_strategy?.platforms?.length > 0 || crm.social_media_strategy?.objectives_short?.trim()),
+          badgeText: (crm.social_media_strategy?.platforms?.length > 0) ? `${crm.social_media_strategy.platforms.length} omrežij` : 'Čaka',
+          badgeClass: Boolean(crm.social_media_strategy?.platforms?.length > 0 || crm.social_media_strategy?.objectives_short?.trim())
+            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+        },
+        {
+          id: 'content_strategy',
+          num: 6,
+          completed: Boolean(crm.content_strategy?.content_pillars?.length > 0 || crm.content_strategy?.content_direction?.themes?.trim()),
+          badgeText: (crm.content_strategy?.content_pillars?.length > 0) ? `${crm.content_strategy.content_pillars.length} stebrov` : 'Čaka',
+          badgeClass: Boolean(crm.content_strategy?.content_pillars?.length > 0 || crm.content_strategy?.content_direction?.themes?.trim())
+            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+        },
+        {
+          id: 'production_guidelines',
+          num: 7,
+          completed: Boolean(crm.production_guidelines?.resources?.locations?.trim() || crm.production_guidelines?.rules?.video_style?.trim()),
+          badgeText: Boolean(crm.production_guidelines?.resources?.locations?.trim() || crm.production_guidelines?.rules?.video_style?.trim()) ? 'Opravljeno' : 'Čaka',
+          badgeClass: Boolean(crm.production_guidelines?.resources?.locations?.trim() || crm.production_guidelines?.rules?.video_style?.trim())
+            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+        },
+        {
+          id: 'client_calendar',
+          num: 8,
+          completed: postsCount > 0,
+          badgeText: `${postsCount} objav`,
+          badgeClass: postsCount > 0 
+            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+        },
+        {
+          id: 'performance',
+          num: 9,
+          completed: false,
+          badgeText: 'KPI',
+          badgeClass: 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+        }
+      ];
+
+      let completedCount = 0;
+      steps.forEach(step => {
+        if (step.completed) completedCount++;
+
+        const btn = document.getElementById(`wsTabBtn-${step.id}`);
+        const checkEl = document.getElementById(`wsTodoCheck-${step.id}`);
+        const badgeEl = (step.id === 'discovery') 
+          ? document.getElementById('wsBadge-discovery')
+          : (step.id === 'client_calendar' ? document.getElementById('wsBadge-calendar') : document.getElementById(`wsBadge-${step.id}`));
+
+        if (badgeEl) {
+          badgeEl.innerText = step.badgeText;
+          badgeEl.className = `ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full ${step.badgeClass}`;
+        }
+
+        const isActive = (step.id === activeWorkspaceTab);
+
+        if (btn) {
+          if (isActive) {
+            btn.className = 'ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3 bg-gradient-to-r from-indigo-950/90 to-slate-900 border-l-4 border-l-indigo-500 border-y border-r border-indigo-500/40 text-white shadow-lg shadow-indigo-950/50';
+          } else {
+            btn.className = 'ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3 bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/60 hover:border-slate-700 text-slate-300 hover:text-white';
+          }
+
+          const titleEl = btn.querySelector('.ws-step-title');
+          const subEl = btn.querySelector('.ws-step-sub');
+          if (titleEl) {
+            titleEl.className = `text-xs font-bold block truncate ws-step-title ${isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'}`;
+          }
+          if (subEl) {
+            subEl.className = `text-[11px] block truncate ws-step-sub mt-0.5 ${isActive ? 'text-indigo-300' : 'text-slate-400 group-hover:text-slate-300'}`;
+          }
+        }
+
+        if (checkEl) {
+          if (step.completed) {
+            checkEl.className = `ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all ${isActive ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30 ring-2 ring-emerald-400/60' : 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-400'}`;
+            checkEl.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>`;
+          } else if (isActive) {
+            checkEl.className = 'ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all bg-indigo-600 text-white shadow-md shadow-indigo-600/40 ring-2 ring-indigo-400/60';
+            checkEl.innerHTML = `<span>${step.num}</span>`;
+          } else {
+            checkEl.className = 'ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all bg-slate-950 border border-slate-800 text-slate-500 group-hover:border-slate-700 group-hover:text-slate-300';
+            checkEl.innerHTML = `<span>${step.num}</span>`;
+          }
+        }
+      });
+
+      const overallPercent = Math.round((completedCount / steps.length) * 100);
+      const countEl = document.getElementById('wsTodoOverallCount');
+      if (countEl) countEl.innerText = `${completedCount}/9 opravljeno`;
+      const barEl = document.getElementById('wsTodoProgressBar');
+      if (barEl) barEl.style.width = `${Math.max(10, overallPercent)}%`;
+      const percentEl = document.getElementById('wsTodoProgressPercent');
+      if (percentEl) percentEl.innerText = `${overallPercent}%`;
+
+      // Next step helper prompt
+      const promptEl = document.getElementById('wsTodoNextStepPrompt');
+      if (promptEl) {
+        if (stats.answeredCount < 20) {
+          promptEl.innerHTML = `Naročnik je odgovoril na <strong class="text-white">${stats.answeredCount}/20</strong> vprašanj. Dopolnite vprašalnik v <strong>2. Spoznavanje znamke</strong>.`;
+        } else if (!crm.market_research?.competitors?.length && !crm.market_research?.target_audience?.demographics?.trim()) {
+          promptEl.innerHTML = `Vprašalnik je izpolnjen! Naslednji korak: analizirajte trg in vnesite konkurente v <strong>3. Tržna raziskava</strong>.`;
+        } else if (!crm.brand_strategy?.positioning?.trim() && !crm.brand_strategy?.usp?.trim()) {
+          promptEl.innerHTML = `Nadaljujte z oblikovanjem pozicioniranja in USP v <strong>4. Strategija znamke</strong>.`;
+        } else if (!crm.social_media_strategy?.platforms?.length) {
+          promptEl.innerHTML = `Izberite ključna omrežja in cilje v <strong>5. Strategija omrežij</strong>.`;
+        } else if (!crm.content_strategy?.content_pillars?.length) {
+          promptEl.innerHTML = `Definirajte ključne vsebinske stebre v <strong>6. Vsebinska strategija</strong>.`;
+        } else if (!crm.production_guidelines?.rules?.video_style?.trim() && !crm.production_guidelines?.resources?.locations?.trim()) {
+          promptEl.innerHTML = `Določite smernice za snemanje in copy v <strong>7. Smernice produkcije</strong>.`;
+        } else if (postsCount === 0) {
+          promptEl.innerHTML = `Strategija je pripravljena! Začnite načrtovati objave v <strong>8. Koledar objav</strong>.`;
+        } else {
+          promptEl.innerHTML = `Vse faze so aktivne! V koledarju imate <strong class="text-emerald-400">${postsCount} načrtovanih objav</strong>.`;
+        }
+      }
+
+      const sidebarContainer = document.getElementById('workspaceSidebar');
+      if (sidebarContainer) {
+        lucide.createIcons({ root: sidebarContainer });
+      }
+    }
+
     function switchWorkspaceTab(tabName) {
       activeWorkspaceTab = tabName;
       
-      // Update workspace nav buttons
-      document.querySelectorAll('.ws-nav-btn').forEach(btn => {
-        btn.className = 'ws-nav-btn px-3.5 py-2 rounded-xl font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition';
-      });
-      const activeBtn = document.getElementById(`wsTabBtn-${tabName}`);
-      if (activeBtn) {
-        activeBtn.className = 'ws-nav-btn px-3.5 py-2 rounded-xl font-bold bg-indigo-600 text-white flex items-center gap-1.5 transition shadow-xs';
+      const client = clients.find(c => c.id === currentClientId);
+      if (client) {
+        updateWorkspaceTodoStatus(client);
       }
 
       renderWorkspaceTabContent();
@@ -1933,9 +2232,8 @@
         </div>
       `;
 
-      // Update badges on subtabs
-      document.getElementById('wsBadge-discovery').innerText = `${client.stats.answeredCount}/20`;
-      document.getElementById('wsBadge-calendar').innerText = postsCount;
+      // Update To-Do sidebar and subtabs status
+      updateWorkspaceTodoStatus(client);
 
       lucide.createIcons({ root: headerContainer });
       switchWorkspaceTab(activeWorkspaceTab);
