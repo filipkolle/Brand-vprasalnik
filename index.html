@@ -2067,22 +2067,51 @@
     function closeResetModal() {
       document.getElementById('resetModal').classList.add('hidden');
     }
-    function confirmReset() {
+    async function confirmReset() {
+      // Clear question text fields
       textFields.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.value = '';
+        if (el) {
+          if (id === 'client_company' && currentSubmissionId) {
+            // Keep assigned company name if client is using a unique link
+          } else {
+            el.value = '';
+          }
+        }
       });
+
+      // Clear all active chips
       document.querySelectorAll('.interactive-chip.active').forEach(btn => {
         btn.classList.remove('active');
       });
+
+      // Reset Question 16 products list
       initProducts16(['', '', '']);
-      currentSubmissionId = null;
-      const cleanUrl = window.location.origin + window.location.pathname;
-      window.history.replaceState({}, '', cleanUrl);
-      updateSaveStatus('ready');
+
       calculateProgress();
       closeResetModal();
-      showToast('Vprašalnik je bil ponastavljen.');
+
+      // If client has a unique submission in Supabase, wipe all answers in the database
+      if (currentSubmissionId && supabaseClient) {
+        try {
+          const emptyAnswers = collectData();
+          const { error } = await supabaseClient
+            .from('marketing_questionnaires')
+            .update({
+              answers: emptyAnswers,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', currentSubmissionId);
+
+          if (error) throw error;
+          showToast('Vprašalnik in odgovori v bazi so bili uspešno izbrisani.');
+        } catch (err) {
+          console.error('Napaka pri brisanju odgovorov iz Supabase:', err);
+          showToast('Napaka pri posodobitvi baze.');
+        }
+      } else {
+        showToast('Vprašalnik je bil ponastavljen.');
+      }
     }
 
     // Toast notification
