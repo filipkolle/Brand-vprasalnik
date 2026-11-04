@@ -2396,7 +2396,7 @@
                     <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800">
                       <div class="flex items-center justify-between gap-2 mb-1">
                         <h4 class="text-xs font-bold text-white">${escapeHtml(p.name)}</h4>
-                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${escapeHtml(p.priority || 'Normal')}</span>
+                        ${p.priority ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${escapeHtml(p.priority)}</span>` : ''}
                       </div>
                       <p class="text-[11px] text-slate-400 line-clamp-2">${escapeHtml(p.purpose || p.description || 'Ni opisa')}</p>
                     </div>
@@ -2794,6 +2794,7 @@
       const items = textareas.map(ta => {
         const style = window.getComputedStyle(ta);
         const borderTop = parseFloat(style.borderTopWidth) || 0;
+        const borderBottom = parseFloat(style.borderBottomWidth) || 0;
         // Measure required height with generous buffer (+ 36px) to ensure all text and emojis are completely visible without cropping
         const requiredHeight = Math.max(100, Math.ceil(ta.scrollHeight + borderTop + borderBottom + 36));
         const wrapper = ta.closest('.smart-field-wrapper') || ta;
@@ -3497,26 +3498,106 @@
             </div>
 
             <!-- Configured platforms details -->
-            <div class="space-y-3 pt-3">
-              ${platforms.map((plat, idx) => `
-                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div>
-                    <label class="block font-bold text-indigo-400 mb-1 flex items-center gap-1.5">
-                      <i data-lucide="${getPlatformIcon(plat.name)}" class="w-3.5 h-3.5"></i> ${plat.name}
-                    </label>
-                    <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'role', this.value)" value="${escapeHtml(plat.role || '')}" placeholder="Vloga (npr. Dvig prepoznavnosti & grajenje skupnosti)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+            <div class="space-y-4 pt-3">
+              ${platforms.map((plat, idx) => {
+                const types = PLATFORM_POST_TYPES[plat.name] || [];
+                const counts = plat.post_types || {};
+                const weeklyTotal = getPlatformWeeklyTotal(plat);
+                const activeTypes = types.filter(t => (counts[t] || 0) > 0);
+                return `
+                <div class="p-4 sm:p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 text-xs">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                      <i data-lucide="${getPlatformIcon(plat.name)}" class="w-4 h-4 text-indigo-400"></i> ${plat.name}
+                    </h4>
+                    <div class="flex items-center gap-2">
+                      <span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-bold">${weeklyTotal}× tedensko</span>
+                      <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold">${weeklyTotal * WEEKS_PER_MONTH}× mesečno</span>
+                    </div>
                   </div>
-                  <div>
-                    <label class="block font-bold text-slate-400 mb-1">Pogostost objav</label>
-                    <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'frequency', this.value)" value="${escapeHtml(plat.frequency || '')}" placeholder="npr. 3x tedensko (Reels + Carousel)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block font-bold text-slate-400 mb-1">Vloga omrežja</label>
+                      <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'role', this.value)" value="${escapeHtml(plat.role || '')}" placeholder="Vloga (npr. Dvig prepoznavnosti & grajenje skupnosti)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+                    </div>
+                    <div>
+                      <label class="block font-bold text-slate-400 mb-1">Primarni KPI</label>
+                      <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'kpi', this.value)" value="${escapeHtml(plat.kpi || '')}" placeholder="npr. Doseg, shranjevanja, ogledi" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+                    </div>
                   </div>
+
                   <div>
-                    <label class="block font-bold text-slate-400 mb-1">Primarni KPI</label>
-                    <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'kpi', this.value)" value="${escapeHtml(plat.kpi || '')}" placeholder="npr. Doseg, shranjevanja, ogledi" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+                    <label class="block font-bold text-slate-400 mb-2">Tipi objav in tedenska pogostost</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      ${types.map(t => {
+                        const n = counts[t] || 0;
+                        const safeT = t.replace(/'/g, "\\'");
+                        return `
+                          <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border ${n > 0 ? 'bg-indigo-950/40 border-indigo-500/40' : 'bg-slate-900 border-slate-800'}">
+                            <span class="font-semibold ${n > 0 ? 'text-white' : 'text-slate-400'}">${escapeHtml(t)}</span>
+                            <div class="flex items-center gap-1 shrink-0">
+                              <button type="button" onclick="changePostTypeCount(${idx}, '${safeT}', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition ${n === 0 ? 'opacity-40 cursor-not-allowed' : ''}">−</button>
+                              <span class="w-12 text-center font-bold ${n > 0 ? 'text-indigo-300' : 'text-slate-500'}">${n}×/ted</span>
+                              <button type="button" onclick="changePostTypeCount(${idx}, '${safeT}', 1)" class="w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition">+</button>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+
+                  <!-- Platform summary -->
+                  <div class="rounded-xl border border-slate-800 overflow-hidden">
+                    <table class="w-full text-xs">
+                      <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <tr>
+                          <th class="text-left px-3 py-2 font-bold">Tip vsebine</th>
+                          <th class="text-right px-3 py-2 font-bold">Tedensko</th>
+                          <th class="text-right px-3 py-2 font-bold">Mesečno</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${activeTypes.length > 0 ? activeTypes.map(t => `
+                          <tr class="border-t border-slate-800/70">
+                            <td class="px-3 py-1.5 text-slate-200">${escapeHtml(t)}</td>
+                            <td class="px-3 py-1.5 text-right text-slate-200 font-semibold">${counts[t]}</td>
+                            <td class="px-3 py-1.5 text-right text-slate-200 font-semibold">${counts[t] * WEEKS_PER_MONTH}</td>
+                          </tr>
+                        `).join('') : `
+                          <tr class="border-t border-slate-800/70"><td colspan="3" class="px-3 py-3 text-center text-slate-500">Dodajte vsaj en tip objave z gumbom +</td></tr>
+                        `}
+                      </tbody>
+                      <tfoot>
+                        <tr class="border-t border-slate-700 bg-slate-900/80">
+                          <td class="px-3 py-2 font-bold text-white">Skupaj ${plat.name}</td>
+                          <td class="px-3 py-2 text-right font-extrabold text-indigo-300">${weeklyTotal}</td>
+                          <td class="px-3 py-2 text-right font-extrabold text-emerald-300">${weeklyTotal * WEEKS_PER_MONTH}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
                 </div>
-              `).join('')}
+              `;
+              }).join('')}
             </div>
+
+            ${platforms.length > 0 ? (() => {
+              const grandWeekly = platforms.reduce((s, p) => s + getPlatformWeeklyTotal(p), 0);
+              return `
+                <div class="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/60 to-emerald-950/40 border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div class="space-y-1">
+                    <div class="font-bold text-white text-sm flex items-center gap-2"><i data-lucide="calculator" class="w-4 h-4 text-indigo-300"></i> Skupni obseg vsebine (vsa omrežja)</div>
+                    <div class="text-slate-300">${platforms.map(p => `${escapeHtml(p.name)}: <strong>${getPlatformWeeklyTotal(p)}</strong>/ted`).join(' · ')}</div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-3 py-1.5 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 font-extrabold">${grandWeekly} objav / teden</span>
+                    <span class="px-3 py-1.5 rounded-xl bg-emerald-600/25 border border-emerald-500/40 text-emerald-200 font-extrabold">${grandWeekly * WEEKS_PER_MONTH} objav / mesec</span>
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-500">Mesečni izračun = tedensko × ${WEEKS_PER_MONTH} tedne.</p>
+              `;
+            })() : ''}
           </div>
 
           <!-- Marketing Objectives -->
@@ -3640,45 +3721,52 @@
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                   <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Vsebinski stebri (Content Pillars)
                 </h3>
-                <p class="text-xs text-slate-400 mt-0.5">Strateške tematske osi za ustvarjanje ponovljivega vsebinskega sistema.</p>
+                <p class="text-xs text-slate-400 mt-0.5">Izberite vsebinske stebre, ki jih bo naročnik uporabljal (priporočeno 3–5).</p>
               </div>
-              <button onclick="openAddPillarModal()" class="px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Dodaj vsebinski steber
-              </button>
+              <span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold">${pillars.filter(p => p.key).length} / ${CONTENT_PILLAR_OPTIONS.length} izbranih</span>
             </div>
 
-            <!-- Pillars Grid -->
-            ${pillars.length > 0 ? `
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                ${pillars.map((p, idx) => `
-                  <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5 relative">
-                    <div class="flex items-center justify-between gap-2">
-                      <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
-                        <span>${escapeHtml(p.name)}</span>
-                      </h4>
-                      <div class="flex items-center gap-1">
-                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${escapeHtml(p.priority || 'Normal')}</span>
-                        <button onclick="handleDeletePillar(${idx})" class="p-1 text-slate-500 hover:text-rose-400">
-                          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              ${CONTENT_PILLAR_OPTIONS.map(opt => {
+                const sel = pillars.find(p => p.key === opt.key);
+                return `
+                  <div class="rounded-2xl border transition ${sel ? opt.selClass : 'bg-slate-950 border-slate-800 hover:border-slate-700'}">
+                    <button type="button" onclick="togglePillarOption('${opt.key}')" class="w-full text-left p-4 flex items-start gap-3">
+                      <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${opt.iconClass}">
+                        <i data-lucide="${opt.icon}" class="w-4 h-4"></i>
                       </div>
-                    </div>
-                    
-                    <p class="text-xs text-slate-300">${escapeHtml(p.description || '')}</p>
-                    
-                    <div class="text-[11px] text-slate-400 space-y-1 pt-1 border-t border-slate-900">
-                      <p><strong class="text-slate-300">Strateški namen:</strong> ${escapeHtml(p.purpose || '/')}</p>
-                      <p><strong class="text-slate-300">Glavne teme:</strong> ${escapeHtml(p.topics || '/')}</p>
-                      <p><strong class="text-slate-300">Primeri idej:</strong> ${escapeHtml(p.ideas || '/')}</p>
-                      <p><strong class="text-slate-300">Primarni CTA:</strong> ${escapeHtml(p.cta || '/')}</p>
-                    </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                          <h4 class="text-sm font-bold text-white">${opt.name}</h4>
+                          <span class="w-5 h-5 rounded-md border flex items-center justify-center text-[11px] font-bold ${sel ? 'bg-emerald-500 border-emerald-400 text-white' : 'border-slate-600 text-transparent'}">✓</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">${opt.desc}</p>
+                      </div>
+                    </button>
+                    ${sel ? `
+                      <div class="px-4 pb-4 space-y-2 text-xs">
+                        <input type="text" oninput="handleUpdatePillarField('${opt.key}', 'topics', this.value)" value="${escapeHtml(sel.topics || '')}" placeholder="Glavne teme (npr. ${opt.topicsHint})" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-slate-600">
+                        <input type="text" oninput="handleUpdatePillarField('${opt.key}', 'cta', this.value)" value="${escapeHtml(sel.cta || '')}" placeholder="Primarni CTA (npr. ${opt.ctaHint})" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-slate-600">
+                      </div>
+                    ` : ''}
                   </div>
-                `).join('')}
+                `;
+              }).join('')}
+            </div>
+
+            ${pillars.some(p => !p.key) ? `
+              <div class="p-3 rounded-2xl bg-amber-950/30 border border-amber-500/30 text-xs space-y-2">
+                <p class="text-amber-300 font-bold">Starejši ročno poimenovani stebri (odstranite jih in izberite iz zgornjih opcij):</p>
+                <div class="flex flex-wrap gap-2">
+                  ${pillars.map((p, idx) => p.key ? '' : `
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200">
+                      ${escapeHtml(p.name)}
+                      <button onclick="handleDeletePillar(${idx})" class="text-slate-500 hover:text-rose-400"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    </span>
+                  `).join('')}
+                </div>
               </div>
-            ` : `
-              <p class="text-xs text-slate-500 py-6 text-center">Ni dodanih vsebinskih stebrov. Kliknite zgoraj za dodajanje.</p>
-            `}
+            ` : ''}
           </div>
 
           <!-- Content Direction & Approach -->
@@ -4285,30 +4373,43 @@
       renderWorkspaceTabContent();
     }
 
-    // Content Pillars helpers
-    function openAddPillarModal() {
-      const name = prompt("Naziv vsebinskega stebra (npr. Za kulisami / Edukacija / Izdelki):");
-      if (!name) return;
-      const purpose = prompt("Strateški namen tega stebra (npr. Dvig zaupanja in transparentnosti):");
+    // Content Pillars helpers (6 predefined options)
+    const CONTENT_PILLAR_OPTIONS = [
+      { key: 'edukacija', name: 'Edukacija', icon: 'graduation-cap', desc: 'Nasveti, vodiči in razlage, ki gradijo strokovnost in zaupanje.', topicsHint: 'nasveti, how-to, miti in dejstva', ctaHint: 'Shrani za kasneje', iconClass: 'bg-sky-500/15 text-sky-300', selClass: 'bg-sky-950/30 border-sky-500/50' },
+      { key: 'zabava', name: 'Zabava', icon: 'smile', desc: 'Trendi, humor in relatable vsebine za večji doseg in deljenja.', topicsHint: 'trendi, memi, izzivi', ctaHint: 'Označi prijatelja', iconClass: 'bg-amber-500/15 text-amber-300', selClass: 'bg-amber-950/30 border-amber-500/50' },
+      { key: 'navdih', name: 'Navdih', icon: 'sparkles', desc: 'Zgodbe, vrednote in transformacije za čustveno povezavo.', topicsHint: 'zgodba znamke, pred/po, vrednote', ctaHint: 'Deli zgodbo', iconClass: 'bg-purple-500/15 text-purple-300', selClass: 'bg-purple-950/30 border-purple-500/50' },
+      { key: 'za_kulisami', name: 'Za kulisami', icon: 'camera', desc: 'Proces, ekipa in vsakdan podjetja – pristnost in transparentnost.', topicsHint: 'proces izdelave, ekipa, dan v življenju', ctaHint: 'Spremljaj nas', iconClass: 'bg-emerald-500/15 text-emerald-300', selClass: 'bg-emerald-950/30 border-emerald-500/50' },
+      { key: 'skupnost', name: 'Skupnost & socialni dokaz', icon: 'users', desc: 'Mnenja strank, UGC in interakcija s sledilci.', topicsHint: 'mnenja strank, UGC, ankete', ctaHint: 'Povej svoje mnenje', iconClass: 'bg-rose-500/15 text-rose-300', selClass: 'bg-rose-950/30 border-rose-500/50' },
+      { key: 'promocija', name: 'Promocija & prodaja', icon: 'shopping-bag', desc: 'Predstavitev izdelkov/storitev, ponudbe in akcije za konverzije.', topicsHint: 'izdelki, ponudbe, novosti', ctaHint: 'Naroči zdaj', iconClass: 'bg-indigo-500/15 text-indigo-300', selClass: 'bg-indigo-950/40 border-indigo-500/50' }
+    ];
 
+    function togglePillarOption(key) {
       const client = clients.find(c => c.id === currentClientId);
       if (!client) return;
       if (!client.crm) client.crm = {};
       if (!client.crm.content_strategy) client.crm.content_strategy = {};
       if (!client.crm.content_strategy.content_pillars) client.crm.content_strategy.content_pillars = [];
-
-      client.crm.content_strategy.content_pillars.push({
-        name,
-        description: '',
-        purpose: purpose || '',
-        topics: '',
-        ideas: '',
-        cta: '',
-        priority: 'Visoka'
-      });
-
-      saveCurrentWorkspace(true);
+      const list = client.crm.content_strategy.content_pillars;
+      const existing = list.findIndex(p => p.key === key);
+      if (existing >= 0) {
+        list.splice(existing, 1);
+      } else {
+        const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === key);
+        if (!opt) return;
+        list.push({ key, name: opt.name, purpose: opt.desc, topics: '', cta: '' });
+      }
+      client.strategyStats = calculateStrategyStats(client.crm, client.answers);
+      updateWorkspaceTodoStatus(client);
+      saveCurrentWorkspace(false);
       renderWorkspaceTabContent();
+    }
+
+    function handleUpdatePillarField(key, field, val) {
+      const client = clients.find(c => c.id === currentClientId);
+      const p = client?.crm?.content_strategy?.content_pillars?.find(x => x.key === key);
+      if (!p) return;
+      p[field] = val;
+      scheduleAutoSave();
     }
 
     function handleDeletePillar(idx) {
@@ -4337,13 +4438,45 @@
         list.push({
           name: platName,
           role: 'Dvig prepoznavnosti in interakcije',
-          frequency: '3x tedensko',
-          kpi: 'Doseg & shranjevanja'
+          frequency: '0x tedensko',
+          kpi: 'Doseg & shranjevanja',
+          post_types: {}
         });
       }
 
       saveCurrentWorkspace(false);
       renderWorkspaceTabContent();
+    }
+
+    // Post types available per platform
+    const WEEKS_PER_MONTH = 4;
+    const PLATFORM_POST_TYPES = {
+      Instagram: ['Reels', 'Carousel', 'Statična objava', 'Stories', 'Live'],
+      TikTok: ['Video', 'Foto carousel', 'Stories', 'Live'],
+      Facebook: ['Reels / video', 'Statična objava', 'Carousel / album', 'Stories', 'Tekstovna objava', 'Live'],
+      LinkedIn: ['Tekstovna objava', 'Objava s sliko', 'Dokument (PDF carousel)', 'Video', 'Članek', 'Anketa'],
+      YouTube: ['Dolgi video', 'Shorts', 'Community objava', 'Live'],
+      Pinterest: ['Statični pin', 'Video pin', 'Carousel pin']
+    };
+
+    function getPlatformWeeklyTotal(plat) {
+      const counts = plat?.post_types || {};
+      const allowed = PLATFORM_POST_TYPES[plat?.name] || Object.keys(counts);
+      return allowed.reduce((sum, t) => sum + (parseInt(counts[t], 10) || 0), 0);
+    }
+
+    function changePostTypeCount(idx, type, delta) {
+      const client = clients.find(c => c.id === currentClientId);
+      const plat = client?.crm?.social_media_strategy?.platforms?.[idx];
+      if (!plat) return;
+      if (!plat.post_types) plat.post_types = {};
+      const next = Math.max(0, Math.min(50, (plat.post_types[type] || 0) + delta));
+      if (next === 0) delete plat.post_types[type]; else plat.post_types[type] = next;
+      plat.frequency = `${getPlatformWeeklyTotal(plat)}x tedensko`;
+      scheduleAutoSave();
+      const prevY = window.scrollY;
+      renderWorkspaceTabContent();
+      window.scrollTo(window.scrollX, prevY);
     }
 
     function handleUpdatePlatformConfig(idx, field, val) {
