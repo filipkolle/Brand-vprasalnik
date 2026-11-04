@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="sl" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superadmin Portal • Marketinški Vprašalniki</title>
+  
+  <!-- Google Fonts: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Montserrat', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#0d9488',
+              600: '#0f766e',
+              700: '#115e59',
+            },
+            primary: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Print styles for client report from Admin */
+    #printReportContainer {
+      display: none;
+    }
+
+    @media print {
+      body > *:not(#printReportContainer) {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      #printReportContainer {
+        display: block !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 1.6cm 1.4cm 1.6cm 1.4cm;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-full bg-slate-950 font-sans text-slate-100 antialiased flex flex-col selection:bg-indigo-600 selection:text-white">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-primary-600 to-indigo-800 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 shrink-0">
+          <i data-lucide="shield-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-base sm:text-lg text-white leading-tight tracking-tight">Superadmin Portal</h1>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Naročniki & Strategije</span>
+          </div>
+          <p class="text-xs font-medium text-slate-400">Pregled vseh odgovorov in upravljanje unikatnih povezav</p>
+        </div>
+      </div>
+
+      <!-- Header Action Buttons -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button onclick="fetchClients()" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700/80 active:scale-95" title="Osveži podatke">
+          <i id="refreshIcon" data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Osveži</span>
+        </button>
+
+        <a href="index.html" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700/80 active:scale-95" title="Odpri splošni vprašalnik">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Odpri Vprašalnik</span>
+        </a>
+
+        <button onclick="openCreateModal()" type="button" class="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl shadow-lg shadow-emerald-900/30 transition-all active:scale-95 border border-emerald-500/30">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>+ Nov naročnik</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER (SPLIT-VIEW) -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col">
+    
+    <!-- STATS OVERVIEW CARDS -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      
+      <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Vsi naročniki</p>
+          <h3 id="statTotal" class="text-2xl font-extrabold text-white mt-0.5">0</h3>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+          <i data-lucide="users" class="w-5 h-5"></i>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Zaključeni (>80%)</p>
+          <h3 id="statCompleted" class="text-2xl font-extrabold text-emerald-400 mt-0.5">0</h3>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+          <i data-lucide="check-check" class="w-5 h-5"></i>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-amber-400">V reševanju</p>
+          <h3 id="statInProgress" class="text-2xl font-extrabold text-amber-400 mt-0.5">0</h3>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+          <i data-lucide="clock" class="w-5 h-5"></i>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Nova vabila</p>
+          <h3 id="statNew" class="text-2xl font-extrabold text-slate-300 mt-0.5">0</h3>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 flex items-center justify-center">
+          <i data-lucide="send" class="w-5 h-5"></i>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MAIN TWO-COLUMN SPLIT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 items-start">
+      
+      <!-- LEFT COLUMN: Client List & Filters (5 cols) -->
+      <section class="lg:col-span-5 bg-slate-900/90 border border-slate-800/90 rounded-3xl p-4 sm:p-5 flex flex-col shadow-xl">
+        
+        <!-- Search & Filter Controls -->
+        <div class="space-y-3 mb-4">
+          <!-- Search input -->
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+            <input id="searchInput" oninput="renderClientList()" type="text" placeholder="Išči po podjetju, kontaktu, e-pošti..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition">
+          </div>
+
+          <!-- Status Filter Tabs -->
+          <div class="flex items-center gap-1.5 p-1 bg-slate-950 border border-slate-800/80 rounded-xl text-xs overflow-x-auto scrollbar-none">
+            <button onclick="setFilter('all')" data-filter="all" class="filter-tab px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white transition shrink-0">
+              Vsi (<span id="countAll">0</span>)
+            </button>
+            <button onclick="setFilter('completed')" data-filter="completed" class="filter-tab px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition shrink-0">
+              Zaključeni (<span id="countCompleted">0</span>)
+            </button>
+            <button onclick="setFilter('progress')" data-filter="progress" class="filter-tab px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition shrink-0">
+              V teku (<span id="countProgress">0</span>)
+            </button>
+            <button onclick="setFilter('new')" data-filter="new" class="filter-tab px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition shrink-0">
+              Novi (<span id="countNew">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Clients List Container -->
+        <div id="clientsListContainer" class="space-y-2.5 max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
+          <!-- Populated by JavaScript -->
+          <div class="p-8 text-center text-slate-500">
+            <i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-400"></i>
+            <p class="text-xs">Nalaganje naročnikov iz Supabase baze...</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN: Selected Client Dedicated Inspector (7 cols) -->
+      <section id="inspectorSection" class="lg:col-span-7 bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-7 shadow-xl min-h-[500px]">
+        
+        <!-- Empty State (When no client is selected) -->
+        <div id="inspectorEmptyState" class="h-full min-h-[400px] flex flex-col items-center justify-center text-center p-8">
+          <div class="w-16 h-16 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mb-4">
+            <i data-lucide="layout-dashboard" class="w-8 h-8"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-1">Izberite naročnika s seznama</h3>
+          <p class="text-xs sm:text-sm text-slate-400 max-w-sm mb-6 leading-relaxed">
+            Kliknite na naročnika na levi strani, da odprete njegovo namensko sekcijo z vsemi odgovori, unikatno povezavo in možnostjo izvoza.
+          </p>
+          <button onclick="openCreateModal()" type="button" class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-900/30 transition active:scale-95">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Ustvari novo povezavo za naročnika</span>
+          </button>
+        </div>
+
+        <!-- Client Detailed View Container -->
+        <div id="inspectorContent" class="hidden space-y-6">
+          <!-- Populated dynamically by JavaScript -->
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL: CREATE NEW CLIENT QUESTIONNAIRE -->
+  <div id="createModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-slate-100">
+      
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="link" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white">Ustvari unikaten vprašalnik</h3>
+            <p class="text-xs text-slate-400">Povezava bo namenjena izključno temu naročniku</p>
+          </div>
+        </div>
+        <button onclick="closeCreateModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="createClientForm" onsubmit="handleCreateClient(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+            Ime podjetja / blagovne znamke <span class="text-rose-400">*</span>
+          </label>
+          <input id="newCompanyName" type="text" required placeholder="npr. Pekarna Dobrote d.o.o." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+              Kontaktna oseba
+            </label>
+            <input id="newContactPerson" type="text" placeholder="npr. Marko Novak" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+              E-poštni naslov
+            </label>
+            <input id="newEmail" type="email" placeholder="npr. marko@dobrote.si" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+            Spletna stran / družbena omrežja
+          </label>
+          <input id="newWebsite" type="text" placeholder="npr. www.dobrote.si ali @pekarna_dobrote" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition">
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+          <button type="button" onclick="closeCreateModal()" class="px-4 py-2.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition">
+            Prekliči
+          </button>
+          <button id="createSubmitBtn" type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg shadow-emerald-900/30 transition active:scale-95">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span>Generiraj unikaten link</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL: LINK CREATED SUCCESS -->
+  <div id="linkSuccessModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-emerald-500/40 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-slate-100">
+      
+      <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mb-4">
+        <i data-lucide="check-circle" class="w-6 h-6"></i>
+      </div>
+
+      <h3 class="text-lg font-bold text-white mb-1">Unikaten vprašalnik je ustvarjen!</h3>
+      <p id="successClientName" class="text-xs sm:text-sm text-slate-300 mb-5">
+        Za naročnika je bil uspešno ustvarjen unikaten dostop v Supabase bazi.
+      </p>
+
+      <!-- Copyable Link Input -->
+      <div class="mb-4">
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Unikatna povezava za naročnika:</label>
+        <div class="flex items-center gap-2">
+          <input id="generatedLinkInput" type="text" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-emerald-300 font-mono focus:outline-none">
+          <button onclick="copyGeneratedLink()" type="button" class="px-4 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shrink-0 transition active:scale-95 flex items-center gap-1.5">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopiraj
+          </button>
+        </div>
+      </div>
+
+      <!-- Pre-written invitation message -->
+      <div class="mb-6">
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Vnaprej pripravljeno sporočilo za naročnika:</label>
+        <textarea id="invitationMessage" rows="4" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 leading-relaxed font-sans focus:outline-none"></textarea>
+        <button onclick="copyInvitationMessage()" type="button" class="mt-2 text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition">
+          <i data-lucide="clipboard-copy" class="w-3.5 h-3.5"></i> Kopiraj celotno besedilo za e-pošto / WhatsApp
+        </button>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+        <button type="button" onclick="closeLinkSuccessModal()" class="px-5 py-2.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+          Zapri
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-indigo-600 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs sm:text-sm font-semibold border border-indigo-400/40">
+      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-300"></i>
+      <span id="toastMsg">Uspešno!</span>
+    </div>
+  </div>
+
+  <!-- DEDICATED PRINT REPORT CONTAINER (For printing client from admin) -->
+  <div id="printReportContainer" class="p-8"></div>
+
+  <!-- JAVASCRIPT LOGIC (SUPABASE REAL-TIME ADMIN INTEGRATION) -->
+  <script>
+    const SUPABASE_URL = 'https://rsoxueewmheusurlhuyj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_HrIwwiu-aS7HFegM1zw1bw_9H4fhWaM';
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    let clients = [];
+    let selectedClientId = null;
+    let activeFilter = 'all';
+
+    // 20 Questions definition for accurate inspection and printing
+    const QUESTION_LABELS = {
+      1: "1. Kako bi na kratko predstavili svoje podjetje nekomu, ki zanj še nikoli ni slišal?",
+      2: "2. Kako in zakaj se je začela zgodba vašega podjetja?",
+      3: "3. Kakšna je vaša dolgoročna vizija za podjetje?",
+      4: "4. Katere so ključne vrednote vašega podjetja?",
+      5: "5. Kateri so vaši glavni izdelki ali storitve?",
+      6: "6. Katerih 5 izdelkov ali storitev trenutno prodate največ?",
+      7: "7. Zakaj stranke izberejo ravno vas in ne konkurence?",
+      8: "8. Kdo so vaši glavni konkurenti in ali obstajajo podjetja, ki so vam za vzor?",
+      9: "9. Kakšno izkušnjo ali občutek želite, da ima stranka ob sodelovanju z vami?",
+      10: "10. Kdo so vaše najpogostejše stranke?",
+      11: "11. S kakšnimi težavami, potrebami ali željami se stranke najpogosteje obračajo na vas?",
+      12: "12. Kaj stranke pred nakupom ali sodelovanjem najbolj zanima ali jih morda bega?",
+      13: "13. Kakšne stranke bi si najbolj želeli v prihodnje?",
+      14: "14. Kateri so vaši glavni poslovni cilji v naslednjih 3 mesecih?",
+      15: "15. Kje vidite podjetje čez 1 do 2 leti?",
+      16: "16. Kateri izdelki ali storitve so trenutno v ospredju in jih želite najbolj izpostaviti?",
+      17: "17. Katere 3 besede po vašem mnenju najbolje opišejo vaše podjetje?",
+      18: "18. Kakšen vtis želite pustiti pri ljudeh, ko pomislijo na vašo blagovno znamko?",
+      19: "19. Kakšen ton komunikacije in vzdušje želite na družbenih omrežjih?",
+      20: "20. Ali obstajajo teme, sporočila ali načini komunikacije, ki jih v nobenem primeru ne želite uporabljati (t.i. 'no-go')?"
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      fetchClients();
+    });
+
+    // Fetch all clients from Supabase
+    async function fetchClients() {
+      const refreshIcon = document.getElementById('refreshIcon');
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      try {
+        if (!supabaseClient) throw new Error('Supabase klient ni inicializiran');
+
+        const { data, error } = await supabaseClient
+          .from('marketing_questionnaires')
+          .select('*')
+          .order('updated_at', { ascending: false });
+
+        if (error) throw error;
+
+        clients = (data || []).map(record => {
+          const stats = calculateClientStats(record.answers);
+          return {
+            ...record,
+            stats
+          };
+        });
+
+        updateOverviewStats();
+        renderClientList();
+
+        // If a client was previously selected, re-render their view
+        if (selectedClientId) {
+          const found = clients.find(c => c.id === selectedClientId);
+          if (found) {
+            renderClientInspector(found);
+          } else {
+            closeInspector();
+          }
+        }
+
+      } catch (err) {
+        console.error('Napaka pri pridobivanju naročnikov:', err);
+        showToast('Napaka pri branju iz Supabase baze.');
+      } finally {
+        if (refreshIcon) {
+          setTimeout(() => refreshIcon.classList.remove('animate-spin'), 400);
+        }
+      }
+    }
+
+    // Calculate answers count & progress for a client
+    function calculateClientStats(answers) {
+      if (!answers) return { answeredCount: 0, percent: 0, status: 'new' };
+      const fields = answers.fields || {};
+      const chips = answers.chips || {};
+      const prods = answers.q16_products || [];
+
+      let answered = 0;
+
+      // Q1
+      if ((fields.q1_text && fields.q1_text.trim().length > 2) || (chips.q1_business_type?.length > 0) || (chips.q1_reach?.length > 0)) answered++;
+      // Q2
+      if ((fields.q2_text && fields.q2_text.trim().length > 2) || (chips.q2_origins?.length > 0)) answered++;
+      // Q3
+      if ((fields.q3_text && fields.q3_text.trim().length > 2) || (chips.q3_vision_tags?.length > 0)) answered++;
+      // Q4
+      if ((fields.q4_text && fields.q4_text.trim().length > 2) || (chips.q4_values?.length > 0)) answered++;
+      // Q5
+      if ((fields.q5_text && fields.q5_text.trim().length > 2) || (chips.q5_price_range?.length > 0)) answered++;
+      // Q6
+      if (fields.q6_top1 || fields.q6_top2 || fields.q6_top3) answered++;
+      // Q7
+      if ((fields.q7_text && fields.q7_text.trim().length > 2) || (chips.q7_advantages?.length > 0)) answered++;
+      // Q8
+      if (fields.q8_competitors || fields.q8_inspiration) answered++;
+      // Q9
+      if ((fields.q9_text && fields.q9_text.trim().length > 2) || (chips.q9_feelings?.length > 0)) answered++;
+      // Q10
+      if ((fields.q10_text && fields.q10_text.trim().length > 2) || (chips.q10_audience_type?.length > 0) || (chips.q10_age_group?.length > 0)) answered++;
+      // Q11
+      if ((fields.q11_text && fields.q11_text.trim().length > 2) || (chips.q11_painpoints?.length > 0)) answered++;
+      // Q12
+      if ((fields.q12_text && fields.q12_text.trim().length > 2) || (chips.q12_questions?.length > 0) || (chips.q12_converters?.length > 0)) answered++;
+      // Q13
+      if ((fields.q13_text && fields.q13_text.trim().length > 2) || (chips.q13_future_clients?.length > 0)) answered++;
+      // Q14
+      if ((fields.q14_text && fields.q14_text.trim().length > 2) || (chips.q14_short_goals?.length > 0)) answered++;
+      // Q15
+      if ((fields.q15_text && fields.q15_text.trim().length > 2) || (chips.q15_long_goals?.length > 0)) answered++;
+      // Q16
+      if (prods && prods.length > 0) answered++;
+      // Q17
+      if (fields.q17_word1 || fields.q17_word2 || fields.q17_word3) answered++;
+      // Q18
+      if ((fields.q18_text && fields.q18_text.trim().length > 2) || (chips.q18_impressions?.length > 0)) answered++;
+      // Q19
+      if ((fields.q19_text && fields.q19_text.trim().length > 2) || (chips.q19_address_form?.length > 0) || (chips.q19_tone_chips?.length > 0)) answered++;
+      // Q20
+      if ((fields.q20_text && fields.q20_text.trim().length > 2) || (chips.q20_nogo?.length > 0)) answered++;
+
+      const percent = Math.round((answered / 20) * 100);
+      let status = 'new';
+      if (percent >= 80) status = 'completed';
+      else if (answered > 0) status = 'progress';
+
+      return { answeredCount: answered, percent, status };
+    }
+
+    // Update Top Stats Counter
+    function updateOverviewStats() {
+      const total = clients.length;
+      const completed = clients.filter(c => c.stats.status === 'completed').length;
+      const progress = clients.filter(c => c.stats.status === 'progress').length;
+      const newItems = clients.filter(c => c.stats.status === 'new').length;
+
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statCompleted').innerText = completed;
+      document.getElementById('statInProgress').innerText = progress;
+      document.getElementById('statNew').innerText = newItems;
+
+      document.getElementById('countAll').innerText = total;
+      document.getElementById('countCompleted').innerText = completed;
+      document.getElementById('countProgress').innerText = progress;
+      document.getElementById('countNew').innerText = newItems;
+    }
+
+    // Filter switching
+    function setFilter(filter) {
+      activeFilter = filter;
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        if (tab.dataset.filter === filter) {
+          tab.className = 'filter-tab px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white transition shrink-0';
+        } else {
+          tab.className = 'filter-tab px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition shrink-0';
+        }
+      });
+      renderClientList();
+    }
+
+    // Render left-side client list
+    function renderClientList() {
+      const container = document.getElementById('clientsListContainer');
+      const searchQuery = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+
+      let filtered = clients.filter(c => {
+        if (activeFilter !== 'all' && c.stats.status !== activeFilter) return false;
+        if (searchQuery) {
+          const matchCompany = (c.company_name || '').toLowerCase().includes(searchQuery);
+          const matchContact = (c.contact_person || '').toLowerCase().includes(searchQuery);
+          const matchEmail = (c.email || '').toLowerCase().includes(searchQuery);
+          if (!matchCompany && !matchContact && !matchEmail) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 px-4 text-center text-slate-500">
+            <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+            <p class="text-xs font-semibold">Ni najdenih naročnikov</p>
+            <p class="text-[11px] text-slate-600 mt-1">Poskusite spremeniti iskalni niz ali ustvarite nov vprašalnik.</p>
+          </div>
+        `;
+        lucide.createIcons({ root: container });
+        return;
+      }
+
+      container.innerHTML = filtered.map(client => {
+        const isSelected = client.id === selectedClientId;
+        const initial = (client.company_name || 'N').charAt(0).toUpperCase();
+        const dateStr = formatDateTime(client.updated_at || client.created_at);
+
+        let statusBadge = '';
+        if (client.stats.status === 'completed') {
+          statusBadge = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Zaključeno (100%)</span>`;
+        } else if (client.stats.status === 'progress') {
+          statusBadge = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">V reševanju (${client.stats.percent}%)</span>`;
+        } else {
+          statusBadge = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">Novo vabilo</span>`;
+        }
+
+        return `
+          <div onclick="selectClient('${client.id}')" class="cursor-pointer group p-3.5 rounded-2xl border transition-all ${
+            isSelected 
+              ? 'bg-indigo-950/60 border-indigo-500/70 shadow-lg shadow-indigo-950/50' 
+              : 'bg-slate-950/70 border-slate-800/80 hover:bg-slate-900 hover:border-slate-700'
+          }">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-700 border border-slate-700 text-white font-black text-sm flex items-center justify-center shrink-0 group-hover:from-indigo-600 group-hover:to-indigo-500 transition">
+                  ${initial}
+                </div>
+                <div class="min-w-0">
+                  <h4 class="text-xs sm:text-sm font-bold text-white truncate leading-snug">
+                    ${escapeHtml(client.company_name || 'Neimenovan naročnik')}
+                  </h4>
+                  <p class="text-[11px] text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
+                    <span>${escapeHtml(client.contact_person || 'Ni kontakta')}</span>
+                    ${client.email ? `<span class="text-slate-600">•</span><span class="truncate">${escapeHtml(client.email)}</span>` : ''}
+                  </p>
+                </div>
+              </div>
+
+              <div class="shrink-0 text-right">
+                ${statusBadge}
+              </div>
+            </div>
+
+            <!-- Mini Progress Bar & Quick link -->
+            <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between gap-2 text-[11px] text-slate-500">
+              <div class="flex items-center gap-2 flex-1 max-w-[200px]">
+                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div class="h-1.5 rounded-full ${client.stats.percent >= 80 ? 'bg-emerald-500' : 'bg-indigo-500'}" style="width: ${client.stats.percent}%"></div>
+                </div>
+                <span class="font-bold text-slate-400 text-[10px] shrink-0">${client.stats.answeredCount}/20</span>
+              </div>
+
+              <div class="flex items-center gap-1" onclick="event.stopPropagation()">
+                <button onclick="copyClientLink('${client.id}')" type="button" class="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition" title="Kopiraj povezavo">
+                  <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                </button>
+                <a href="index.html?id=${client.id}" target="_blank" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Odpri vprašalnik">
+                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons({ root: container });
+    }
+
+    // Select a client to view in dedicated inspector
+    function selectClient(id) {
+      selectedClientId = id;
+      renderClientList();
+
+      const client = clients.find(c => c.id === id);
+      if (client) {
+        renderClientInspector(client);
+      }
+    }
+
+    function closeInspector() {
+      selectedClientId = null;
+      document.getElementById('inspectorEmptyState').classList.remove('hidden');
+      document.getElementById('inspectorContent').classList.add('hidden');
+      renderClientList();
+    }
+
+    // Render detailed Inspector for the selected client
+    function renderClientInspector(client) {
+      const emptyState = document.getElementById('inspectorEmptyState');
+      const content = document.getElementById('inspectorContent');
+      emptyState.classList.add('hidden');
+      content.classList.remove('hidden');
+
+      const clientUrl = `${window.location.origin}/index.html?id=${client.id}`;
+      const answers = client.answers || {};
+      const fields = answers.fields || {};
+      const chips = answers.chips || {};
+      const prods = answers.q16_products || [];
+
+      // Build structured answers preview
+      content.innerHTML = `
+        <!-- Client Hero Card -->
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950/60 border border-indigo-500/30 rounded-2xl p-5 shadow-lg">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-2.5 h-2.5 rounded-full ${client.stats.percent >= 80 ? 'bg-emerald-500 animate-pulse' : 'bg-indigo-500'}"></span>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Podrobnosti naročnika</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black text-white leading-tight">
+                ${escapeHtml(client.company_name || 'Neimenovan naročnik')}
+              </h2>
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300 mt-2">
+                ${client.contact_person ? `<span class="flex items-center gap-1.5"><i data-lucide="user" class="w-3.5 h-3.5 text-indigo-400"></i>${escapeHtml(client.contact_person)}</span>` : ''}
+                ${client.email ? `<span class="flex items-center gap-1.5"><i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i>${escapeHtml(client.email)}</span>` : ''}
+                ${client.website ? `<span class="flex items-center gap-1.5"><i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-400"></i>${escapeHtml(client.website)}</span>` : ''}
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="printClientReport('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition active:scale-95">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i> Natisni / PDF
+              </button>
+              <a href="${clientUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Odpri kot naročnik
+              </a>
+            </div>
+          </div>
+
+          <!-- Unique Link Bar -->
+          <div class="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 min-w-[200px]">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Unikaten link za tega naročnika:</span>
+              <div class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-emerald-400 font-mono truncate select-all">
+                ${clientUrl}
+              </div>
+            </div>
+            <button onclick="copyClientLink('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-xl transition shrink-0 active:scale-95">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopiraj link
+            </button>
+          </div>
+
+          <!-- Progress summary -->
+          <div class="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60">
+              <span class="text-[10px] text-slate-500 block uppercase font-bold">Izpolnjenost</span>
+              <span class="font-bold text-white text-sm">${client.stats.percent}%</span>
+            </div>
+            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60">
+              <span class="text-[10px] text-slate-500 block uppercase font-bold">Odgovorjeno</span>
+              <span class="font-bold text-indigo-400 text-sm">${client.stats.answeredCount} / 20</span>
+            </div>
+            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60">
+              <span class="text-[10px] text-slate-500 block uppercase font-bold">Zadnja sprememba</span>
+              <span class="font-semibold text-slate-300 text-[11px] truncate block mt-0.5">${formatDateTime(client.updated_at || client.created_at)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Answers by 5 Sklopi -->
+        <div class="space-y-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-indigo-400"></i> Odgovori naročnika po sklopih
+          </h3>
+
+          <!-- SKLOP 1 -->
+          ${renderSklopSection(1, "1. PREDSTAVITEV PODJETJA", [
+            renderQA(1, fields.q1_text, [
+              { label: "Tip poslovanja", items: chips.q1_business_type },
+              { label: "Doseg", items: chips.q1_reach }
+            ]),
+            renderQA(2, fields.q2_text, [
+              { label: "Elementi začetka", items: chips.q2_origins }
+            ]),
+            renderQA(3, fields.q3_text, [
+              { label: "Smeri vizije", items: chips.q3_vision_tags }
+            ]),
+            renderQA(4, fields.q4_text, [
+              { label: "Vrednote", items: chips.q4_values }
+            ])
+          ])}
+
+          <!-- SKLOP 2 -->
+          ${renderSklopSection(2, "2. PONUDBA IN KONKURENČNA PREDNOST", [
+            renderQA(5, fields.q5_text, [
+              { label: "Cenovni rang", items: chips.q5_price_range }
+            ]),
+            renderCustomQA(6, [fields.q6_top1, fields.q6_top2, fields.q6_top3, fields.q6_top4, fields.q6_top5].filter(Boolean).length > 0
+              ? `<ol class="list-decimal list-inside space-y-1 text-xs sm:text-sm text-slate-200 mt-2 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                  ${[fields.q6_top1, fields.q6_top2, fields.q6_top3, fields.q6_top4, fields.q6_top5].filter(Boolean).map(it => `<li><strong>${escapeHtml(it)}</strong></li>`).join('')}
+                </ol>`
+              : null
+            ),
+            renderQA(7, fields.q7_text, [
+              { label: "Konkurenčne prednosti", items: chips.q7_advantages }
+            ]),
+            renderCustomQA(8, (fields.q8_competitors || fields.q8_inspiration)
+              ? `<div class="space-y-2 mt-2">
+                  ${fields.q8_competitors ? `<div class="text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span class="text-slate-400 font-bold uppercase text-[10px] block mb-1">Glavni konkurenti:</span><span class="text-slate-200">${escapeHtml(fields.q8_competitors)}</span></div>` : ''}
+                  ${fields.q8_inspiration ? `<div class="text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span class="text-slate-400 font-bold uppercase text-[10px] block mb-1">Vzorniki / navdih:</span><span class="text-slate-200">${escapeHtml(fields.q8_inspiration)}</span></div>` : ''}
+                </div>`
+              : null
+            ),
+            renderQA(9, fields.q9_text, [
+              { label: "Želeni občutki", items: chips.q9_feelings }
+            ])
+          ])}
+
+          <!-- SKLOP 3 -->
+          ${renderSklopSection(3, "3. VAŠE STRANKE", [
+            renderQA(10, fields.q10_text, [
+              { label: "Tip strank", items: chips.q10_audience_type },
+              { label: "Starost", items: chips.q10_age_group }
+            ]),
+            renderQA(11, fields.q11_text, [
+              { label: "Težave in motivi", items: chips.q11_painpoints }
+            ]),
+            renderQA(12, fields.q12_text, [
+              { label: "Vprašanja / dvomi", items: chips.q12_questions },
+              { label: "Kaj jih prepriča", items: chips.q12_converters }
+            ]),
+            renderQA(13, fields.q13_text, [
+              { label: "Želeni fokus", items: chips.q13_future_clients }
+            ])
+          ])}
+
+          <!-- SKLOP 4 -->
+          ${renderSklopSection(4, "4. POSLOVNI IN MARKETINŠKI CILJI", [
+            renderQA(14, fields.q14_text, [
+              { label: "Cilji v 3 mesecih", items: chips.q14_short_goals }
+            ]),
+            renderQA(15, fields.q15_text, [
+              { label: "Dolgoročni mejniki", items: chips.q15_long_goals }
+            ]),
+            renderCustomQA(16, (prods && prods.length > 0)
+              ? `<ol class="list-decimal list-inside space-y-1 text-xs sm:text-sm text-slate-200 mt-2 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                  ${prods.map(p => `<li><strong>${escapeHtml(p)}</strong></li>`).join('')}
+                </ol>`
+              : null
+            )
+          ])}
+
+          <!-- SKLOP 5 -->
+          ${renderSklopSection(5, "5. IDENTITETA IN KOMUNIKACIJA BLAGOVNE ZNAMKE", [
+            renderCustomQA(17, [fields.q17_word1, fields.q17_word2, fields.q17_word3].filter(Boolean).length > 0
+              ? `<div class="flex flex-wrap gap-2 mt-2">
+                  ${[fields.q17_word1, fields.q17_word2, fields.q17_word3].filter(Boolean).map((w, idx) => `
+                    <span class="px-3 py-1 rounded-lg text-xs font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                      #${idx + 1} ${escapeHtml(w)}
+                    </span>
+                  `).join('')}
+                </div>`
+              : null
+            ),
+            renderQA(18, fields.q18_text, [
+              { label: "Želeni vtisi", items: chips.q18_impressions }
+            ]),
+            renderQA(19, fields.q19_text, [
+              { label: "Nagovor", items: chips.q19_address_form },
+              { label: "Ton", items: chips.q19_tone_chips }
+            ]),
+            renderQA(20, fields.q20_text, [
+              { label: "Prepovedane vsebine (No-Go)", items: chips.q20_nogo, isDanger: true }
+            ])
+          ])}
+        </div>
+      `;
+
+      lucide.createIcons({ root: content });
+    }
+
+    function renderSklopSection(num, title, qaHtmlList) {
+      return `
+        <div class="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xs">
+          <h4 class="text-xs sm:text-sm font-bold text-indigo-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 flex items-center justify-center text-xs font-black">${num}</span>
+            ${escapeHtml(title)}
+          </h4>
+          <div class="space-y-3.5">
+            ${qaHtmlList.join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQA(num, text, chipGroups = []) {
+      const qTitle = QUESTION_LABELS[num];
+      const hasText = text && text.trim().length > 0;
+      const hasChips = chipGroups.some(cg => cg.items && cg.items.length > 0);
+
+      if (!hasText && !hasChips) {
+        return `
+          <div class="p-3 rounded-xl bg-slate-900/40 border border-slate-800/40">
+            <div class="text-xs font-semibold text-slate-400">${escapeHtml(qTitle)}</div>
+            <div class="text-[11px] text-slate-600 italic mt-1 flex items-center gap-1">
+              <i data-lucide="circle-dashed" class="w-3 h-3"></i> Naročnik še ni odgovoril
+            </div>
+          </div>
+        `;
+      }
+
+      let content = '';
+      if (hasText) {
+        content += `<div class="mt-2 text-xs sm:text-sm text-slate-200 bg-slate-950 p-3 rounded-xl border border-slate-800/80 leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</div>`;
+      }
+
+      chipGroups.forEach(cg => {
+        if (cg.items && cg.items.length > 0) {
+          const badgeClass = cg.isDanger
+            ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+            : 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
+
+          content += `
+            <div class="mt-2.5">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">${escapeHtml(cg.label)}:</span>
+              <div class="flex flex-wrap gap-1.5">
+                ${cg.items.map(it => `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold border ${badgeClass}">✓ ${escapeHtml(it)}</span>`).join('')}
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      return `
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <div class="text-xs font-bold text-white">${escapeHtml(qTitle)}</div>
+          ${content}
+        </div>
+      `;
+    }
+
+    function renderCustomQA(num, htmlContent) {
+      const qTitle = QUESTION_LABELS[num];
+      if (!htmlContent) {
+        return `
+          <div class="p-3 rounded-xl bg-slate-900/40 border border-slate-800/40">
+            <div class="text-xs font-semibold text-slate-400">${escapeHtml(qTitle)}</div>
+            <div class="text-[11px] text-slate-600 italic mt-1 flex items-center gap-1">
+              <i data-lucide="circle-dashed" class="w-3 h-3"></i> Naročnik še ni odgovoril
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <div class="text-xs font-bold text-white">${escapeHtml(qTitle)}</div>
+          ${htmlContent}
+        </div>
+      `;
+    }
+
+    // Modal Create Client Handlers
+    function openCreateModal() {
+      document.getElementById('createClientForm').reset();
+      document.getElementById('createModal').classList.remove('hidden');
+      document.getElementById('newCompanyName').focus();
+    }
+
+    function closeCreateModal() {
+      document.getElementById('createModal').classList.add('hidden');
+    }
+
+    async function handleCreateClient(e) {
+      e.preventDefault();
+      const btn = document.getElementById('createSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Generiram...`;
+
+      const company = document.getElementById('newCompanyName').value.trim();
+      const contact = document.getElementById('newContactPerson').value.trim();
+      const email = document.getElementById('newEmail').value.trim();
+      const website = document.getElementById('newWebsite').value.trim();
+
+      const initialPayload = {
+        company_name: company,
+        contact_person: contact,
+        email: email,
+        website: website,
+        answers: {
+          fields: {
+            client_company: company,
+            client_contact: contact,
+            client_email: email,
+            client_website: website
+          },
+          chips: {},
+          q16_products: [],
+          timestamp: new Date().toISOString()
+        },
+        updated_at: new Date().toISOString()
+      };
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('marketing_questionnaires')
+          .insert([initialPayload])
+          .select();
+
+        if (error) throw error;
+        if (data && data[0]) {
+          const newRecord = data[0];
+          closeCreateModal();
+          await fetchClients();
+          selectClient(newRecord.id);
+          showLinkSuccessModal(newRecord);
+        }
+      } catch (err) {
+        console.error('Napaka pri ustvarjanju naročnika:', err);
+        showToast('Napaka pri shranjevanju novega naročnika.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4"></i> Generiraj unikaten link`;
+        lucide.createIcons();
+      }
+    }
+
+    // Success Modal after link creation
+    function showLinkSuccessModal(record) {
+      const link = `${window.location.origin}/index.html?id=${record.id}`;
+      document.getElementById('generatedLinkInput').value = link;
+      document.getElementById('successClientName').innerText = `Za podjetje "${record.company_name}" je bil ustvarjen unikaten dostop.`;
+
+      const msg = `Pozdravljeni,\n\nza pripravo celovite marketinške strategije za ${record.company_name} smo pripravili kratek strateški vprašalnik.\n\nDo vašega osebnega vprašalnika lahko dostopate prek spodnje povezave:\n${link}\n\nVsi vaši odgovori se samodejno shranjujejo sproti, tako da lahko vprašalnik izpolnite v svojem tempu.\n\nLep pozdrav,\nFilip`;
+      document.getElementById('invitationMessage').value = msg;
+
+      document.getElementById('linkSuccessModal').classList.remove('hidden');
+      lucide.createIcons({ root: document.getElementById('linkSuccessModal') });
+    }
+
+    function closeLinkSuccessModal() {
+      document.getElementById('linkSuccessModal').classList.add('hidden');
+    }
+
+    function copyGeneratedLink() {
+      const inp = document.getElementById('generatedLinkInput');
+      inp.select();
+      navigator.clipboard.writeText(inp.value).then(() => {
+        showToast('Povezava je skopirana v odložišče!');
+      });
+    }
+
+    function copyInvitationMessage() {
+      const txt = document.getElementById('invitationMessage').value;
+      navigator.clipboard.writeText(txt).then(() => {
+        showToast('Celotno vabilo je skopirano!');
+      });
+    }
+
+    function copyClientLink(id) {
+      const url = `${window.location.origin}/index.html?id=${id}`;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Unikaten link za naročnika je skopiran!');
+      });
+    }
+
+    // PRINT CLIENT REPORT FROM SUPERADMIN
+    function printClientReport(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      const container = document.getElementById('printReportContainer');
+      const answers = client.answers || {};
+      const fields = answers.fields || {};
+      const chips = answers.chips || {};
+      const prods = answers.q16_products || [];
+      const printDate = new Date().toLocaleDateString('sl-SI', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      function renderPrintQA(num, text, chipGroups = []) {
+        const qTitle = QUESTION_LABELS[num];
+        const hasText = text && text.trim().length > 0;
+        const hasChips = chipGroups.some(cg => cg.items && cg.items.length > 0);
+        if (!hasText && !hasChips) return null;
+
+        let out = `<div style="break-inside: avoid; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-size: 11pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">${escapeHtml(qTitle)}</div>`;
+        if (hasText) {
+          out += `<div style="font-size: 10.5pt; color: #1e293b; background: #f8fafc; border-left: 3px solid #6366f1; padding: 8px 12px; margin-top: 4px; border-radius: 4px; line-height: 1.5; white-space: pre-wrap;">${escapeHtml(text)}</div>`;
+        }
+        chipGroups.forEach(cg => {
+          if (cg.items && cg.items.length > 0) {
+            out += `<div style="margin-top: 6px;">
+              <span style="font-size: 8.5pt; font-weight: 700; color: #64748b; text-transform: uppercase;">${escapeHtml(cg.label)}: </span>
+              ${cg.items.map(it => `<span style="display: inline-block; font-size: 9pt; font-weight: 600; background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; padding: 2px 7px; border-radius: 4px; margin-right: 4px;">✓ ${escapeHtml(it)}</span>`).join('')}
+            </div>`;
+          }
+        });
+        out += `</div>`;
+        return out;
+      }
+
+      const qItems = [
+        renderPrintQA(1, fields.q1_text, [{ label: "Tip", items: chips.q1_business_type }, { label: "Doseg", items: chips.q1_reach }]),
+        renderPrintQA(2, fields.q2_text, [{ label: "Elementi začetka", items: chips.q2_origins }]),
+        renderPrintQA(3, fields.q3_text, [{ label: "Smeri vizije", items: chips.q3_vision_tags }]),
+        renderPrintQA(4, fields.q4_text, [{ label: "Vrednote", items: chips.q4_values }]),
+        renderPrintQA(5, fields.q5_text, [{ label: "Cenovni rang", items: chips.q5_price_range }]),
+        [fields.q6_top1, fields.q6_top2, fields.q6_top3].filter(Boolean).length > 0 ? `<div style="break-inside: avoid; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;"><div style="font-size: 11pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">${QUESTION_LABELS[6]}</div><ol style="margin: 4px 0 0 20px; font-size: 10.5pt; color: #1e293b;">${[fields.q6_top1, fields.q6_top2, fields.q6_top3, fields.q6_top4, fields.q6_top5].filter(Boolean).map(it => `<li><strong>${escapeHtml(it)}</strong></li>`).join('')}</ol></div>` : null,
+        renderPrintQA(7, fields.q7_text, [{ label: "Prednosti", items: chips.q7_advantages }]),
+        (fields.q8_competitors || fields.q8_inspiration) ? `<div style="break-inside: avoid; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;"><div style="font-size: 11pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">${QUESTION_LABELS[8]}</div>${fields.q8_competitors ? `<div style="font-size: 10pt; color: #1e293b; background: #f8fafc; padding: 6px 10px; border-left: 3px solid #cbd5e1; margin-top: 4px;"><strong>Konkurenti:</strong> ${escapeHtml(fields.q8_competitors)}</div>` : ''}${fields.q8_inspiration ? `<div style="font-size: 10pt; color: #1e293b; background: #f8fafc; padding: 6px 10px; border-left: 3px solid #cbd5e1; margin-top: 4px;"><strong>Navdih:</strong> ${escapeHtml(fields.q8_inspiration)}</div>` : ''}</div>` : null,
+        renderPrintQA(9, fields.q9_text, [{ label: "Občutki", items: chips.q9_feelings }]),
+        renderPrintQA(10, fields.q10_text, [{ label: "Tip strank", items: chips.q10_audience_type }, { label: "Starost", items: chips.q10_age_group }]),
+        renderPrintQA(11, fields.q11_text, [{ label: "Težave", items: chips.q11_painpoints }]),
+        renderPrintQA(12, fields.q12_text, [{ label: "Vprašanja", items: chips.q12_questions }, { label: "Prepriča jih", items: chips.q12_converters }]),
+        renderPrintQA(13, fields.q13_text, [{ label: "Fokus strank", items: chips.q13_future_clients }]),
+        renderPrintQA(14, fields.q14_text, [{ label: "Cilji v 3 mesecih", items: chips.q14_short_goals }]),
+        renderPrintQA(15, fields.q15_text, [{ label: "Dolgoročni cilji", items: chips.q15_long_goals }]),
+        (prods && prods.length > 0) ? `<div style="break-inside: avoid; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;"><div style="font-size: 11pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">${QUESTION_LABELS[16]}</div><ol style="margin: 4px 0 0 20px; font-size: 10.5pt; color: #1e293b;">${prods.map(p => `<li><strong>${escapeHtml(p)}</strong></li>`).join('')}</ol></div>` : null,
+        [fields.q17_word1, fields.q17_word2, fields.q17_word3].filter(Boolean).length > 0 ? `<div style="break-inside: avoid; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;"><div style="font-size: 11pt; font-weight: 700; color: #0f172a; margin-bottom: 4px;">${QUESTION_LABELS[17]}</div><div style="display: flex; gap: 6px; margin-top: 4px;">${[fields.q17_word1, fields.q17_word2, fields.q17_word3].filter(Boolean).map((w, idx) => `<span style="background: #faf5ff; color: #6b21a8; border: 1px solid #ddd6fe; padding: 3px 8px; border-radius: 5px; font-size: 9.5pt; font-weight: 700;">#${idx+1} ${escapeHtml(w)}</span>`).join('')}</div></div>` : null,
+        renderPrintQA(18, fields.q18_text, [{ label: "Želeni vtisi", items: chips.q18_impressions }]),
+        renderPrintQA(19, fields.q19_text, [{ label: "Nagovor", items: chips.q19_address_form }, { label: "Ton", items: chips.q19_tone_chips }]),
+        renderPrintQA(20, fields.q20_text, [{ label: "Prepovedano", items: chips.q20_nogo }])
+      ].filter(Boolean);
+
+      container.innerHTML = `
+        <div style="font-family: 'Montserrat', system-ui, sans-serif; color: #0f172a; line-height: 1.5;">
+          <div style="border-bottom: 2px solid #4f46e5; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h1 style="font-size: 16pt; font-weight: 800; color: #0f172a; margin: 0;">Marketinška Strategija — Odgovori naročnika</h1>
+              <p style="font-size: 9.5pt; color: #64748b; margin: 3px 0 0 0;">Uradno poročilo odgovorov • Izpis iz Superadmin portala</p>
+            </div>
+            <div style="text-align: right; font-size: 8.5pt; color: #64748b;">
+              <div>Datum: <strong>${escapeHtml(printDate)}</strong></div>
+              <div style="font-weight: 800; color: #4f46e5; font-size: 10pt; margin-top: 2px;">${escapeHtml(client.company_name || 'Naročnik')}</div>
+            </div>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 9.5pt;">
+            <div><span style="font-size: 8pt; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Podjetje:</span><strong>${escapeHtml(client.company_name || '/')}</strong></div>
+            <div><span style="font-size: 8pt; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Kontakt:</span><strong>${escapeHtml(client.contact_person || '/')}</strong></div>
+            <div><span style="font-size: 8pt; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">E-pošta:</span><strong>${escapeHtml(client.email || '/')}</strong></div>
+            <div><span style="font-size: 8pt; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Splet / omrežja:</span><strong>${escapeHtml(client.website || '/')}</strong></div>
+          </div>
+
+          ${qItems.length > 0 ? qItems.join('') : '<p style="color: #64748b; text-align: center; padding: 20px;">Naročnik še ni vnesel nobenih odgovorov.</p>'}
+
+          <div style="margin-top: 24px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #94a3b8; text-align: center;">
+            Superadmin Portal • Marketinška Strategija • ${escapeHtml(client.company_name || '')}
+          </div>
+        </div>
+      `;
+
+      window.print();
+    }
+
+    // Helper functions
+    function formatDateTime(isoStr) {
+      if (!isoStr) return '/';
+      try {
+        const d = new Date(isoStr);
+        return d.toLocaleDateString('sl-SI', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch (e) {
+        return isoStr;
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      if (toast && toastMsg) {
+        toastMsg.innerText = msg;
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        setTimeout(() => {
+          toast.classList.add('translate-y-20', 'opacity-0');
+        }, 2800);
+      }
+    }
+  </script>
+</body>
+</html>
