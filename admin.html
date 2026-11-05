@@ -6304,22 +6304,11 @@
                   <span class="text-[10px] text-slate-500 font-mono">1 → 4</span>
                 </div>
 
-                <!-- 1. OSNOVA -->
-                <div class="space-y-1.5 p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                  <div class="flex items-center gap-2 font-bold text-slate-200">
-                    <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-[10px] font-mono">1</span>
-                    <span>Naslov & Vsebinski steber</span>
-                  </div>
-                  <p class="text-[11px] text-slate-400 pl-7 leading-relaxed">
-                    1 video = 1 ključna rešitev. Določite format in steber naročnika, da sledite mesečni strategiji.
-                  </p>
-                </div>
-
-                <!-- 2. HOOK -->
+                <!-- 1. HOOK -->
                 <div class="space-y-1.5 p-3 rounded-2xl bg-slate-950/60 border border-amber-500/20">
                   <div class="flex items-center gap-2 font-bold text-amber-400">
-                    <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center text-[10px] font-mono font-bold">2</span>
-                    <span>1. Faza: HOOK (0–3 sekunde)</span>
+                    <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center text-[10px] font-mono font-bold">1</span>
+                    <span>Faza: HOOK (0–3 sekunde)</span>
                   </div>
                   <p class="text-[11px] text-slate-300 pl-7 leading-relaxed">
                     <strong>Stop-scroll moment:</strong> Brez uvodnih pozdravov!
@@ -6330,11 +6319,11 @@
                   </ul>
                 </div>
 
-                <!-- 3. JEDRO -->
+                <!-- 2. JEDRO -->
                 <div class="space-y-1.5 p-3 rounded-2xl bg-slate-950/60 border border-indigo-500/20">
                   <div class="flex items-center gap-2 font-bold text-indigo-400">
-                    <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 flex items-center justify-center text-[10px] font-mono font-bold">3</span>
-                    <span>2. Faza: JEDRO & VREDNOST</span>
+                    <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 flex items-center justify-center text-[10px] font-mono font-bold">2</span>
+                    <span>Faza: JEDRO & VREDNOST</span>
                   </div>
                   <p class="text-[11px] text-slate-300 pl-7 leading-relaxed">
                     Zgodba in postopek rešitve v 3–4 točkah:
@@ -6345,22 +6334,22 @@
                   </ul>
                 </div>
 
-                <!-- 4. CTA -->
+                <!-- 3. CTA -->
                 <div class="space-y-1.5 p-3 rounded-2xl bg-slate-950/60 border border-emerald-500/20">
                   <div class="flex items-center gap-2 font-bold text-emerald-400">
-                    <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-[10px] font-mono font-bold">4</span>
-                    <span>3. Faza: POZIV K DEJANJU (CTA)</span>
+                    <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-[10px] font-mono font-bold">3</span>
+                    <span>Faza: POZIV K DEJANJU (CTA)</span>
                   </div>
                   <p class="text-[11px] text-slate-400 pl-7 leading-relaxed">
                     En sam klic k akciji: npr. <em>"Shrani za naslednjo peko"</em> ali <em>"Napiši KVAS v komentar"</em>.
                   </p>
                 </div>
 
-                <!-- 5. PRODUKCIJA -->
+                <!-- 4. PRODUKCIJA -->
                 <div class="space-y-1.5 p-3 rounded-2xl bg-slate-950/60 border border-slate-800">
                   <div class="flex items-center gap-2 font-bold text-slate-300">
-                    <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-[10px] font-mono">5</span>
-                    <span>4. Faza: SNEMANJE & OPREMA</span>
+                    <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-[10px] font-mono">4</span>
+                    <span>Faza: SNEMANJE & OPREMA</span>
                   </div>
                   <p class="text-[11px] text-slate-400 pl-7 leading-relaxed">
                     Čista naravna svetloba, brezžični mikrofon, rekviziti in dinamični rumeni podnapisi.
@@ -6382,7 +6371,10 @@
 
                   <!-- 1. KORAK: NASLOV SCENARIJA -->
                   <div class="space-y-3 pb-5 border-b border-slate-800">
-                    <input id="spTitle" type="text" required value="${escapeHtml(sTitle)}" placeholder="Vpišite naslov scenarija (npr. 3 napake pri pripravi kvasa)..." class="w-full bg-transparent border-b border-slate-800 focus:border-indigo-500 pb-2 text-xl sm:text-2xl font-black text-white placeholder-slate-600 focus:outline-none transition">
+                    <div>
+                      <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Naslov scenarija</label>
+                      <input id="spTitle" type="text" required value="${escapeHtml(sTitle)}" placeholder="" class="w-full bg-transparent border-b border-slate-800 focus:border-indigo-500 pb-2 text-xl sm:text-2xl font-black text-white placeholder-slate-600 focus:outline-none transition">
+                    </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
                       <div>
@@ -6418,7 +6410,8 @@
                     </div>
 
                     <div class="pt-1">
-                      <input id="spCoreMessage" type="text" value="${escapeHtml(sCoreMessage)}" placeholder="Ključno sporočilo (Takeaway za gledalca)..." class="w-full bg-slate-950 border border-slate-800/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                      <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Ključno sporočilo (Takeaway za gledalca)</label>
+                      <input id="spCoreMessage" type="text" value="${escapeHtml(sCoreMessage)}" placeholder="" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                     </div>
                   </div>
 
@@ -6426,7 +6419,7 @@
                   <div class="space-y-3 p-4 rounded-2xl bg-slate-950/60 border border-amber-500/25">
                     <div class="flex items-center justify-between">
                       <span class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
-                        <i data-lucide="zap" class="w-4 h-4"></i> 1. Faza: HOOK (0–3 sekunde)
+                        <i data-lucide="zap" class="w-4 h-4"></i> Faza: HOOK (0–3 sekunde)
                       </span>
                       <span class="text-[10px] text-amber-400/80 font-mono">Ustavitev drsenja</span>
                     </div>
@@ -6434,11 +6427,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                       <div>
                         <label class="block font-semibold text-slate-300 mb-1">Verbalni hook (Govor & tekst na ekranu)</label>
-                        <textarea id="spHookVerbal" rows="3" placeholder="Npr. 'Če se ti kruh po peki vedno posede, delaš to napako...'">${escapeHtml(sHookVerbal)}</textarea>
+                        <textarea id="spHookVerbal" rows="3" placeholder="">${escapeHtml(sHookVerbal)}</textarea>
                       </div>
                       <div>
                         <label class="block font-semibold text-slate-300 mb-1">Vizualni hook (Kaj se vidi v 1. sekundi)</label>
-                        <textarea id="spHookVisual" rows="3" placeholder="Npr. Zvok hrustanja skorje, hiter prerez toplega hlebca s paro...">${escapeHtml(sHookVisual)}</textarea>
+                        <textarea id="spHookVisual" rows="3" placeholder="">${escapeHtml(sHookVisual)}</textarea>
                       </div>
                     </div>
                   </div>
@@ -6447,7 +6440,7 @@
                   <div class="space-y-3 p-4 rounded-2xl bg-slate-950/60 border border-indigo-500/25">
                     <div class="flex items-center justify-between">
                       <span class="text-xs font-black text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-                        <i data-lucide="play-circle" class="w-4 h-4"></i> 2. Faza: JEDRO & VREDNOST
+                        <i data-lucide="play-circle" class="w-4 h-4"></i> Faza: JEDRO & VREDNOST
                       </span>
                       <span class="text-[10px] text-indigo-300 font-mono">Kadri in govor</span>
                     </div>
@@ -6455,11 +6448,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                       <div>
                         <label class="block font-semibold text-slate-300 mb-1">Vizualni potek (Snemalna knjiga / Kadri)</label>
-                        <textarea id="spBodyVisual" rows="8" placeholder="Kader 1: Merjenje temperature z digitalnim termometrom&#10;Kader 2: Dodajanje sladkorja in penjenje kvasa&#10;Kader 3: Zamesitev testa&#10;Kader 4: Končni prerez zlatega hlebca...">${escapeHtml(sBodyVisual)}</textarea>
+                        <textarea id="spBodyVisual" rows="8" placeholder="">${escapeHtml(sBodyVisual)}</textarea>
                       </div>
                       <div>
                         <label class="block font-semibold text-slate-300 mb-1">Govorno besedilo (Voiceover / Govor v kamero)</label>
-                        <textarea id="spBodyAudio" rows="8" placeholder="1. točka: Večina meni, da bolj ko je voda topla, hitreje bo testo vzhajalo. Napaka!&#10;2. točka: Kvasovke odmrejo že pri 42 stopinjah. Voda mora biti prijetno mlačna (35–38°C).&#10;3. točka: Vedno dodajte pol žličke sladkorja za hrano kvasovkam...">${escapeHtml(sBodyAudio)}</textarea>
+                        <textarea id="spBodyAudio" rows="8" placeholder="">${escapeHtml(sBodyAudio)}</textarea>
                       </div>
                     </div>
                   </div>
@@ -6468,13 +6461,14 @@
                   <div class="space-y-3 p-4 rounded-2xl bg-slate-950/60 border border-emerald-500/25">
                     <div class="flex items-center justify-between">
                       <span class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2">
-                        <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i> 3. Faza: CALL TO ACTION (CTA)
+                        <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i> Faza: CALL TO ACTION (CTA)
                       </span>
                       <span class="text-[10px] text-emerald-300 font-mono">En sam poziv</span>
                     </div>
 
                     <div class="text-xs">
-                      <textarea id="spCta" rows="2" placeholder="Npr. 'Shrani ta recept za naslednji vikend in v komentar napiši 'KVAS', če želiš naš brezplačen vodnik za peko!'">${escapeHtml(sCta)}</textarea>
+                      <label class="block font-semibold text-slate-300 mb-1">Poziv k dejanju (CTA)</label>
+                      <textarea id="spCta" rows="2" placeholder="">${escapeHtml(sCta)}</textarea>
                     </div>
                   </div>
 
@@ -6482,23 +6476,27 @@
                   <div class="space-y-3 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
                     <div class="flex items-center justify-between">
                       <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <i data-lucide="sliders" class="w-4 h-4 text-purple-400"></i> 4. Faza: Tehnična navodila za snemanje
+                        <i data-lucide="sliders" class="w-4 h-4 text-purple-400"></i> Faza: Tehnična navodila za snemanje
                       </span>
                       <span class="text-[10px] text-slate-500">Za snemalca</span>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       <div>
-                        <input id="spLocation" type="text" value="${escapeHtml(sLocation)}" placeholder="Lokacija & Osvetlitev (npr. Kuhinjski otok, svetloba iz leve)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none">
+                        <label class="block font-semibold text-slate-300 mb-1">Lokacija & Osvetlitev</label>
+                        <input id="spLocation" type="text" value="${escapeHtml(sLocation)}" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none">
                       </div>
                       <div>
-                        <input id="spAudio" type="text" value="${escapeHtml(sAudio)}" placeholder="Zvok & Glasba (npr. Brezžični mikrofon, poudarjen ASMR)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none">
+                        <label class="block font-semibold text-slate-300 mb-1">Zvok & Glasba</label>
+                        <input id="spAudio" type="text" value="${escapeHtml(sAudio)}" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none">
                       </div>
                       <div>
-                        <input id="spProps" type="text" value="${escapeHtml(sProps)}" placeholder="Rekviziti & Izdelki (npr. Termometer, svež kruh)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none">
+                        <label class="block font-semibold text-slate-300 mb-1">Rekviziti & Izdelki</label>
+                        <input id="spProps" type="text" value="${escapeHtml(sProps)}" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none">
                       </div>
                       <div>
-                        <input id="spEditing" type="text" value="${escapeHtml(sEditing)}" placeholder="Montaža & Podnapisi (npr. Dinamični rumeni podnapisi)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none">
+                        <label class="block font-semibold text-slate-300 mb-1">Montaža & Podnapisi</label>
+                        <input id="spEditing" type="text" value="${escapeHtml(sEditing)}" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none">
                       </div>
                     </div>
                   </div>
