@@ -186,15 +186,6 @@
         <span class="text-slate-400">Delovni prostor:</span>
         <span id="breadcrumbClientName" class="font-bold text-white bg-indigo-900/60 px-2 py-0.5 rounded-md border border-indigo-500/30 truncate max-w-xs">Ime naročnika</span>
       </div>
-
-      <div class="flex items-center gap-3">
-        <span id="autoSaveIndicator" class="text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-          <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Vsi podatki shranjeni v bazi
-        </span>
-        <button onclick="saveCurrentWorkspace(true)" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-lg transition active:scale-95">
-          <i data-lucide="save" class="w-3 h-3"></i> Shrani zdaj
-        </button>
-      </div>
     </div>
   </div>
 
@@ -2504,6 +2495,16 @@
     function switchWorkspaceTab(tabName) {
       activeWorkspaceTab = tabName;
       
+      // Hero naročnika je viden SAMO v operativnem pregledu (overview)
+      const headerContainer = document.getElementById('workspaceHeaderContainer');
+      if (headerContainer) {
+        if (activeWorkspaceTab === 'overview') {
+          headerContainer.classList.remove('hidden');
+        } else {
+          headerContainer.classList.add('hidden');
+        }
+      }
+
       const client = clients.find(c => c.id === currentClientId);
       if (client) {
         updateWorkspaceTodoStatus(client);
