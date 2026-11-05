@@ -525,193 +525,190 @@
         <!-- Injected dynamically by JS -->
       </div>
 
-      <!-- Workspace 2-Column Workflow Layout: Left To-Do Steps Sidebar + Right Tab Content -->
-      <div class="flex flex-col lg:flex-row items-start gap-6">
+      <!-- Workspace Full-Width Content Layout -->
+      <div class="w-full">
+        <!-- Workspace Dynamic Active Section Content -->
+        <div id="workspaceTabContent" class="w-full space-y-6">
+          <!-- Rendered dynamically by switchWorkspaceTab() -->
+        </div>
+      </div>
 
-        <!-- LEFT SIDEBAR: TO-DO LIST PO KORAKIH (Sticky Workflow Menu) -->
-        <aside id="workspaceSidebar" class="w-full lg:w-80 xl:w-84 shrink-0 lg:sticky lg:top-20 space-y-4">
-          
-          <!-- To-Do Card -->
-          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-4 sm:p-5 shadow-xl">
+      <!-- SLIDE-OVER DRAWER: POTEK DELA (STRATEGIJA TO-DO) -->
+      <div id="workspaceTodoDrawerOverlay" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm hidden transition-opacity duration-300" onclick="toggleWorkspaceTodoDrawer(false)">
+        <div class="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10" onclick="event.stopPropagation()">
+          <aside id="workspaceSidebar" class="w-screen max-w-md bg-slate-900 border-l border-slate-800 p-5 sm:p-6 flex flex-col justify-between shadow-2xl overflow-y-auto">
             
-            <!-- Sidebar Header with Progress -->
-            <div class="pb-3.5 mb-3 border-b border-slate-800">
-              <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="space-y-4">
+              <!-- Drawer Header with close button -->
+              <div class="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center shrink-0">
                     <i data-lucide="check-square" class="w-4 h-4"></i>
                   </div>
                   <div>
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Potek dela (To-Do)</h3>
-                    <p class="text-[10px] text-slate-400">9 korakov strategije</p>
+                    <p class="text-[10px] text-slate-400">8 korakov priprave strategije</p>
                   </div>
                 </div>
-                <span id="wsTodoOverallCount" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
-                  0/9 opravljeno
-                </span>
+                <button type="button" onclick="toggleWorkspaceTodoDrawer(false)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
               </div>
 
-              <!-- Mini Progress Bar -->
-              <div class="mt-2.5 bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-800 p-0.5">
-                <div id="wsTodoProgressBar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 10%;"></div>
+              <!-- Progress Bar -->
+              <div class="pb-3 border-b border-slate-800">
+                <div class="flex items-center justify-between text-[11px] mb-1.5 font-medium">
+                  <span class="text-slate-400">Skupni napredek</span>
+                  <span id="wsTodoOverallCount" class="font-bold text-indigo-300">0/8 opravljeno</span>
+                </div>
+                <div class="bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800 p-0.5">
+                  <div id="wsTodoProgressBar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 10%;"></div>
+                </div>
+                <div class="flex justify-end mt-1 text-[10px] text-slate-400 font-bold">
+                  <span id="wsTodoProgressPercent">0%</span>
+                </div>
               </div>
-              <div class="flex items-center justify-between text-[10px] text-slate-400 mt-1.5 font-medium">
-                <span>Skupni napredek</span>
-                <span id="wsTodoProgressPercent" class="font-bold text-white">0%</span>
+
+              <!-- Steps List (Vertical To-Do List Ordered From Top to Bottom) -->
+              <nav class="space-y-1.5" aria-label="Koraki strategije">
+                
+                <!-- Korak 1: Spoznavanje znamke -->
+                <button onclick="switchWorkspaceTabAndCloseDrawer('discovery')" id="wsTabBtn-discovery" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                  <div id="wsTodoCheck-discovery" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                    <span>1</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs font-bold block truncate ws-step-title">1. Spoznavanje znamke</span>
+                      <span id="wsBadge-discovery" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-950 border border-indigo-500/30 text-indigo-300">0/20</span>
+                    </div>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Vprašalnik naročnika</span>
+                  </div>
+                </button>
+
+                <!-- Korak 2: Tržna raziskava -->
+                <button onclick="switchWorkspaceTabAndCloseDrawer('research')" id="wsTabBtn-research" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                  <div id="wsTodoCheck-research" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                    <span>2</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs font-bold block truncate ws-step-title">2. Tržna raziskava</span>
+                      <span id="wsBadge-research" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                    </div>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Trg, publika & konkurenca</span>
+                  </div>
+                </button>
+
+                <!-- Korak 3: Strategija znamke -->
+                <button onclick="switchWorkspaceTabAndCloseDrawer('brand_strategy')" id="wsTabBtn-brand_strategy" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                  <div id="wsTodoCheck-brand_strategy" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                    <span>3</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs font-bold block truncate ws-step-title">3. Strategija znamke</span>
+                      <span id="wsBadge-brand_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                    </div>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Pozicioniranje, ton & USP</span>
+                  </div>
+                </button>
+
+                <!-- Korak 4: Strategija omrežij -->
+                <button onclick="switchWorkspaceTabAndCloseDrawer('social_strategy')" id="wsTabBtn-social_strategy" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                  <div id="wsTodoCheck-social_strategy" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                    <span>4</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs font-bold block truncate ws-step-title">4. Strategija omrežij</span>
+                      <span id="wsBadge-social_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                    </div>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Kanali, cilji & taktika</span>
+                  </div>
+                </button>
+
+                <!-- Korak 5: Vsebinska strategija -->
+                <button onclick="switchWorkspaceTabAndCloseDrawer('content_strategy')" id="wsTabBtn-content_strategy" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                  <div id="wsTodoCheck-content_strategy" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                    <span>5</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs font-bold block truncate ws-step-title">5. Vsebinska strategija</span>
+                      <span id="wsBadge-content_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                    </div>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Vsebinski stebri & formati</span>
+                  </div>
+                </button>
+
+                <!-- Korak 6: Smernice produkcije -->
+                <button onclick="switchWorkspaceTabAndCloseDrawer('production_guidelines')" id="wsTabBtn-production_guidelines" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                  <div id="wsTodoCheck-production_guidelines" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                    <span>6</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs font-bold block truncate ws-step-title">6. Smernice produkcije</span>
+                      <span id="wsBadge-production_guidelines" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                    </div>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Snemanje, video & copy vodnik</span>
+                  </div>
+                </button>
+
+                <!-- Korak 7: Koledar objav -->
+                <button onclick="switchWorkspaceTabAndCloseDrawer('client_calendar')" id="wsTabBtn-client_calendar" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                  <div id="wsTodoCheck-client_calendar" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                    <span>7</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs font-bold block truncate ws-step-title">7. Koledar objav</span>
+                      <span id="wsBadge-calendar" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300">0</span>
+                    </div>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Mesečni načrt & statusi</span>
+                  </div>
+                </button>
+
+                <!-- Korak 8: Uspešnost -->
+                <button onclick="switchWorkspaceTabAndCloseDrawer('performance')" id="wsTabBtn-performance" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
+                  <div id="wsTodoCheck-performance" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
+                    <span>8</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-xs font-bold block truncate ws-step-title">8. Uspešnost</span>
+                      <span id="wsBadge-performance" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
+                    </div>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Analitika, rezultati & KPI</span>
+                  </div>
+                </button>
+
+              </nav>
+
+              <!-- Quick Tip / Workflow Helper Card -->
+              <div class="bg-gradient-to-br from-indigo-950/40 to-slate-900/80 border border-indigo-500/20 rounded-2xl p-4">
+                <div class="flex items-center gap-2 mb-1.5 text-indigo-300">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                  <span class="text-xs font-bold">Priporočen naslednji korak</span>
+                </div>
+                <p id="wsTodoNextStepPrompt" class="text-[11px] text-slate-400 leading-relaxed">
+                  Preglejte odgovore vprašalnika in nadaljujte z vnosom tržne raziskave.
+                </p>
               </div>
+
             </div>
 
-            <!-- Steps List (Vertical To-Do List Ordered From Top to Bottom) -->
-            <nav class="space-y-1.5" aria-label="Koraki strategije">
-              
-              <!-- Korak 1: Pregled -->
-              <button onclick="switchWorkspaceTab('overview')" id="wsTabBtn-overview" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
-                <div id="wsTodoCheck-overview" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
-                  <span>1</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="text-xs font-bold block truncate ws-step-title">1. Pregled</span>
-                    <span id="wsBadge-overview" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
-                  </div>
-                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Splošni pregled naročnika</span>
-                </div>
+            <!-- Drawer Footer -->
+            <div class="pt-4 border-t border-slate-800 mt-4">
+              <button type="button" onclick="switchWorkspaceTabAndCloseDrawer('overview')" class="w-full py-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 text-indigo-400"></i>
+                <span>Odpri Operativni pregled</span>
               </button>
-
-              <!-- Korak 2: Spoznavanje znamke -->
-              <button onclick="switchWorkspaceTab('discovery')" id="wsTabBtn-discovery" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
-                <div id="wsTodoCheck-discovery" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
-                  <span>2</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="text-xs font-bold block truncate ws-step-title">2. Spoznavanje znamke</span>
-                    <span id="wsBadge-discovery" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-950 border border-indigo-500/30 text-indigo-300">0/20</span>
-                  </div>
-                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Vprašalnik naročnika</span>
-                </div>
-              </button>
-
-              <!-- Korak 3: Tržna raziskava -->
-              <button onclick="switchWorkspaceTab('research')" id="wsTabBtn-research" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
-                <div id="wsTodoCheck-research" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
-                  <span>3</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="text-xs font-bold block truncate ws-step-title">3. Tržna raziskava</span>
-                    <span id="wsBadge-research" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
-                  </div>
-                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Trg, publika & konkurenca</span>
-                </div>
-              </button>
-
-              <!-- Korak 4: Strategija znamke -->
-              <button onclick="switchWorkspaceTab('brand_strategy')" id="wsTabBtn-brand_strategy" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
-                <div id="wsTodoCheck-brand_strategy" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
-                  <span>4</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="text-xs font-bold block truncate ws-step-title">4. Strategija znamke</span>
-                    <span id="wsBadge-brand_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
-                  </div>
-                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Pozicioniranje, ton & USP</span>
-                </div>
-              </button>
-
-              <!-- Korak 5: Strategija omrežij -->
-              <button onclick="switchWorkspaceTab('social_strategy')" id="wsTabBtn-social_strategy" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
-                <div id="wsTodoCheck-social_strategy" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
-                  <span>5</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="text-xs font-bold block truncate ws-step-title">5. Strategija omrežij</span>
-                    <span id="wsBadge-social_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
-                  </div>
-                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Kanali, cilji & taktika</span>
-                </div>
-              </button>
-
-              <!-- Korak 6: Vsebinska strategija -->
-              <button onclick="switchWorkspaceTab('content_strategy')" id="wsTabBtn-content_strategy" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
-                <div id="wsTodoCheck-content_strategy" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
-                  <span>6</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="text-xs font-bold block truncate ws-step-title">6. Vsebinska strategija</span>
-                    <span id="wsBadge-content_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
-                  </div>
-                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Vsebinski stebri & formati</span>
-                </div>
-              </button>
-
-              <!-- Korak 7: Smernice produkcije -->
-              <button onclick="switchWorkspaceTab('production_guidelines')" id="wsTabBtn-production_guidelines" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
-                <div id="wsTodoCheck-production_guidelines" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
-                  <span>7</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="text-xs font-bold block truncate ws-step-title">7. Smernice produkcije</span>
-                    <span id="wsBadge-production_guidelines" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
-                  </div>
-                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Snemanje, video & copy vodnik</span>
-                </div>
-              </button>
-
-              <!-- Korak 8: Koledar objav -->
-              <button onclick="switchWorkspaceTab('client_calendar')" id="wsTabBtn-client_calendar" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
-                <div id="wsTodoCheck-client_calendar" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
-                  <span>8</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="text-xs font-bold block truncate ws-step-title">8. Koledar objav</span>
-                    <span id="wsBadge-calendar" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300">0</span>
-                  </div>
-                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Mesečni načrt & statusi</span>
-                </div>
-              </button>
-
-              <!-- Korak 9: Uspešnost -->
-              <button onclick="switchWorkspaceTab('performance')" id="wsTabBtn-performance" type="button" class="ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3">
-                <div id="wsTodoCheck-performance" class="ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all">
-                  <span>9</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-1">
-                    <span class="text-xs font-bold block truncate ws-step-title">9. Uspešnost</span>
-                    <span id="wsBadge-performance" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
-                  </div>
-                  <span class="text-[11px] block truncate ws-step-sub text-slate-400">Analitika, rezultati & KPI</span>
-                </div>
-              </button>
-
-            </nav>
-
-          </div>
-
-          <!-- Quick Tip / Workflow Helper Card -->
-          <div class="bg-gradient-to-br from-indigo-950/40 to-slate-900/80 border border-indigo-500/20 rounded-3xl p-4 hidden sm:block">
-            <div class="flex items-center gap-2 mb-1.5 text-indigo-300">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-              <span class="text-xs font-bold">Priporočen naslednji korak</span>
             </div>
-            <p id="wsTodoNextStepPrompt" class="text-[11px] text-slate-400 leading-relaxed">
-              Preglejte odgovore vprašalnika in nadaljujte z vnosom tržne raziskave.
-            </p>
-          </div>
 
-        </aside>
-
-        <!-- Workspace Dynamic Active Section Content -->
-        <div id="workspaceTabContent" class="flex-1 min-w-0 space-y-6">
-          <!-- Rendered dynamically by switchWorkspaceTab() -->
+          </aside>
         </div>
-
       </div>
 
     </section>
@@ -992,6 +989,104 @@
     </div>
   </div>
 
+  <!-- MODAL: ADD SWIPE FILE ITEM (PRIMER OBJAVE) -->
+  <div id="addSwipeModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="bookmark" class="w-4 h-4 text-amber-400"></i> Dodaj primer objave (Swipe File)
+        </h3>
+        <button onclick="closeAddSwipeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="addSwipeForm" onsubmit="handleSaveSwipeItem(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="swipeModalClientId">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Naslov / Ideja primera *</label>
+          <input type="text" id="swipeModalTitle" required placeholder="Npr. Test hrustljavosti z mikrofonom (ASMR)" class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Povezava do objave (URL)</label>
+          <input type="url" id="swipeModalUrl" placeholder="https://www.instagram.com/reel/... ali TikTok povezava" class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Format vsebine</label>
+          <select id="swipeModalFormat" class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none transition">
+            <option value="Reels / Kratek video (9:16)">Reels / Kratek video (9:16)</option>
+            <option value="Vrtiljak (Carousel)">Vrtiljak (Carousel)</option>
+            <option value="Fotografija / Grafika">Fotografija / Grafika</option>
+            <option value="Zgodba (Story)">Zgodba (Story)</option>
+            <option value="Članek / Tekst">Članek / Tekst</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Zakaj nam je všeč / Navodilo za izvedbo</label>
+          <textarea id="swipeModalNotes" rows="3" placeholder="Zapišite kratek opomnik, zakaj ta objava deluje in kako jo prilagoditi za naročnika..." class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-600 focus:outline-none transition"></textarea>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeAddSwipeModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition">
+            Prekliči
+          </button>
+          <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition shadow-md">
+            Shrani primer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT RESOURCE LINKS (GRADIVA & POVEZAVE) -->
+  <div id="resourceLinksModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="folder-git-2" class="w-4 h-4 text-purple-400"></i> Povezave do gradiv naročnika
+        </h3>
+        <button onclick="closeResourceLinksModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="resourceLinksForm" onsubmit="handleSaveResourceLinks(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="resourceLinksClientId">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+            <i data-lucide="hard-drive" class="w-3.5 h-3.5 text-emerald-400"></i> Google Drive / Dropbox mapa
+          </label>
+          <input type="url" id="rlDrive" placeholder="https://drive.google.com/..." class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+            <i data-lucide="palette" class="w-3.5 h-3.5 text-sky-400"></i> Canva / Figma predloge
+          </label>
+          <input type="url" id="rlCanva" placeholder="https://www.canva.com/..." class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+            <i data-lucide="instagram" class="w-3.5 h-3.5 text-pink-400"></i> Instagram profil URL
+          </label>
+          <input type="url" id="rlInstagram" placeholder="https://instagram.com/..." class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+            <i data-lucide="video" class="w-3.5 h-3.5 text-cyan-400"></i> TikTok profil URL
+          </label>
+          <input type="url" id="rlTiktok" placeholder="https://tiktok.com/@..." class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeResourceLinksModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition">
+            Prekliči
+          </button>
+          <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition shadow-md">
+            Shrani povezave
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: ADD / EDIT CONTENT POST (PLANIRANJE OBJAVE) -->
   <div id="postModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl text-slate-100">
@@ -1229,6 +1324,14 @@
           openClientWorkspace(urlClientId);
         }
       }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          toggleWorkspaceTodoDrawer(false);
+          closeAddSwipeModal();
+          closeResourceLinksModal();
+        }
+      });
     });
 
     // -------------------------------------------------------------
@@ -2164,7 +2267,28 @@
       switchTopTab('clients');
     }
 
-    // Update the vertical To-Do sidebar status, checkmarks, counters and active step
+    // Slide-over Drawer controls for Workspace To-Do List
+    function toggleWorkspaceTodoDrawer(force) {
+      const overlay = document.getElementById('workspaceTodoDrawerOverlay');
+      if (!overlay) return;
+      const isHidden = overlay.classList.contains('hidden');
+      const shouldOpen = (typeof force === 'boolean') ? force : isHidden;
+
+      if (shouldOpen) {
+        overlay.classList.remove('hidden');
+        const sidebar = document.getElementById('workspaceSidebar');
+        if (sidebar && window.lucide) lucide.createIcons({ root: sidebar });
+      } else {
+        overlay.classList.add('hidden');
+      }
+    }
+
+    function switchWorkspaceTabAndCloseDrawer(tabKey) {
+      switchWorkspaceTab(tabKey);
+      toggleWorkspaceTodoDrawer(false);
+    }
+
+    // Update the To-Do drawer status, checkmarks, counters and active step (8 strategic steps)
     function updateWorkspaceTodoStatus(client) {
       if (!client) return;
       const crm = client.crm || {};
@@ -2181,15 +2305,8 @@
 
       const steps = [
         {
-          id: 'overview',
-          num: 1,
-          completed: true,
-          badgeText: 'Pripravljeno',
-          badgeClass: 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30'
-        },
-        {
           id: 'discovery',
-          num: 2,
+          num: 1,
           completed: stats.answeredCount === 20,
           badgeText: `${stats.answeredCount}/20`,
           badgeClass: stats.answeredCount === 20 
@@ -2198,7 +2315,7 @@
         },
         {
           id: 'research',
-          num: 3,
+          num: 2,
           completed: isResearchDone,
           badgeText: (crm.market_research?.competitors?.length > 0) ? `${crm.market_research.competitors.length} konk.` : (isResearchDone ? 'Opravljeno' : 'Čaka'),
           badgeClass: isResearchDone 
@@ -2207,7 +2324,7 @@
         },
         {
           id: 'brand_strategy',
-          num: 4,
+          num: 3,
           completed: isBrandDone,
           badgeText: isBrandDone ? 'Opravljeno' : 'Čaka',
           badgeClass: isBrandDone
@@ -2216,7 +2333,7 @@
         },
         {
           id: 'social_strategy',
-          num: 5,
+          num: 4,
           completed: isSocialDone,
           badgeText: (crm.social_media_strategy?.platforms?.length > 0) ? `${crm.social_media_strategy.platforms.length} omrežij` : (isSocialDone ? 'Opravljeno' : 'Čaka'),
           badgeClass: isSocialDone
@@ -2225,7 +2342,7 @@
         },
         {
           id: 'content_strategy',
-          num: 6,
+          num: 5,
           completed: isContentDone,
           badgeText: (crm.content_strategy?.content_pillars?.length > 0) ? `${crm.content_strategy.content_pillars.length} stebrov` : (isContentDone ? 'Opravljeno' : 'Čaka'),
           badgeClass: isContentDone
@@ -2234,7 +2351,7 @@
         },
         {
           id: 'production_guidelines',
-          num: 7,
+          num: 6,
           completed: isProductionDone,
           badgeText: isProductionDone ? 'Opravljeno' : 'Čaka',
           badgeClass: isProductionDone
@@ -2243,16 +2360,16 @@
         },
         {
           id: 'client_calendar',
-          num: 8,
+          num: 7,
           completed: isCalendarDone,
           badgeText: `${postsCount} objav`,
           badgeClass: isCalendarDone 
-            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
             : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
         },
         {
           id: 'performance',
-          num: 9,
+          num: 8,
           completed: isPerformanceDone,
           badgeText: isPerformanceDone ? 'Aktivno' : 'KPI',
           badgeClass: isPerformanceDone
@@ -2311,7 +2428,9 @@
 
       const overallPercent = Math.round((completedCount / steps.length) * 100);
       const countEl = document.getElementById('wsTodoOverallCount');
-      if (countEl) countEl.innerText = `${completedCount}/9 opravljeno`;
+      if (countEl) countEl.innerText = `${completedCount}/8 opravljeno`;
+      const triggerBadge = document.getElementById('wsTodoTriggerBadge');
+      if (triggerBadge) triggerBadge.innerText = `${completedCount}/8 opravljeno`;
       const barEl = document.getElementById('wsTodoProgressBar');
       if (barEl) barEl.style.width = `${Math.max(10, overallPercent)}%`;
       const percentEl = document.getElementById('wsTodoProgressPercent');
@@ -2321,19 +2440,19 @@
       const promptEl = document.getElementById('wsTodoNextStepPrompt');
       if (promptEl) {
         if (stats.answeredCount < 20) {
-          promptEl.innerHTML = `Naročnik je odgovoril na <strong class="text-white">${stats.answeredCount}/20</strong> vprašanj. Dopolnite vprašalnik v <strong>2. Spoznavanje znamke</strong>.`;
+          promptEl.innerHTML = `Naročnik je odgovoril na <strong class="text-white">${stats.answeredCount}/20</strong> vprašanj. Dopolnite vprašalnik v <strong>1. Spoznavanje znamke</strong>.`;
         } else if (!crm.market_research?.competitors?.length && !crm.market_research?.target_audience?.demographics?.trim()) {
-          promptEl.innerHTML = `Vprašalnik je izpolnjen! Naslednji korak: analizirajte trg in vnesite konkurente v <strong>3. Tržna raziskava</strong>.`;
+          promptEl.innerHTML = `Vprašalnik je izpolnjen! Naslednji korak: analizirajte trg in vnesite konkurente v <strong>2. Tržna raziskava</strong>.`;
         } else if (!crm.brand_strategy?.positioning?.trim() && !crm.brand_strategy?.usp?.trim()) {
-          promptEl.innerHTML = `Nadaljujte z oblikovanjem pozicioniranja in USP v <strong>4. Strategija znamke</strong>.`;
+          promptEl.innerHTML = `Nadaljujte z oblikovanjem pozicioniranja in USP v <strong>3. Strategija znamke</strong>.`;
         } else if (!crm.social_media_strategy?.platforms?.length) {
-          promptEl.innerHTML = `Izberite ključna omrežja in cilje v <strong>5. Strategija omrežij</strong>.`;
+          promptEl.innerHTML = `Izberite ključna omrežja in cilje v <strong>4. Strategija omrežij</strong>.`;
         } else if (!crm.content_strategy?.content_pillars?.length) {
-          promptEl.innerHTML = `Definirajte ključne vsebinske stebre v <strong>6. Vsebinska strategija</strong>.`;
+          promptEl.innerHTML = `Definirajte ključne vsebinske stebre v <strong>5. Vsebinska strategija</strong>.`;
         } else if (!crm.production_guidelines?.rules?.video_style?.trim() && !crm.production_guidelines?.resources?.locations?.trim()) {
-          promptEl.innerHTML = `Določite smernice za snemanje in copy v <strong>7. Smernice produkcije</strong>.`;
+          promptEl.innerHTML = `Določite smernice za snemanje in copy v <strong>6. Smernice produkcije</strong>.`;
         } else if (postsCount === 0) {
-          promptEl.innerHTML = `Strategija je pripravljena! Začnite načrtovati objave v <strong>8. Koledar objav</strong>.`;
+          promptEl.innerHTML = `Strategija je pripravljena! Začnite načrtovati objave v <strong>7. Koledar objav</strong>.`;
         } else {
           promptEl.innerHTML = `Vse faze so aktivne! V koledarju imate <strong class="text-emerald-400">${postsCount} načrtovanih objav</strong>.`;
         }
@@ -2426,6 +2545,13 @@
 
           <!-- Quick Action buttons -->
           <div class="flex flex-wrap items-center gap-2">
+            <button id="wsTodoDrawerTriggerBtn" onclick="toggleWorkspaceTodoDrawer(true)" type="button" class="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-indigo-300 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 rounded-xl transition active:scale-95 shadow-xs">
+              <i data-lucide="check-square" class="w-3.5 h-3.5 text-indigo-400"></i>
+              <span>Potek dela</span>
+              <span id="wsTodoTriggerBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/25 border border-indigo-500/40 text-indigo-200">
+                0/8 opravljeno
+              </span>
+            </button>
             <button onclick="openQuickIdeaModal('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs">
               <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i> Zapiši idejo
             </button>
@@ -2461,35 +2587,69 @@
 
       const container = document.getElementById('workspaceTabContent');
 
+      // Top Back/Breadcrumb Bar on non-overview tabs
+      let backBarHtml = '';
+      if (activeWorkspaceTab !== 'overview') {
+        const tabTitles = {
+          discovery: '1. Spoznavanje znamke',
+          research: '2. Tržna raziskava',
+          brand_strategy: '3. Strategija znamke',
+          social_strategy: '4. Strategija omrežij',
+          content_strategy: '5. Vsebinska strategija',
+          production_guidelines: '6. Smernice produkcije',
+          client_calendar: '7. Koledar objav',
+          performance: '8. Uspešnost'
+        };
+        backBarHtml = `
+          <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-lg mb-2">
+            <div class="flex items-center gap-3">
+              <button type="button" onclick="switchWorkspaceTab('overview')" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 rounded-xl transition active:scale-95 shadow-xs">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5 text-indigo-400"></i> Nazaj na Operativni pregled
+              </button>
+              <span class="text-xs font-bold text-slate-600">/</span>
+              <span class="text-xs font-black text-white">${tabTitles[activeWorkspaceTab] || activeWorkspaceTab}</span>
+            </div>
+            <button type="button" onclick="toggleWorkspaceTodoDrawer(true)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 rounded-xl transition active:scale-95">
+              <i data-lucide="check-square" class="w-3.5 h-3.5 text-indigo-400"></i> Odpri potek dela (To-Do)
+            </button>
+          </div>
+        `;
+      }
+
+      let contentHtml = '';
       switch (activeWorkspaceTab) {
         case 'overview':
-          container.innerHTML = renderWsOverview(client);
+          contentHtml = renderWsOverview(client);
           break;
         case 'discovery':
-          container.innerHTML = renderWsDiscovery(client);
+          contentHtml = renderWsDiscovery(client);
           break;
         case 'research':
-          container.innerHTML = renderWsResearch(client);
+          contentHtml = renderWsResearch(client);
           break;
         case 'brand_strategy':
-          container.innerHTML = renderWsBrandStrategy(client);
+          contentHtml = renderWsBrandStrategy(client);
           break;
         case 'social_strategy':
-          container.innerHTML = renderWsSocialStrategy(client);
+          contentHtml = renderWsSocialStrategy(client);
           break;
         case 'content_strategy':
-          container.innerHTML = renderWsContentStrategy(client);
+          contentHtml = renderWsContentStrategy(client);
           break;
         case 'production_guidelines':
-          container.innerHTML = renderWsProductionGuidelines(client);
+          contentHtml = renderWsProductionGuidelines(client);
           break;
         case 'client_calendar':
-          container.innerHTML = renderWsClientCalendar(client);
+          contentHtml = renderWsClientCalendar(client);
           break;
         case 'performance':
-          container.innerHTML = renderWsPerformance(client);
+          contentHtml = renderWsPerformance(client);
           break;
+        default:
+          contentHtml = renderWsOverview(client);
       }
+
+      container.innerHTML = backBarHtml + contentHtml;
 
       lucide.createIcons({ root: container });
       autoResizeAllTextareas(container);
@@ -2497,173 +2657,627 @@
     }
 
     // -------------------------------------------------------------
-    // WORKSPACE MODULE 1: OVERVIEW
+    // WORKSPACE MODULE: OPERATIVNI PREGLED (COMMAND CENTER)
     // -------------------------------------------------------------
     function renderWsOverview(client) {
       const crm = client.crm || {};
-      const answers = client.answers || {};
-      const fields = answers.fields || {};
-      const chips = answers.chips || {};
       const posts = crm.content_calendar || [];
+      const swipeFile = crm.swipe_file || [];
+      const quickTasks = crm.quick_tasks || [];
+      const resourceLinks = crm.resource_links || {};
+      const promotions = crm.promotions || {
+        focus: '',
+        campaigns: '',
+        priority_products: '',
+        active_offer: ''
+      };
 
-      // Next scheduled posts
-      const upcomingPosts = posts.filter(p => p.date).sort((a,b) => new Date(a.date) - new Date(b.date)).slice(0, 3);
+      // Monthly Quota Calculation for current viewed month
+      const now = new Date();
+      const currentMonthIdx = now.getMonth();
+      const currentYear = now.getFullYear();
+      const currentMonthPosts = posts.filter(p => {
+        if (!p.date) return false;
+        const d = new Date(p.date);
+        return d.getMonth() === currentMonthIdx && d.getFullYear() === currentYear;
+      });
+
+      const plan = crm.social_media_strategy?.content_frequency_plan || {};
+      const WEEKS_PER_MONTH = 4;
+      let totalMonthlyQuota = 0;
+      ['video', 'carousel', 'photo', 'story', 'text'].forEach(k => {
+        const weekly = parseInt(plan[k]?.weekly, 10) || 0;
+        totalMonthlyQuota += (weekly * WEEKS_PER_MONTH);
+      });
+      if (totalMonthlyQuota === 0) totalMonthlyQuota = 16;
+
+      const monthPlannedCount = currentMonthPosts.length;
+      const monthChannelPosts = currentMonthPosts.reduce((acc, p) => {
+        const plats = Array.isArray(p.platforms) && p.platforms.length > 0 ? p.platforms : [p.platform || 'Instagram'];
+        return acc + plats.length;
+      }, 0);
+      const targetChannelQuota = totalMonthlyQuota * 2;
+
+      // Upcoming posts (next 5 posts sorted by date ascending, from today onwards or latest scheduled)
+      const sortedPosts = [...posts].sort((a,b) => new Date(a.date) - new Date(b.date));
+      const todayFloor = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const futurePosts = sortedPosts.filter(p => p.date && new Date(p.date) >= todayFloor);
+      const displayPosts = futurePosts.length > 0 ? futurePosts.slice(0, 5) : sortedPosts.slice(-4);
 
       return `
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          <!-- Left Column (7 cols): Strategic Snapshot -->
-          <div class="lg:col-span-7 space-y-6">
-            
-            <!-- Strategic Pillars Snapshot -->
-            <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl">
-              <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                  <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Aktivni vsebinski stebri
-                </h3>
-                <button onclick="switchWorkspaceTab('content_strategy')" class="text-xs font-bold text-indigo-400 hover:underline">
-                  Uredi stebre →
-                </button>
-              </div>
+        <div class="space-y-6">
 
-              ${(crm.content_strategy?.content_pillars?.length > 0) ? `
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  ${crm.content_strategy.content_pillars.map(p => {
-                    const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === p.key || (p.name && o.name.toLowerCase() === p.name.toLowerCase()));
-                    const pName = opt ? opt.name : (p.name || 'Steber');
-                    return `
-                      <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800">
-                        <div class="flex items-center justify-between gap-2 mb-1">
-                          <h4 class="text-xs font-bold text-white">${escapeHtml(pName)}</h4>
-                          ${p.priority ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${escapeHtml(p.priority)}</span>` : ''}
-                        </div>
-                        <p class="text-[11px] text-slate-400 line-clamp-2">${escapeHtml(p.purpose || p.description || (opt ? opt.desc : 'Ni opisa'))}</p>
-                      </div>
-                    `;
-                  }).join('')}
-                </div>
-              ` : `
-                <div class="py-8 text-center text-slate-500 bg-slate-950/60 rounded-2xl border border-slate-850 p-4">
-                  <p class="text-xs font-semibold text-slate-400">Vsebinski stebri še niso določeni</p>
-                  <p class="text-[11px] text-slate-500 mt-1">Določite 3–5 ključnih vsebinskih stebrov za naročnika.</p>
-                  <button onclick="switchWorkspaceTab('content_strategy')" class="mt-3 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded-xl">
-                    + Definiraj stebre
-                  </button>
-                </div>
-              `}
-            </div>
-
-            <!-- Positioning & Core USP -->
-            <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-              <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                  <i data-lucide="award" class="w-4 h-4 text-emerald-400"></i> Pozicioniranje & USP
-                </h3>
-                <button onclick="switchWorkspaceTab('brand_strategy')" class="text-xs font-bold text-indigo-400 hover:underline">
-                  Uredi strategijo →
-                </button>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Pozicioniranje na trgu</label>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-200">
-                  ${escapeHtml(crm.brand_strategy?.positioning || fields.q1_text || 'Pozicioniranje še ni opredeljeno.')}
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Glavna konkurenčna prednost (USP)</label>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-200">
-                  ${escapeHtml(crm.brand_strategy?.usp || fields.q7_text || 'USP še ni opredeljen.')}
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Ciljna skupina (Persona)</label>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-200">
-                  ${escapeHtml(crm.brand_strategy?.target_audience?.primary || fields.q10_text || 'Ciljna skupina še ni opredeljena.')}
-                </div>
+          <!-- Operational Ribbon (Top KPI & Quick Nav) -->
+          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-4 sm:p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                <span class="text-slate-400 font-medium">Kreirane vsebine (ta mesec):</span>
+                <span class="font-bold ${monthPlannedCount >= totalMonthlyQuota ? 'text-emerald-400' : 'text-indigo-300'}">
+                  ${monthPlannedCount} / ${totalMonthlyQuota}
+                </span>
+                <span class="text-slate-700 font-bold mx-1">|</span>
+                <span class="text-slate-400 font-medium">Objave po kanalih:</span>
+                <span class="font-bold text-emerald-400">
+                  ${monthChannelPosts} / ${targetChannelQuota}
+                </span>
               </div>
             </div>
 
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <button type="button" onclick="openAddPostModal('${client.id}')" class="px-3.5 py-2 font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5 shadow-md active:scale-95">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> + Planiraj objavo
+              </button>
+              <button type="button" onclick="openAddSwipeModal('${client.id}')" class="px-3.5 py-2 font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition flex items-center gap-1.5 shadow-xs active:scale-95">
+                <i data-lucide="bookmark" class="w-3.5 h-3.5 text-amber-400"></i> + Dodaj primer
+              </button>
+              <button type="button" onclick="switchWorkspaceTab('client_calendar')" class="px-3.5 py-2 font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700 flex items-center gap-1.5">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-sky-400"></i> Celoten koledar →
+              </button>
+            </div>
           </div>
 
-          <!-- Right Column (5 cols): Upcoming Tasks & Platforms -->
-          <div class="lg:col-span-5 space-y-6">
-            
-            <!-- Platforms & Frequencies -->
-            <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl">
-              <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                  <i data-lucide="share-2" class="w-4 h-4 text-blue-400"></i> Izbrana omrežja
-                </h3>
-                <button onclick="switchWorkspaceTab('social_strategy')" class="text-xs font-bold text-indigo-400 hover:underline">
-                  Uredi →
-                </button>
-              </div>
+          <!-- Main 2-Column Operational Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-              ${(crm.social_media_strategy?.platforms?.length > 0) ? `
-                <div class="space-y-2">
-                  ${crm.social_media_strategy.platforms.map(plat => `
-                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
-                      <span class="font-bold text-white flex items-center gap-2">
-                        <i data-lucide="${getPlatformIcon(plat.name)}" class="w-3.5 h-3.5 text-indigo-400"></i> ${escapeHtml(plat.name)}
-                      </span>
-                      <span class="text-slate-400 font-medium">${escapeHtml(plat.frequency || '1-3x tedensko')}</span>
+            <!-- LEFT COLUMN (7 cols): Focus/Promotions + Swipe File (Inspiration) -->
+            <div class="lg:col-span-7 space-y-6">
+
+              <!-- CONA 1: KAJ JE POTREBNO PROMOVIRATI (FOKUS & PROMOCIJE) -->
+              <div class="bg-slate-900/90 border border-indigo-500/30 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
+                      <i data-lucide="target" class="w-4 h-4"></i>
                     </div>
-                  `).join('')}
+                    <div>
+                      <h3 class="text-xs font-black uppercase tracking-wider text-white">Trenutni fokus & Promocije</h3>
+                      <p class="text-[11px] text-slate-400">Glavno prodajno in promocijsko sporočilo za ta mesec</p>
+                    </div>
+                  </div>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                    Aktualna kampanja
+                  </span>
                 </div>
-              ` : `
-                <p class="text-xs text-slate-500 py-3 text-center">Ni izbranih omrežij za tega naročnika.</p>
-              `}
-            </div>
 
-            <!-- Upcoming Posts -->
-            <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl">
-              <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                  <i data-lucide="calendar" class="w-4 h-4 text-sky-400"></i> Naslednje načrtovane objave
-                </h3>
-                <button onclick="switchWorkspaceTab('client_calendar')" class="text-xs font-bold text-indigo-400 hover:underline">
-                  Koledar (${posts.length}) →
-                </button>
+                <div class="space-y-3.5 text-xs">
+                  <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      Glavni vsebinski & prodajni fokus
+                    </label>
+                    <input type="text" id="wsPromoFocus" value="${escapeHtml(promotions.focus || '')}" 
+                      onchange="handleSavePromotionsField('focus', this.value)"
+                      placeholder="Vpišite glavni fokus (npr. Predstavitev nove linije kruha z drožmi in vikend ponudba)..."
+                      class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                        Aktivna ponudba / Popust / Koda
+                      </label>
+                      <input type="text" id="wsPromoOffer" value="${escapeHtml(promotions.active_offer || '')}" 
+                        onchange="handleSavePromotionsField('active_offer', this.value)"
+                        placeholder="npr. 15% popust s kodo DROZI15 do konca meseca"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+                    </div>
+                    <div>
+                      <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                        Prioritetni izdelki / Storitve
+                      </label>
+                      <input type="text" id="wsPromoProducts" value="${escapeHtml(promotions.priority_products || '')}" 
+                        onchange="handleSavePromotionsField('priority_products', this.value)"
+                        placeholder="npr. Rženi hlebec, Rogljički, Peka za dogodke"
+                        class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      Podrobnosti kampanje & navodila naročnika
+                    </label>
+                    <textarea id="wsPromoCampaigns" rows="2" 
+                      onchange="handleSavePromotionsField('campaigns', this.value)"
+                      placeholder="Specifične zahteve naročnika, poudarki pri komunikaciji, posebni dogodki ali cilji..."
+                      class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-600 focus:outline-none transition">${escapeHtml(promotions.campaigns || '')}</textarea>
+                  </div>
+                </div>
               </div>
 
-              ${upcomingPosts.length > 0 ? `
-                <div class="space-y-2.5">
-                  ${upcomingPosts.map(p => `
-                    <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
-                      <div class="flex items-center justify-between text-[10px] mb-1">
-                        <span class="text-indigo-400 font-bold">${p.platform || 'IG'}</span>
-                        <span class="text-slate-400 font-mono">${formatDate(p.date)}</span>
+              <!-- CONA 3: SHRAMBA PRIMEROV OBJAV (SWIPE FILE / NAVDIH) -->
+              <div class="bg-slate-900/90 border border-amber-500/25 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                      <i data-lucide="bookmark" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-xs font-black uppercase tracking-wider text-white">Primeri objav & Navdih (Swipe File)</h3>
+                      <p class="text-[11px] text-slate-400">Shranjene reference in ideje za tega naročnika (${swipeFile.length})</p>
+                    </div>
+                  </div>
+                  <button onclick="openAddSwipeModal('${client.id}')" type="button" class="px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition flex items-center gap-1.5 shadow-xs active:scale-95">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Dodaj primer
+                  </button>
+                </div>
+
+                ${swipeFile.length > 0 ? `
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    ${swipeFile.map(item => `
+                      <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col justify-between gap-3 hover:border-slate-700 transition">
+                        <div>
+                          <div class="flex items-center justify-between gap-2 mb-1.5">
+                            <span class="text-xs font-bold text-white truncate">${escapeHtml(item.title || 'Primer objave')}</span>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
+                              ${escapeHtml(item.format || 'Reels')}
+                            </span>
+                          </div>
+                          ${item.notes ? `<p class="text-[11px] text-slate-400 line-clamp-3 mb-2">${escapeHtml(item.notes)}</p>` : ''}
+                          ${item.url ? `
+                            <a href="${escapeHtml(item.url)}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-400 hover:text-sky-300 hover:underline break-all">
+                              <i data-lucide="external-link" class="w-3 h-3 shrink-0"></i> Povezava do objave
+                            </a>
+                          ` : ''}
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-900 gap-2">
+                          <button onclick="convertSwipeToScript('${client.id}', '${item.id}')" type="button" class="px-2.5 py-1 text-[10px] font-bold text-purple-300 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 rounded-lg transition flex items-center gap-1 active:scale-95">
+                            <i data-lucide="clapperboard" class="w-3 h-3"></i> Pretvori v scenarij
+                          </button>
+                          <button onclick="handleDeleteSwipeItem('${client.id}', '${item.id}')" type="button" class="text-slate-500 hover:text-rose-400 p-1 rounded-lg transition" title="Odstrani primer">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                          </button>
+                        </div>
                       </div>
-                      <h5 class="text-xs font-bold text-white truncate">${escapeHtml(p.title)}</h5>
-                    </div>
-                  `).join('')}
+                    `).join('')}
+                  </div>
+                ` : `
+                  <div class="py-8 text-center text-slate-500 bg-slate-950/60 rounded-2xl border border-slate-800/60 p-4">
+                    <i data-lucide="bookmark" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i>
+                    <p class="text-xs font-bold text-slate-300">Ni shranjenih primerov objav</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Ko na Instagramu ali TikToku najdete dober video ali format, ga shranite sem za navdih.</p>
+                    <button onclick="openAddSwipeModal('${client.id}')" class="mt-3 px-3.5 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 rounded-xl hover:bg-amber-500/25 transition">
+                      + Dodaj prvi primer
+                    </button>
+                  </div>
+                `}
+              </div>
+
+              <!-- Internal Agency Notes -->
+              <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 shadow-xl">
+                <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                    <i data-lucide="sticky-note" class="w-4 h-4 text-amber-400"></i> Hitri interni zaznamki
+                  </h3>
+                  <span class="text-[10px] text-slate-500">Avtomatsko shranjevanje</span>
                 </div>
-              ` : `
-                <p class="text-xs text-slate-500 py-4 text-center">Ni prihajajočih načrtovanih objav.</p>
-                <button onclick="openAddPostModal('${client.id}')" class="w-full mt-2 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition">
-                  + Načrtuj prvo objavo
-                </button>
-              `}
+                <textarea oninput="handleAutoSaveCrmField('internal_notes', this.value); handleSmartFieldInput(this);" rows="3" placeholder="Vpišite interne opombe, dogovore ali posebnosti za tega naročnika..." class="smart-field-textarea w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 leading-relaxed resize-none overflow-hidden">${escapeHtml(crm.internal_notes || '')}</textarea>
+              </div>
+
             </div>
 
-            <!-- Internal Agency Notes -->
-            <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 shadow-xl">
-              <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                  <i data-lucide="sticky-note" class="w-4 h-4 text-amber-400"></i> Hitri interni zaznamki
-                </h3>
-                <span class="text-[10px] text-slate-500">Avtomatsko shranjevanje</span>
+            <!-- RIGHT COLUMN (5 cols): Operational Calendar + Quick Tasks + Resources -->
+            <div class="lg:col-span-5 space-y-6">
+
+              <!-- CONA 2: OPERATIVNI KOLEDAR (PRIHAJAJOČE OBJAVE) -->
+              <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center">
+                      <i data-lucide="calendar" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-xs font-black uppercase tracking-wider text-white">Prihajajoče objave</h3>
+                      <p class="text-[11px] text-slate-400">Operativni razpored objav v teku</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button onclick="openAddPostModal('${client.id}')" type="button" class="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition shadow-xs flex items-center gap-1 active:scale-95">
+                      <i data-lucide="plus" class="w-3.5 h-3.5"></i> Planiraj
+                    </button>
+                    <button onclick="switchWorkspaceTab('client_calendar')" type="button" class="px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700 flex items-center gap-1">
+                      Koledar →
+                    </button>
+                  </div>
+                </div>
+
+                ${displayPosts.length > 0 ? `
+                  <div class="space-y-2.5">
+                    ${displayPosts.map(p => {
+                      const fmtInfo = getFormatBadgeInfo(p.format);
+                      const postDate = p.date ? new Date(p.date) : null;
+                      const dateStr = postDate ? `${postDate.toLocaleDateString('sl-SI', { weekday: 'short', day: 'numeric', month: 'short' })} • ${p.time || '18:00'}` : 'Brez datuma';
+                      return `
+                        <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer transition flex items-center justify-between gap-3 group">
+                          <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-2.5 h-2.5 rounded-full ${fmtInfo.dotClass} shrink-0"></div>
+                            <div class="min-w-0">
+                              <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-white group-hover:text-indigo-300 transition truncate">${escapeHtml(p.title || 'Neimenovana objava')}</span>
+                                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${fmtInfo.badgeClass} shrink-0">${fmtInfo.label}</span>
+                              </div>
+                              <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                                <span class="font-mono">${dateStr}</span>
+                                ${p.platform ? `<span>• ${escapeHtml(p.platform)}</span>` : ''}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="shrink-0 flex items-center gap-2">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${getStatusBadgeClass(p.status)}">
+                              ${getStatusLabel(p.status)}
+                            </span>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 group-hover:text-slate-300 transition"></i>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                ` : `
+                  <div class="py-8 text-center text-slate-500 bg-slate-950/60 rounded-2xl border border-slate-800/60 p-4">
+                    <i data-lucide="calendar" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i>
+                    <p class="text-xs font-bold text-slate-300">Ni prihajajočih načrtovanih objav</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Začnite z načrtovanjem naslednjega tedna.</p>
+                    <button onclick="openAddPostModal('${client.id}')" class="mt-3 px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded-xl hover:bg-indigo-500 transition shadow-sm">
+                      + Načrtuj prvo objavo
+                    </button>
+                  </div>
+                `}
               </div>
-              <textarea oninput="handleAutoSaveCrmField('internal_notes', this.value); handleSmartFieldInput(this);" rows="4" placeholder="Vpišite interne opombe, dogovore ali posebnosti za tega naročnika..." class="smart-field-textarea w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 leading-relaxed resize-none overflow-hidden">${escapeHtml(crm.internal_notes || '')}</textarea>
+
+              <!-- CONA 4A: HITRA OPERATIVNA OPRAVILA (QUICK TASKS) -->
+              <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 shadow-xl space-y-3.5">
+                <div class="flex items-center justify-between pb-2.5 border-b border-slate-800">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                      <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-white">Operativna opravila</h3>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-400 font-mono">
+                    ${quickTasks.filter(t => t.completed).length}/${quickTasks.length} opravljeno
+                  </span>
+                </div>
+
+                <!-- Add task input -->
+                <form onsubmit="handleQuickTaskAdd(event, '${client.id}')" class="flex items-center gap-2">
+                  <input type="text" id="wsQuickTaskInput" placeholder="Vpišite novo opravilo in pritisnite Enter..." class="flex-1 bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none transition">
+                  <button type="submit" class="w-8 h-8 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shrink-0 active:scale-95">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                  </button>
+                </form>
+
+                <!-- Task list -->
+                <div class="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+                  ${quickTasks.length > 0 ? quickTasks.map(t => `
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950/80 border border-slate-800/80 group text-xs hover:border-slate-700 transition">
+                      <label class="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1">
+                        <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="handleToggleQuickTask('${client.id}', '${t.id}')" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0">
+                        <span class="truncate ${t.completed ? 'line-through text-slate-500' : 'text-slate-200'}">${escapeHtml(t.text)}</span>
+                      </label>
+                      <button onclick="handleDeleteQuickTask('${client.id}', '${t.id}')" type="button" class="text-slate-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition p-1">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                  `).join('') : `
+                    <p class="text-[11px] text-slate-500 py-3 text-center">Ni odprtih opravil za tega naročnika.</p>
+                  `}
+                </div>
+              </div>
+
+              <!-- CONA 4B: BAZA GRADIV & POVEZAV -->
+              <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 shadow-xl space-y-3.5">
+                <div class="flex items-center justify-between pb-2.5 border-b border-slate-800">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center">
+                      <i data-lucide="folder-git-2" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-white">Baza gradiv & povezav</h3>
+                  </div>
+                  <button onclick="openEditResourceLinksModal('${client.id}')" type="button" class="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition">
+                    Uredi povezave →
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  ${resourceLinks.drive ? `
+                    <a href="${escapeHtml(resourceLinks.drive)}" target="_blank" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-indigo-500/50 flex items-center gap-2 transition group">
+                      <i data-lucide="hard-drive" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                      <span class="font-bold text-white truncate group-hover:text-indigo-300">Google Drive</span>
+                    </a>
+                  ` : `
+                    <button onclick="openEditResourceLinksModal('${client.id}')" class="p-2.5 rounded-xl bg-slate-950/50 border border-dashed border-slate-800 hover:border-slate-700 flex items-center gap-2 text-slate-500 hover:text-slate-300 transition">
+                      <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                      <span class="truncate">+ Drive mapa</span>
+                    </button>
+                  `}
+
+                  ${resourceLinks.canva ? `
+                    <a href="${escapeHtml(resourceLinks.canva)}" target="_blank" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-indigo-500/50 flex items-center gap-2 transition group">
+                      <i data-lucide="palette" class="w-4 h-4 text-sky-400 shrink-0"></i>
+                      <span class="font-bold text-white truncate group-hover:text-indigo-300">Canva / Figma</span>
+                    </a>
+                  ` : `
+                    <button onclick="openEditResourceLinksModal('${client.id}')" class="p-2.5 rounded-xl bg-slate-950/50 border border-dashed border-slate-800 hover:border-slate-700 flex items-center gap-2 text-slate-500 hover:text-slate-300 transition">
+                      <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                      <span class="truncate">+ Canva / Figma</span>
+                    </button>
+                  `}
+
+                  ${resourceLinks.instagram ? `
+                    <a href="${escapeHtml(resourceLinks.instagram)}" target="_blank" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-indigo-500/50 flex items-center gap-2 transition group">
+                      <i data-lucide="instagram" class="w-4 h-4 text-pink-400 shrink-0"></i>
+                      <span class="font-bold text-white truncate group-hover:text-indigo-300">Instagram</span>
+                    </a>
+                  ` : `
+                    <button onclick="openEditResourceLinksModal('${client.id}')" class="p-2.5 rounded-xl bg-slate-950/50 border border-dashed border-slate-800 hover:border-slate-700 flex items-center gap-2 text-slate-500 hover:text-slate-300 transition">
+                      <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                      <span class="truncate">+ Instagram URL</span>
+                    </button>
+                  `}
+
+                  ${resourceLinks.tiktok ? `
+                    <a href="${escapeHtml(resourceLinks.tiktok)}" target="_blank" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-indigo-500/50 flex items-center gap-2 transition group">
+                      <i data-lucide="video" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+                      <span class="font-bold text-white truncate group-hover:text-indigo-300">TikTok</span>
+                    </a>
+                  ` : `
+                    <button onclick="openEditResourceLinksModal('${client.id}')" class="p-2.5 rounded-xl bg-slate-950/50 border border-dashed border-slate-800 hover:border-slate-700 flex items-center gap-2 text-slate-500 hover:text-slate-300 transition">
+                      <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                      <span class="truncate">+ TikTok URL</span>
+                    </button>
+                  `}
+                </div>
+              </div>
+
             </div>
 
           </div>
 
         </div>
       `;
+    }
+
+    // Helper functions for format and status badges
+    function getFormatBadgeInfo(format) {
+      const f = (format || '').toLowerCase();
+      if (f.includes('video') || f.includes('reel')) {
+        return {
+          label: 'Video / Reels',
+          badgeClass: 'bg-emerald-950/70 border-emerald-500/35 text-emerald-300',
+          dotClass: 'bg-emerald-400'
+        };
+      }
+      if (f.includes('carousel') || f.includes('vrtiljak')) {
+        return {
+          label: 'Vrtiljak',
+          badgeClass: 'bg-sky-950/70 border-sky-500/35 text-sky-300',
+          dotClass: 'bg-sky-400'
+        };
+      }
+      if (f.includes('foto') || f.includes('image') || f.includes('grafika')) {
+        return {
+          label: 'Fotografija',
+          badgeClass: 'bg-amber-950/70 border-amber-500/35 text-amber-300',
+          dotClass: 'bg-amber-400'
+        };
+      }
+      if (f.includes('story') || f.includes('zgodba')) {
+        return {
+          label: 'Zgodba',
+          badgeClass: 'bg-rose-950/70 border-rose-500/35 text-rose-300',
+          dotClass: 'bg-rose-400'
+        };
+      }
+      return {
+        label: 'Članek / Tekst',
+        badgeClass: 'bg-purple-950/70 border-purple-500/35 text-purple-300',
+        dotClass: 'bg-purple-400'
+      };
+    }
+
+    function getStatusBadgeClass(status) {
+      switch (status) {
+        case 'published':
+          return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        case 'ready_to_record':
+        case 'recorded':
+          return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
+        case 'in_editing':
+          return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        default:
+          return 'bg-slate-800 text-slate-400 border border-slate-700';
+      }
+    }
+
+    function getStatusLabel(status) {
+      switch (status) {
+        case 'published':
+          return 'Objavljeno';
+        case 'ready_to_record':
+          return 'Za snemanje';
+        case 'recorded':
+          return 'Posneto';
+        case 'in_editing':
+          return 'V montaži';
+        default:
+          return 'Načrtovano';
+      }
+    }
+
+    // Handlers for Promotions and Focus
+    function handleSavePromotionsField(field, value) {
+      const client = clients.find(c => c.id === currentClientId);
+      if (!client) return;
+      if (!client.crm) client.crm = {};
+      if (!client.crm.promotions) client.crm.promotions = {};
+      client.crm.promotions[field] = value;
+      scheduleAutoSave();
+    }
+
+    // Handlers for Swipe File
+    function openAddSwipeModal(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      document.getElementById('swipeModalClientId').value = clientId;
+      document.getElementById('swipeModalTitle').value = '';
+      document.getElementById('swipeModalUrl').value = '';
+      document.getElementById('swipeModalFormat').value = 'Reels / Kratek video (9:16)';
+      document.getElementById('swipeModalNotes').value = '';
+      document.getElementById('addSwipeModal').classList.remove('hidden');
+    }
+
+    function closeAddSwipeModal() {
+      document.getElementById('addSwipeModal').classList.add('hidden');
+    }
+
+    function handleSaveSwipeItem(e) {
+      e.preventDefault();
+      const clientId = document.getElementById('swipeModalClientId').value;
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      if (!client.crm) client.crm = {};
+      if (!client.crm.swipe_file) client.crm.swipe_file = [];
+
+      const newItem = {
+        id: 'swipe_' + Date.now(),
+        title: document.getElementById('swipeModalTitle').value.trim(),
+        url: document.getElementById('swipeModalUrl').value.trim(),
+        format: document.getElementById('swipeModalFormat').value,
+        notes: document.getElementById('swipeModalNotes').value.trim(),
+        created_at: new Date().toISOString()
+      };
+
+      client.crm.swipe_file.unshift(newItem);
+      scheduleAutoSave();
+      closeAddSwipeModal();
+      renderWorkspaceTabContent();
+      showToast('Primer objave je bil shranjen v Swipe File!');
+    }
+
+    function handleDeleteSwipeItem(clientId, itemId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client || !client.crm?.swipe_file) return;
+      client.crm.swipe_file = client.crm.swipe_file.filter(i => i.id !== itemId);
+      scheduleAutoSave();
+      renderWorkspaceTabContent();
+      showToast('Primer objave je bil odstranjen.');
+    }
+
+    function convertSwipeToScript(clientId, swipeId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client || !client.crm) return;
+      const item = (client.crm.swipe_file || []).find(s => s.id === swipeId);
+      if (!item) return;
+
+      if (!client.crm.ideas) client.crm.ideas = [];
+      const newIdea = {
+        id: 'idea_' + Date.now(),
+        title: item.title || 'Ideja iz Swipe File',
+        pillar: 'Izobraževalne vsebine',
+        format: item.format || 'Reels / Kratek video (9:16)',
+        hook_verbal: item.notes || '',
+        notes: item.url ? `Referenca: ${item.url}` : '',
+        created_at: new Date().toISOString()
+      };
+      client.crm.ideas.unshift(newIdea);
+      scheduleAutoSave();
+      openScriptModal(clientId, null, newIdea.id);
+      showToast('Primer je bil prenesen v scenarij!');
+    }
+
+    // Handlers for Quick Tasks
+    function handleQuickTaskAdd(e, clientId) {
+      e.preventDefault();
+      const input = document.getElementById('wsQuickTaskInput');
+      if (!input || !input.value.trim()) return;
+
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      if (!client.crm) client.crm = {};
+      if (!client.crm.quick_tasks) client.crm.quick_tasks = [];
+
+      const newTask = {
+        id: 'task_' + Date.now(),
+        text: input.value.trim(),
+        completed: false
+      };
+
+      client.crm.quick_tasks.unshift(newTask);
+      scheduleAutoSave();
+      renderWorkspaceTabContent();
+      showToast('Opravilo je bilo dodano!');
+    }
+
+    function handleToggleQuickTask(clientId, taskId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client || !client.crm?.quick_tasks) return;
+      const task = client.crm.quick_tasks.find(t => t.id === taskId);
+      if (task) {
+        task.completed = !task.completed;
+        scheduleAutoSave();
+        renderWorkspaceTabContent();
+      }
+    }
+
+    function handleDeleteQuickTask(clientId, taskId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client || !client.crm?.quick_tasks) return;
+      client.crm.quick_tasks = client.crm.quick_tasks.filter(t => t.id !== taskId);
+      scheduleAutoSave();
+      renderWorkspaceTabContent();
+    }
+
+    // Handlers for Resource Links
+    function openEditResourceLinksModal(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      const rl = client.crm?.resource_links || {};
+      document.getElementById('resourceLinksClientId').value = clientId;
+      document.getElementById('rlDrive').value = rl.drive || '';
+      document.getElementById('rlCanva').value = rl.canva || '';
+      document.getElementById('rlInstagram').value = rl.instagram || '';
+      document.getElementById('rlTiktok').value = rl.tiktok || '';
+      document.getElementById('resourceLinksModal').classList.remove('hidden');
+    }
+
+    function closeResourceLinksModal() {
+      document.getElementById('resourceLinksModal').classList.add('hidden');
+    }
+
+    function handleSaveResourceLinks(e) {
+      e.preventDefault();
+      const clientId = document.getElementById('resourceLinksClientId').value;
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      if (!client.crm) client.crm = {};
+      client.crm.resource_links = {
+        drive: document.getElementById('rlDrive').value.trim(),
+        canva: document.getElementById('rlCanva').value.trim(),
+        instagram: document.getElementById('rlInstagram').value.trim(),
+        tiktok: document.getElementById('rlTiktok').value.trim()
+      };
+      scheduleAutoSave();
+      closeResourceLinksModal();
+      renderWorkspaceTabContent();
+      showToast('Povezave do gradiv so bile shranjene!');
     }
 
     // -------------------------------------------------------------
