@@ -4407,19 +4407,6 @@
       const plan = getClientProductionPlan(client);
       const dist = calculateDistributionFromPlan(plan);
 
-      // Quota tracker counts
-      const counts = {
-        video: posts.filter(p => (p.format || '').includes('Video') || (p.format || '').includes('Reels')).length,
-        carousel: posts.filter(p => (p.format || '').includes('Vrtiljak') || (p.format || '').includes('Carousel')).length,
-        image: posts.filter(p => (p.format || '').includes('Fotografija') || (p.format || '').includes('Grafika') || (p.format || '').includes('Slika')).length,
-        story: posts.filter(p => (p.format || '').includes('Zgodba') || (p.format || '').includes('Story')).length,
-        text: posts.filter(p => (p.format || '').includes('Tekst') || (p.format || '').includes('Članek')).length
-      };
-
-      const totalPlanned = posts.length;
-      const totalQuota = dist.coreMonthly || 0;
-      const totalPercent = totalQuota > 0 ? Math.min(100, Math.round((totalPlanned / totalQuota) * 100)) : 100;
-
       const now = new Date();
       const todayStr = formatYmd(now);
       const monthNamesSl = ["Januar", "Februar", "Marec", "April", "Maj", "Junij", "Julij", "Avgust", "September", "Oktober", "November", "December"];
@@ -4453,6 +4440,122 @@
       }
       const weekTitle = `${mondayDate.getDate()}. ${monthNamesSl[mondayDate.getMonth()].substring(0,3)} – ${sundayDate.getDate()}. ${monthNamesSl[sundayDate.getMonth()]} ${sundayDate.getFullYear()}`;
 
+      // Target viewed month & year for monthly quota calculation (counts strictly for this month)
+      const viewedYear = (wsCalendarViewMode === 'week') ? mondayDate.getFullYear() : mYear;
+      const viewedMonth = (wsCalendarViewMode === 'week') ? mondayDate.getMonth() : mMonth;
+      const viewedMonthName = monthNamesSl[viewedMonth];
+
+      // Filter posts strictly for the currently viewed month
+      const monthPosts = posts.filter(p => {
+        if (!p.date) return false;
+        const d = parseYmd(p.date);
+        return d.getFullYear() === viewedYear && d.getMonth() === viewedMonth;
+      });
+
+      // Format counts for this month
+      const monthCounts = {
+        video: monthPosts.filter(p => {
+          const f = (p.format || '').toLowerCase();
+          return f.includes('video') || f.includes('reels') || f.includes('tiktok') || f.includes('shorts');
+        }).length,
+        carousel: monthPosts.filter(p => {
+          const f = (p.format || '').toLowerCase();
+          return f.includes('vrtiljak') || f.includes('carousel');
+        }).length,
+        image: monthPosts.filter(p => {
+          const f = (p.format || '').toLowerCase();
+          return f.includes('fotografija') || f.includes('grafika') || f.includes('slika') || f.includes('image') || f.includes('photo');
+        }).length,
+        story: monthPosts.filter(p => {
+          const f = (p.format || '').toLowerCase();
+          return f.includes('zgodba') || f.includes('story');
+        }).length,
+        text: monthPosts.filter(p => {
+          const f = (p.format || '').toLowerCase();
+          return f.includes('tekst') || f.includes('članek') || f.includes('clanek') || f.includes('text');
+        }).length
+      };
+
+      const monthPlanned = monthPosts.length;
+      const totalQuota = dist.coreMonthly || 0;
+      const monthPercent = totalQuota > 0 ? Math.min(100, Math.round((monthPlanned / totalQuota) * 100)) : 100;
+
+      // Channel posts strictly for this month
+      const monthChannelPosts = monthPosts.reduce((sum, p) => sum + ((p.platforms && p.platforms.length) ? p.platforms.length : 1), 0);
+      const targetChannelQuota = dist.totalPostsMonthly || 0;
+
+      const formatDefs = [
+        {
+          key: 'video',
+          name: 'Video / Reels',
+          icon: 'film',
+          bgClass: 'bg-emerald-950/70 border-emerald-500/35 text-emerald-200',
+          dotClass: 'bg-emerald-400',
+          iconColor: 'text-emerald-400',
+          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
+          badgeUnmet: 'bg-slate-900/80 text-emerald-300/80 border-slate-800'
+        },
+        {
+          key: 'carousel',
+          name: 'Vrtiljak (Carousel)',
+          icon: 'copy',
+          bgClass: 'bg-sky-950/70 border-sky-500/35 text-sky-200',
+          dotClass: 'bg-sky-400',
+          iconColor: 'text-sky-400',
+          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
+          badgeUnmet: 'bg-slate-900/80 text-sky-300/80 border-slate-800'
+        },
+        {
+          key: 'image',
+          name: 'Fotografija / Grafika',
+          icon: 'image',
+          bgClass: 'bg-amber-950/70 border-amber-500/35 text-amber-200',
+          dotClass: 'bg-amber-400',
+          iconColor: 'text-amber-400',
+          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
+          badgeUnmet: 'bg-slate-900/80 text-amber-300/80 border-slate-800'
+        },
+        {
+          key: 'story',
+          name: 'Zgodba (Story)',
+          icon: 'smartphone',
+          bgClass: 'bg-rose-950/70 border-rose-500/35 text-rose-200',
+          dotClass: 'bg-rose-400',
+          iconColor: 'text-rose-400',
+          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
+          badgeUnmet: 'bg-slate-900/80 text-rose-300/80 border-slate-800'
+        },
+        {
+          key: 'text',
+          name: 'Članek / Tekst',
+          icon: 'file-text',
+          bgClass: 'bg-purple-950/70 border-purple-500/35 text-purple-200',
+          dotClass: 'bg-purple-400',
+          iconColor: 'text-purple-400',
+          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
+          badgeUnmet: 'bg-slate-900/80 text-purple-300/80 border-slate-800'
+        }
+      ];
+
+      const formatPillsHtml = formatDefs.map(fmt => {
+        const planItem = plan[fmt.key] || { weekly: 0 };
+        const quota = (parseInt(planItem.weekly, 10) || 0) * WEEKS_PER_MONTH;
+        const planned = monthCounts[fmt.key] || 0;
+        const isMet = quota > 0 && planned >= quota;
+        const badgeClass = isMet ? fmt.badgeMet : fmt.badgeUnmet;
+
+        return `
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border ${fmt.bgClass} font-medium text-[11px] shadow-xs">
+            <span class="w-2 h-2 rounded-full ${fmt.dotClass}"></span>
+            <i data-lucide="${fmt.icon}" class="w-3.5 h-3.5 ${fmt.iconColor}"></i>
+            <span>${fmt.name}</span>
+            <span class="ml-1 px-1.5 py-0.5 rounded-md font-bold text-[10px] border ${badgeClass}" title="Mesečna kvota: načrtovano ${planned} od ciljnih ${quota}">
+              ${planned}/${quota}
+            </span>
+          </div>
+        `;
+      }).join('');
+
       return `
         <div class="space-y-6">
           
@@ -4481,133 +4584,89 @@
             </div>
           </div>
 
-          <!-- Production Quota Tracker -->
-          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
-                  <i data-lucide="target" class="w-4 h-4"></i>
-                </div>
-                <div>
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">Sledenje mesečni kvoti produkcije</h4>
-                  <p class="text-[11px] text-slate-400">Načrtovanih <strong>${totalPlanned}</strong> od ciljnih <strong>${totalQuota}</strong> izvirnih kosov (${totalPercent}%)</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-2 text-xs">
-                <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold">
-                  Skupaj objav na kanalih: ${posts.reduce((sum, p) => sum + ((p.platforms && p.platforms.length) ? p.platforms.length : 1), 0)} / ${dist.totalPostsMonthly}
-                </span>
-              </div>
-            </div>
-
-            <!-- Progress bar -->
-            <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
-              <div class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: ${totalPercent}%"></div>
-            </div>
-
-            <!-- Format items breakdown -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1 text-xs">
-              ${PRODUCTION_FORMATS.map(fmt => {
-                const planItem = plan[fmt.key] || { weekly: 0 };
-                const quota = (parseInt(planItem.weekly, 10) || 0) * WEEKS_PER_MONTH;
-                const planned = counts[fmt.key] || 0;
-                const pct = quota > 0 ? Math.min(100, Math.round((planned / quota) * 100)) : 100;
-                const isMet = quota > 0 && planned >= quota;
-
-                return `
-                  <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                    <div class="flex items-center justify-between gap-1">
-                      <span class="font-bold text-white flex items-center gap-1.5 truncate">
-                        <i data-lucide="${fmt.icon}" class="w-3.5 h-3.5 ${fmt.iconColor || 'text-indigo-400'}"></i> ${fmt.name.split(' ')[0]}
-                      </span>
-                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${isMet ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}">
-                        ${planned}/${quota}
-                      </span>
-                    </div>
-                    <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
-                      <div class="${isMet ? 'bg-emerald-400' : 'bg-indigo-500'} h-full rounded-full transition-all" style="width: ${pct}%"></div>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-
           <!-- Interactive Calendar Panel -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
             
             <!-- Calendar Navigation & View Toggle -->
             <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
               
-              <!-- Pager -->
-              <div class="flex items-center gap-2">
-                ${wsCalendarViewMode === 'month' ? `
-                  <button type="button" onclick="changeWsCalendarMonth(-1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
-                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                  </button>
-                  <span class="text-sm font-black text-white px-2">${monthTitle}</span>
-                  <button type="button" onclick="changeWsCalendarMonth(1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
-                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                  </button>
-                  <button type="button" onclick="resetWsCalendarToday()" class="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition">
-                    Danes
-                  </button>
-                ` : wsCalendarViewMode === 'week' ? `
-                  <button type="button" onclick="changeWsCalendarWeek(-1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
-                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                  </button>
-                  <span class="text-sm font-black text-white px-2">${weekTitle}</span>
-                  <button type="button" onclick="changeWsCalendarWeek(1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
-                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                  </button>
-                  <button type="button" onclick="resetWsCalendarToday()" class="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition">
-                    Ta teden
-                  </button>
-                ` : `
-                  <span class="text-sm font-black text-white flex items-center gap-2">
-                    <i data-lucide="list" class="w-4 h-4 text-indigo-400"></i> Kronološki seznam vseh načrtovanih objav (${posts.length})
+              <!-- Pager & Month Core Quota -->
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2">
+                  ${wsCalendarViewMode === 'month' ? `
+                    <button type="button" onclick="changeWsCalendarMonth(-1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
+                      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <span class="text-sm font-black text-white px-2">${monthTitle}</span>
+                    <button type="button" onclick="changeWsCalendarMonth(1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
+                      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                    <button type="button" onclick="resetWsCalendarToday()" class="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition">
+                      Danes
+                    </button>
+                  ` : wsCalendarViewMode === 'week' ? `
+                    <button type="button" onclick="changeWsCalendarWeek(-1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
+                      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <span class="text-sm font-black text-white px-2">${weekTitle}</span>
+                    <button type="button" onclick="changeWsCalendarWeek(1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
+                      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                    <button type="button" onclick="resetWsCalendarToday()" class="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition">
+                      Ta teden
+                    </button>
+                  ` : `
+                    <span class="text-sm font-black text-white flex items-center gap-2">
+                      <i data-lucide="list" class="w-4 h-4 text-indigo-400"></i> Kronološki seznam vseh načrtovanih objav (${posts.length})
+                    </span>
+                  `}
+                </div>
+
+                <!-- Monthly core pieces quota badge -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs" title="Načrtovano ${monthPlanned} od ciljnih ${totalQuota} izvirnih kosov za ${viewedMonthName}">
+                  <span class="text-slate-400">Izvirni kosi (${viewedMonthName}):</span>
+                  <span class="font-bold ${monthPlanned >= totalQuota && totalQuota > 0 ? 'text-emerald-400' : 'text-indigo-300'}">
+                    ${monthPlanned} / ${totalQuota} (${monthPercent}%)
                   </span>
-                `}
+                  <div class="w-12 bg-slate-900 rounded-full h-1.5 overflow-hidden ml-0.5 border border-slate-800">
+                    <div class="${monthPlanned >= totalQuota && totalQuota > 0 ? 'bg-emerald-400' : 'bg-indigo-500'} h-full rounded-full transition-all" style="width: ${monthPercent}%"></div>
+                  </div>
+                </div>
               </div>
 
-              <!-- View mode pills -->
-              <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs">
-                <button type="button" onclick="setWsCalendarViewMode('month')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                  wsCalendarViewMode === 'month' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-                }">
-                  <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Mesec
-                </button>
-                <button type="button" onclick="setWsCalendarViewMode('week')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                  wsCalendarViewMode === 'week' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-                }">
-                  <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i> Teden
-                </button>
-                <button type="button" onclick="setWsCalendarViewMode('list')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                  wsCalendarViewMode === 'list' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-                }">
-                  <i data-lucide="list" class="w-3.5 h-3.5"></i> Seznam
-                </button>
+              <!-- Channel Posts & View mode pills -->
+              <div class="flex flex-wrap items-center gap-2.5">
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold" title="Mesečna norma za objave na kanalih za ${viewedMonthName}">
+                  <i data-lucide="share-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span>Skupaj objav po kanalih: ${monthChannelPosts} / ${targetChannelQuota}</span>
+                </div>
+
+                <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs">
+                  <button type="button" onclick="setWsCalendarViewMode('month')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                    wsCalendarViewMode === 'month' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  }">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Mesec
+                  </button>
+                  <button type="button" onclick="setWsCalendarViewMode('week')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                    wsCalendarViewMode === 'week' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  }">
+                    <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i> Teden
+                  </button>
+                  <button type="button" onclick="setWsCalendarViewMode('list')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                    wsCalendarViewMode === 'list' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  }">
+                    <i data-lucide="list" class="w-3.5 h-3.5"></i> Seznam
+                  </button>
+                </div>
               </div>
             </div>
 
-            <!-- Format color legend -->
-            <div class="flex flex-wrap items-center gap-2 pt-1 pb-2 border-b border-slate-800/60 text-[11px]">
-              <span class="text-slate-400 font-semibold text-[10px] uppercase tracking-wider mr-1">Tipi objav:</span>
-              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-medium">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Video / Reels
+            <!-- Integrated Post Types Legend with format quotas -->
+            <div class="flex flex-wrap items-center gap-2 pt-1 pb-3 border-b border-slate-800 text-xs">
+              <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider mr-1 flex items-center gap-1">
+                <i data-lucide="layers" class="w-3.5 h-3.5 text-indigo-400"></i> Tipi objav:
               </span>
-              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-sky-950/80 border border-sky-500/40 text-sky-300 font-medium">
-                <span class="w-2 h-2 rounded-full bg-sky-400"></span> Vrtiljak (Carousel)
-              </span>
-              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-950/80 border border-amber-500/40 text-amber-300 font-medium">
-                <span class="w-2 h-2 rounded-full bg-amber-400"></span> Fotografija / Grafika
-              </span>
-              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-rose-950/80 border border-rose-500/40 text-rose-300 font-medium">
-                <span class="w-2 h-2 rounded-full bg-rose-400"></span> Zgodba (Story)
-              </span>
-              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-950/80 border border-purple-500/40 text-purple-300 font-medium">
-                <span class="w-2 h-2 rounded-full bg-purple-400"></span> Članek / Tekst
-              </span>
+              ${formatPillsHtml}
             </div>
 
             <!-- VIEW 1: MONTH VIEW GRID -->
