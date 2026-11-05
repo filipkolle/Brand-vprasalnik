@@ -2528,15 +2528,19 @@
 
               ${(crm.content_strategy?.content_pillars?.length > 0) ? `
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  ${crm.content_strategy.content_pillars.map(p => `
-                    <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800">
-                      <div class="flex items-center justify-between gap-2 mb-1">
-                        <h4 class="text-xs font-bold text-white">${escapeHtml(p.name)}</h4>
-                        ${p.priority ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${escapeHtml(p.priority)}</span>` : ''}
+                  ${crm.content_strategy.content_pillars.map(p => {
+                    const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === p.key || (p.name && o.name.toLowerCase() === p.name.toLowerCase()));
+                    const pName = opt ? opt.name : (p.name || 'Steber');
+                    return `
+                      <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                          <h4 class="text-xs font-bold text-white">${escapeHtml(pName)}</h4>
+                          ${p.priority ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${escapeHtml(p.priority)}</span>` : ''}
+                        </div>
+                        <p class="text-[11px] text-slate-400 line-clamp-2">${escapeHtml(p.purpose || p.description || (opt ? opt.desc : 'Ni opisa'))}</p>
                       </div>
-                      <p class="text-[11px] text-slate-400 line-clamp-2">${escapeHtml(p.purpose || p.description || 'Ni opisa')}</p>
-                    </div>
-                  `).join('')}
+                    `;
+                  }).join('')}
                 </div>
               ` : `
                 <div class="py-8 text-center text-slate-500 bg-slate-950/60 rounded-2xl border border-slate-850 p-4">
@@ -4010,13 +4014,6 @@
 
                         <!-- Description -->
                         <p class="text-xs text-slate-300/85 leading-relaxed font-normal my-2 line-clamp-3">${opt.desc}</p>
-
-                        ${(sel.topics || sel.cta) ? `
-                          <div class="mt-3 pt-2.5 border-t border-slate-800/80 space-y-1">
-                            ${sel.topics ? `<p class="text-[11px] text-slate-300 truncate"><span class="text-slate-500 font-bold">Teme:</span> ${escapeHtml(sel.topics)}</p>` : ''}
-                            ${sel.cta ? `<p class="text-[11px] text-indigo-300 truncate"><span class="text-slate-500 font-bold">CTA:</span> ${escapeHtml(sel.cta)}</p>` : ''}
-                          </div>
-                        ` : ''}
                       </div>
 
                       <!-- Footer -->
@@ -4024,9 +4021,6 @@
                         <span class="font-bold flex items-center gap-1.5 ${theme.linkText} transition">
                           <span>Pregled 8 tem & 5 CTA</span>
                           <i data-lucide="arrow-right" class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"></i>
-                        </span>
-                        <span class="text-[10px] font-semibold text-slate-400 bg-slate-900/90 px-2.5 py-1 rounded-xl border border-slate-800">
-                          Klikni kartico
                         </span>
                       </div>
                     </div>
@@ -5198,7 +5192,7 @@
     const CONTENT_PILLAR_OPTIONS = [
       {
         key: 'edukacija',
-        name: 'Edukacija',
+        name: 'Izobraževalne vsebine',
         icon: 'graduation-cap',
         desc: 'Nasveti, vodiči in razlage, ki gradijo strokovnost in zaupanje.',
         topicsHint: 'nasveti, how-to, miti in dejstva',
@@ -5225,7 +5219,7 @@
       },
       {
         key: 'zabava',
-        name: 'Zabava',
+        name: 'Zabavne vsebine',
         icon: 'smile',
         desc: 'Trendi, humor in relatable vsebine za večji doseg in deljenja.',
         topicsHint: 'trendi, memi, izzivi',
@@ -5252,7 +5246,7 @@
       },
       {
         key: 'navdih',
-        name: 'Navdih',
+        name: 'Navdihujoče vsebine',
         icon: 'sparkles',
         desc: 'Zgodbe, vrednote in transformacije za čustveno povezavo.',
         topicsHint: 'zgodba znamke, pred/po, vrednote',
@@ -5316,7 +5310,7 @@
         topics: [
           { title: 'Ocene in priporočila zadovoljnih strank', desc: 'Avtentične izjave, ocene z zvezdicami ali posnetki zaslona sporočil navdušenih kupcev.' },
           { title: 'UGC videoposnetki in unboxingi uporabnikov', desc: 'Videoposnetki realnih kupcev pri odpiranju paketa ali vsakodnevni uporabi izdelka.' },
-          { title: 'Odgovarjanje na vprašanja skupnosti (Q&A)', desc: 'Odgovori na najpogostejša vprašanja, dvome in dileme, ki jih stranke pošiljajo v DM.' },
+          { title: 'Odgovarjanje na vprašalnik skupnosti (Q&A)', desc: 'Odgovori na najpogostejša vprašanja, dvome in dileme, ki jih stranke pošiljajo v DM.' },
           { title: 'Študija primera z merljivimi rezultati (Case study)', desc: 'Podroben pregled problema, uporabljene rešitve in točnih rezultatov stranke.' },
           { title: 'Skupnostno odločanje in ankete', desc: '"Pomagajte nam izbrati novo barvo, okus ali embalažo za naslednjo serijo".' },
           { title: 'Aktivacije in nagradne igre za sledilce', desc: 'Privlačen izziv ali nagradna igra, ki nagrajuje zvestobo in sodelovanje skupnosti.' },
@@ -5333,7 +5327,7 @@
       },
       {
         key: 'promocija',
-        name: 'Promocija & prodaja',
+        name: 'Promocijske vsebine',
         icon: 'shopping-bag',
         desc: 'Predstavitev izdelkov/storitev, ponudbe in akcije za konverzije.',
         topicsHint: 'izdelki, ponudbe, novosti',
@@ -5987,7 +5981,10 @@
     function getClientPillarOptions(client) {
       const activePillars = client?.crm?.content_strategy?.content_pillars || [];
       if (activePillars.length > 0) {
-        return activePillars.map(p => p.name || p.key);
+        return activePillars.map(p => {
+          const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === p.key || (p.name && o.name.toLowerCase() === p.name.toLowerCase()));
+          return opt ? opt.name : (p.name || p.key);
+        });
       }
       return CONTENT_PILLAR_OPTIONS.map(o => o.name);
     }
