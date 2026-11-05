@@ -716,6 +716,13 @@
 
     </section>
 
+    <!-- ============================================================ -->
+    <!-- VIEW F: FULL-PAGE PROFESSIONAL SCRIPTWRITING STUDIO -->
+    <!-- ============================================================ -->
+    <section id="view-scriptwriter" class="hidden space-y-6">
+      <div id="scriptwriterStudioContainer" class="space-y-6"></div>
+    </section>
+
   </main>
 
 
@@ -906,150 +913,6 @@
         </h4>
         <div id="quickIdeasListContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
       </div>
-    </div>
-  </div>
-
-  <!-- MODAL: PROFESSIONAL VIDEO / CONTENT SCRIPTWRITING -->
-  <div id="scriptModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-        <div>
-          <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <i data-lucide="clapperboard" class="w-5 h-5 text-purple-400"></i> Profesionalni scenarij za vsebino & snemanje
-          </h3>
-          <p class="text-[11px] text-slate-400 mt-0.5">Strukturiran postopek od pritegnitve pozornosti (Hook) do klica k dejanju (CTA).</p>
-        </div>
-        <button onclick="closeScriptModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="scriptModalForm" onsubmit="handleSaveScript(event)" class="space-y-5 text-xs">
-        <input type="hidden" id="scriptModalScriptId">
-        <input type="hidden" id="scriptModalClientId">
-        <input type="hidden" id="scriptModalLinkedIdeaId">
-
-        <!-- Idea connection selector -->
-        <div id="scriptIdeaPickerWrapper" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-2">
-            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400 shrink-0"></i>
-            <span class="text-[11px] font-bold text-slate-300">Nadaljuj iz obstoječe ideje:</span>
-          </div>
-          <select id="scriptIdeaPickerSelect" onchange="handleSelectIdeaForScript(this.value)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500">
-            <!-- Injected options -->
-          </select>
-        </div>
-
-        <!-- Title, Format, Pillar -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="sm:col-span-1">
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Naslov scenarija *</label>
-            <input id="scriptModalTitle" type="text" required placeholder="npr. 3 napake pri pripravi kvasa" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
-          </div>
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Format vsebine</label>
-            <select id="scriptModalFormat" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
-              <option value="Reels / Video">🎬 Reels / Kratek video (9:16)</option>
-              <option value="Vrtiljak (Carousel)">📚 Vrtiljak (Carousel)</option>
-              <option value="Fotografija / Grafika">🖼️ Fotografija / Grafika</option>
-              <option value="Zgodba (Story)">📱 Zgodba (Story)</option>
-              <option value="Tekstovna objava / Članek">📝 Tekstovna objava / Članek</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Vsebinski steber</label>
-            <select id="scriptModalPillar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
-              <!-- Dynamically populated -->
-            </select>
-          </div>
-        </div>
-
-        <!-- Target & Key message -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Ciljna publika / Bolečina stranke</label>
-            <input id="scriptModalTarget" type="text" placeholder="npr. Domači peki, ki jim testo ne vzhaja pravilno..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
-          </div>
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Glavno sporočilo (Takeaway)</label>
-            <input id="scriptModalCoreMessage" type="text" placeholder="npr. Temperatura vode je ključna – kvas potrebuje med 35 in 38 stopinj." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
-          </div>
-        </div>
-
-        <!-- 1. FAZA: HOOK -->
-        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="zap" class="w-4 h-4"></i> 1. Faza: HOOK (0–3 sekunde — ključ za ustavitev drsenja)
-            </span>
-            <span class="text-[10px] text-slate-500 font-semibold">Stop-scroll moment</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-300 mb-1">Verbalni hook (Kaj poveš / napisi na ekranu)</label>
-              <textarea id="scriptModalHookVerbal" rows="2" placeholder="Npr. 'Če ti kruh nikoli ne uspe hrustljav, skoraj zagotovo delaš to napako...'" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"></textarea>
-            </div>
-            <div>
-              <label class="block font-bold text-slate-300 mb-1">Vizualni hook (Kaj gledalec vidi v 1. sekundi)</label>
-              <textarea id="scriptModalHookVisual" rows="2" placeholder="Npr. Rez na prelom svežega hlebca s paro, hitro približevanje kamere, rekvizit v roki..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. FAZA: BODY / JEDRO -->
-        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="play-circle" class="w-4 h-4"></i> 2. Faza: JEDRO & VREDNOST (Postopek / Koraki / Zgodba)
-            </span>
-            <span class="text-[10px] text-slate-500 font-semibold">Vizualno + Govor</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-300 mb-1">Vizualni potek (Kadri / B-roll / Prikaz)</label>
-              <textarea id="scriptModalBodyVisual" rows="4" placeholder="Kader 1: Prikaz gnetenja testa z rokami&#10;Kader 2: Merjenje temperature z digitalnim termometrom&#10;Kader 3: Pokritje posode s toplo vlažno krpo..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"></textarea>
-            </div>
-            <div>
-              <label class="block font-bold text-slate-300 mb-1">Govorni tekst (Voiceover / Govor v kamero)</label>
-              <textarea id="scriptModalBodyAudio" rows="4" placeholder="Točka 1: Večina ljudi uporabi prevročo vodo, ki kvasovke uniči. Voda mora biti mlačna.&#10;Točka 2: Za hitrejšo aktivacijo vedno dodaj pol žličke sladkorja ali medu...&#10;Točka 3: Pazi na prepih v kuhinji..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. FAZA: CALL TO ACTION -->
-        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i> 3. Faza: CALL TO ACTION (CTA)
-            </span>
-            <span class="text-[10px] text-slate-500 font-semibold">Kaj naj gledalec stori zdaj</span>
-          </div>
-          <div>
-            <textarea id="scriptModalCta" rows="2" placeholder="Npr. 'Shrani ta recept za naslednji vikend in v komentar napiši 'KVAS', če želiš naš celoten vodnik za peko!'..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30"></textarea>
-          </div>
-        </div>
-
-        <!-- 4. FAZA: PRODUKCIJSKA NAVODILA -->
-        <div>
-          <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Tehnična in produkcijska navodila za snemanje</label>
-          <textarea id="scriptModalProductionNotes" rows="2" placeholder="Npr. Lokacija: svetel pult v kuhinji. Zvok: ASMR hrustljavost kruha. Glasba: nežen akustični ritem v ozadju. Tekstovni overlay: 'Pravilo 35 stopinj'..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30"></textarea>
-        </div>
-
-        <div class="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800">
-          <button id="scriptDeleteBtn" type="button" onclick="handleDeleteCurrentScript()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold hidden">
-            Izbriši scenarij
-          </button>
-          <div class="flex items-center gap-2 ml-auto">
-            <button type="button" onclick="closeScriptModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Prekliči</button>
-            <button type="button" onclick="handleSaveScriptAndPlanPost()" class="px-3.5 py-2 text-xs font-bold text-sky-300 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 rounded-xl transition flex items-center gap-1.5 active:scale-95">
-              <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Shrani in načrtuj v koledar →
-            </button>
-            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-md transition active:scale-95">
-              Shrani scenarij
-            </button>
-          </div>
-        </div>
-      </form>
     </div>
   </div>
 
@@ -1339,7 +1202,13 @@
       await fetchClients();
 
       if (urlClientId) {
-        openClientWorkspace(urlClientId);
+        const urlView = urlParams.get('view');
+        const urlScript = urlParams.get('script');
+        if (urlView === 'script') {
+          openScriptPage(urlClientId, urlScript);
+        } else {
+          openClientWorkspace(urlClientId);
+        }
       }
     });
 
@@ -1616,13 +1485,13 @@
       activeTopTab = tabName;
 
       // Close workspace if switching to a global view
-      if (tabName !== 'workspace') {
+      if (tabName !== 'workspace' && tabName !== 'scriptwriter') {
         currentClientId = null;
         document.getElementById('workspaceTopBar').classList.add('hidden');
       }
 
       // Hide all views
-      ['dashboard', 'clients', 'calendar', 'production', 'workspace'].forEach(t => {
+      ['dashboard', 'clients', 'calendar', 'production', 'workspace', 'scriptwriter'].forEach(t => {
         const el = document.getElementById(`view-${t}`);
         if (el) el.classList.add('hidden');
       });
@@ -1653,6 +1522,10 @@
       else if (activeTopTab === 'calendar') renderGlobalCalendar();
       else if (activeTopTab === 'production') renderGlobalProduction();
       else if (activeTopTab === 'workspace' && currentClientId) renderWorkspace();
+      else if (activeTopTab === 'scriptwriter' && currentClientId) {
+        const client = clients.find(c => c.id === currentClientId);
+        if (client) renderScriptwriterStudio(client);
+      }
     }
 
     // -------------------------------------------------------------
@@ -2234,13 +2107,15 @@
       // Update URL query parameter
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.set('client', clientId);
+      newUrl.searchParams.delete('view');
+      newUrl.searchParams.delete('script');
       window.history.replaceState({}, '', newUrl.toString());
 
       // Show top bar
       document.getElementById('workspaceTopBar').classList.remove('hidden');
 
       // Hide other views and show workspace
-      ['dashboard', 'clients', 'calendar', 'production'].forEach(t => {
+      ['dashboard', 'clients', 'calendar', 'production', 'scriptwriter'].forEach(t => {
         const el = document.getElementById(`view-${t}`);
         if (el) el.classList.add('hidden');
       });
@@ -2260,6 +2135,8 @@
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('client');
       newUrl.searchParams.delete('id');
+      newUrl.searchParams.delete('view');
+      newUrl.searchParams.delete('script');
       window.history.replaceState({}, '', newUrl.toString());
       switchTopTab('clients');
     }
@@ -5456,133 +5333,540 @@
       renderWorkspaceTabContent();
     }
 
-    // --- PROFESSIONAL SCRIPTWRITING ---
-    function openScriptModal(clientId = null, scriptId = null, prefillFromIdeaId = null) {
+    // --- PROFESSIONAL FULL-PAGE SCRIPTWRITING STUDIO ---
+    function openScriptPage(clientId = null, scriptId = null, prefillFromIdeaId = null) {
       const cId = clientId || currentClientId;
       const client = clients.find(c => c.id === cId);
       if (!client) return;
 
-      document.getElementById('scriptModalClientId').value = client.id;
-      document.getElementById('scriptModalScriptId').value = scriptId || '';
-      document.getElementById('scriptModalForm').reset();
-      document.getElementById('scriptDeleteBtn').classList.toggle('hidden', !scriptId);
+      currentClientId = cId;
+      activeTopTab = 'scriptwriter';
 
-      // Populate pillars
-      const pillarSelect = document.getElementById('scriptModalPillar');
-      if (pillarSelect) {
-        const pillarList = getClientPillarOptions(client);
-        pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}">${escapeHtml(pName)}</option>`).join('');
+      // Update URL query parameter
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('client', cId);
+      newUrl.searchParams.set('view', 'script');
+      if (scriptId && scriptId !== 'new') newUrl.searchParams.set('script', scriptId);
+      else newUrl.searchParams.delete('script');
+      window.history.replaceState({}, '', newUrl.toString());
+
+      // Update workspace top bar
+      document.getElementById('workspaceTopBar').classList.remove('hidden');
+      const breadcrumbName = document.getElementById('breadcrumbClientName');
+      if (breadcrumbName) {
+        breadcrumbName.innerHTML = `${escapeHtml(client.company_name)} <span class="text-purple-400 font-normal">/ 🎬 Scenarijski studio</span>`;
       }
 
-      // Populate idea picker
-      const ideaSelect = document.getElementById('scriptIdeaPickerSelect');
-      const ideas = client.crm?.ideas || [];
-      if (ideaSelect) {
-        ideaSelect.innerHTML = `<option value="">— Začni nov scenarij (brez ideje) —</option>` +
-          ideas.map(i => `<option value="${i.id}" ${prefillFromIdeaId === i.id ? 'selected' : ''}>💡 ${escapeHtml(i.title)}</option>`).join('');
-      }
+      // Hide other views and show scriptwriter view
+      ['dashboard', 'clients', 'calendar', 'production', 'workspace'].forEach(t => {
+        const el = document.getElementById(`view-${t}`);
+        if (el) el.classList.add('hidden');
+      });
+      document.getElementById('view-scriptwriter').classList.remove('hidden');
 
-      if (scriptId) {
-        const s = (client.crm?.scripts || []).find(x => x.id === scriptId);
-        if (s) {
-          document.getElementById('scriptModalTitle').value = s.title || '';
-          document.getElementById('scriptModalFormat').value = s.format || 'Reels / Video';
-          if (s.pillar) document.getElementById('scriptModalPillar').value = s.pillar;
-          document.getElementById('scriptModalTarget').value = s.target || '';
-          document.getElementById('scriptModalCoreMessage').value = s.core_message || '';
-          document.getElementById('scriptModalHookVerbal').value = s.hook_verbal || '';
-          document.getElementById('scriptModalHookVisual').value = s.hook_visual || '';
-          document.getElementById('scriptModalBodyVisual').value = s.body_visual || '';
-          document.getElementById('scriptModalBodyAudio').value = s.body_audio || '';
-          document.getElementById('scriptModalCta').value = s.cta || '';
-          document.getElementById('scriptModalProductionNotes').value = s.production_notes || '';
-          document.getElementById('scriptModalLinkedIdeaId').value = s.linked_idea_id || '';
-        }
-      } else if (prefillFromIdeaId) {
-        handleSelectIdeaForScript(prefillFromIdeaId);
-      }
+      // Deactivate top nav buttons
+      document.querySelectorAll('.top-nav-btn').forEach(btn => {
+        btn.className = 'top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-400 hover:text-white transition';
+      });
 
-      document.getElementById('scriptModal').classList.remove('hidden');
-      lucide.createIcons({ root: document.getElementById('scriptModal') });
+      renderScriptwriterStudio(client, scriptId, prefillFromIdeaId);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Backward-compatible alias
+    function openScriptModal(clientId = null, scriptId = null, prefillFromIdeaId = null) {
+      openScriptPage(clientId, scriptId, prefillFromIdeaId);
     }
 
     function closeScriptModal() {
-      document.getElementById('scriptModal').classList.add('hidden');
+      if (currentClientId) openClientWorkspace(currentClientId, 'calendar');
+      else switchTopTab('clients');
     }
 
-    function handleSelectIdeaForScript(ideaId) {
-      if (!ideaId) return;
-      const client = clients.find(c => c.id === document.getElementById('scriptModalClientId').value);
-      const idea = (client?.crm?.ideas || []).find(i => i.id === ideaId);
-      if (!idea) return;
+    function renderScriptwriterStudio(client, activeScriptId = null, prefillFromIdeaId = null) {
+      const container = document.getElementById('scriptwriterStudioContainer');
+      if (!container || !client) return;
 
-      document.getElementById('scriptModalTitle').value = idea.title || '';
-      if (idea.format) document.getElementById('scriptModalFormat').value = idea.format;
-      if (idea.pillar) document.getElementById('scriptModalPillar').value = idea.pillar;
-      document.getElementById('scriptModalLinkedIdeaId').value = idea.id;
-      if (idea.notes && !document.getElementById('scriptModalCoreMessage').value) {
-        document.getElementById('scriptModalCoreMessage').value = idea.notes;
+      if (!client.crm) client.crm = {};
+      const scripts = client.crm.scripts || [];
+      const ideas = client.crm.ideas || [];
+
+      // Determine active script or prefill idea
+      let activeScript = null;
+      if (activeScriptId && activeScriptId !== 'new') {
+        activeScript = scripts.find(s => s.id === activeScriptId) || null;
+      } else if (!activeScriptId && !prefillFromIdeaId && scripts.length > 0) {
+        activeScript = scripts[0];
       }
+
+      let prefillIdea = null;
+      if (prefillFromIdeaId) {
+        prefillIdea = ideas.find(i => i.id === prefillFromIdeaId) || null;
+      }
+
+      const sTitle = activeScript?.title || prefillIdea?.title || '';
+      const sFormat = activeScript?.format || prefillIdea?.format || 'Reels / Video';
+      const sPillar = activeScript?.pillar || prefillIdea?.pillar || '';
+      const sTarget = activeScript?.target || '';
+      const sCoreMessage = activeScript?.core_message || prefillIdea?.notes || '';
+      const sHookVerbal = activeScript?.hook_verbal || '';
+      const sHookVisual = activeScript?.hook_visual || '';
+      const sBodyVisual = activeScript?.body_visual || '';
+      const sBodyAudio = activeScript?.body_audio || '';
+      const sCta = activeScript?.cta || '';
+      const sLocation = activeScript?.location || '';
+      const sAudio = activeScript?.audio || '';
+      const sProps = activeScript?.props || '';
+      const sEditing = activeScript?.editing || '';
+      const sProductionNotes = activeScript?.production_notes || '';
+      const sStatus = activeScript?.status || 'ready';
+      const linkedIdeaId = activeScript?.linked_idea_id || prefillIdea?.id || '';
+
+      const pillarList = getClientPillarOptions(client);
+
+      container.innerHTML = `
+        <div class="space-y-6">
+
+          <!-- TOP HERO & CONTROL HEADER -->
+          <div class="bg-gradient-to-r from-slate-900 via-purple-950/40 to-slate-900 border border-purple-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <button onclick="openClientWorkspace('${client.id}', 'calendar')" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 rounded-xl transition active:scale-95 shadow-xs">
+                <i data-lucide="arrow-left" class="w-4 h-4 text-purple-400"></i>
+                <span>Nazaj v delovni prostor</span>
+              </button>
+
+              <div class="h-6 w-[1px] bg-slate-800 hidden sm:block"></div>
+
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse"></span>
+                  <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                    <i data-lucide="clapperboard" class="w-5 h-5 text-purple-400"></i> Scenarijski studio & Snemalna knjiga
+                  </h2>
+                  <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    ${escapeHtml(client.company_name)}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 mt-0.5">Celostno načrtovanje Hooka (0–3s), vizualnih kadrov, govornega teksta in navodil za snemanje.</p>
+              </div>
+            </div>
+
+            <!-- Right Header Actions -->
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="openScriptPage('${client.id}', 'new')" class="px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition flex items-center gap-1.5 active:scale-95">
+                <i data-lucide="plus" class="w-4 h-4 text-emerald-400"></i> Nov scenarij
+              </button>
+
+              ${activeScript ? `
+                <button type="button" onclick="handleDeleteScriptPage('${client.id}', '${activeScript.id}')" class="px-3.5 py-2 text-xs font-bold text-rose-300 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5 active:scale-95">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i> Izbriši
+                </button>
+              ` : ''}
+
+              <button type="button" onclick="handleSaveScriptPageAndPlanPost('${client.id}')" class="px-4 py-2 text-xs font-bold text-sky-200 bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 rounded-xl transition flex items-center gap-1.5 active:scale-95 shadow-md">
+                <i data-lucide="calendar" class="w-4 h-4 text-sky-400"></i> Shrani in načrtuj v koledar →
+              </button>
+
+              <button type="button" onclick="handleSaveScriptPage('${client.id}')" class="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-xl shadow-lg shadow-purple-950/40 border border-purple-500/30 transition flex items-center gap-2 active:scale-95">
+                <i data-lucide="save" class="w-4 h-4"></i> Shrani scenarij
+              </button>
+            </div>
+          </div>
+
+          <!-- MAIN 2-COLUMN STUDIO WORKSPACE -->
+          <div class="flex flex-col lg:flex-row items-start gap-6">
+
+            <!-- LEFT SIDEBAR: SAVED SCRIPTS & QUICK IDEAS PICKER -->
+            <aside class="w-full lg:w-80 xl:w-88 shrink-0 space-y-5 lg:sticky lg:top-20">
+
+              <!-- Card 1: Vsi scenariji naročnika -->
+              <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                    <i data-lucide="film" class="w-4 h-4 text-purple-400"></i> Scenariji naročnika
+                  </h3>
+                  <span class="text-xs font-mono font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+                    ${scripts.length}
+                  </span>
+                </div>
+
+                <div class="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                  ${scripts.length > 0 ? scripts.map(s => {
+                    const isActive = activeScript && activeScript.id === s.id;
+                    return `
+                      <div onclick="openScriptPage('${client.id}', '${s.id}')" class="p-3 rounded-2xl border transition cursor-pointer space-y-1.5 ${
+                        isActive
+                          ? 'bg-purple-950/40 border-purple-500/80 ring-1 ring-purple-500/40 shadow-md'
+                          : 'bg-slate-950/70 border-slate-800/80 hover:bg-slate-950 hover:border-slate-700'
+                      }">
+                        <div class="flex items-center justify-between gap-1 text-[10px]">
+                          <span class="font-bold px-2 py-0.5 rounded-md ${
+                            s.format?.includes('Reels') ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' :
+                            s.format?.includes('Vrtiljak') ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
+                            'bg-slate-800 text-slate-300'
+                          }">
+                            ${escapeHtml(s.format || 'Reels')}
+                          </span>
+                          <span class="text-[10px] text-slate-500 font-mono">${s.updated_at ? formatDate(s.updated_at) : ''}</span>
+                        </div>
+                        <h4 class="text-xs font-bold text-white line-clamp-2 leading-snug">${escapeHtml(s.title || 'Brez naslova')}</h4>
+                        ${s.pillar ? `<p class="text-[10px] text-slate-400 truncate">${escapeHtml(s.pillar)}</p>` : ''}
+                      </div>
+                    `;
+                  }).join('') : `
+                    <div class="text-center py-6 text-slate-500 space-y-2">
+                      <i data-lucide="clapperboard" class="w-7 h-7 mx-auto opacity-40"></i>
+                      <p class="text-xs font-medium">Še nimate shranjenih scenarijev.</p>
+                      <p class="text-[11px] text-slate-600">Izpolnite obrazec na desni in ustvarite svoj prvi scenarij.</p>
+                    </div>
+                  `}
+                </div>
+
+                <button type="button" onclick="openScriptPage('${client.id}', 'new')" class="w-full py-2 text-xs font-bold text-purple-300 hover:text-white bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl transition flex items-center justify-center gap-1.5 active:scale-95">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Ustvari nov scenarij
+                </button>
+              </div>
+
+              <!-- Card 2: Quick Ideas Drawer -->
+              <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                    <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400"></i> Zapisane ideje
+                  </h3>
+                  <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                    ${ideas.length}
+                  </span>
+                </div>
+
+                <div class="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+                  ${ideas.length > 0 ? ideas.map(idea => `
+                    <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-1.5 text-xs">
+                      <div class="font-bold text-white text-[11px] leading-tight line-clamp-2">${escapeHtml(idea.title)}</div>
+                      ${idea.notes ? `<p class="text-[10px] text-slate-400 line-clamp-2 italic">${escapeHtml(idea.notes)}</p>` : ''}
+                      <div class="flex items-center justify-between pt-1">
+                        <span class="text-[9px] text-amber-400/90 font-medium">${escapeHtml(idea.pillar || idea.format || 'Ideja')}</span>
+                        <button type="button" onclick="openScriptPage('${client.id}', null, '${idea.id}')" class="text-[10px] font-bold text-purple-300 hover:text-purple-200 bg-purple-500/15 hover:bg-purple-500/25 px-2 py-0.5 rounded-md border border-purple-500/30 transition">
+                          Razvij scenarij →
+                        </button>
+                      </div>
+                    </div>
+                  `).join('') : `
+                    <div class="text-center py-4 text-slate-500 text-[11px]">
+                      Ni zapisanih idej. Uporabite gumb »Zapiši idejo« v delovnem prostoru.
+                    </div>
+                  `}
+                </div>
+              </div>
+
+              <!-- Card 3: Cheat Sheet -->
+              <div class="bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-500/20 rounded-3xl p-4 sm:p-5 shadow-xl space-y-2.5 text-xs">
+                <h4 class="font-bold text-indigo-300 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i> Pravila uspešnega scenarija
+                </h4>
+                <ul class="space-y-2 text-[11px] text-slate-400">
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-amber-400 font-bold">1.</span>
+                    <span><b class="text-slate-200">0–3s Hook:</b> Brez pozdravov. Začnite takoj s težavo ali presenečenjem.</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-indigo-400 font-bold">2.</span>
+                    <span><b class="text-slate-200">Jedro & vrednost:</b> Kadri naj se menjajo na 2–4s za visoko zadrževanje gledalca.</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-emerald-400 font-bold">3.</span>
+                    <span><b class="text-slate-200">Jasna akcija (CTA):</b> Natančno 1 poziv: shrani, komentiraj ali obišči povezavo.</span>
+                  </li>
+                </ul>
+              </div>
+
+            </aside>
+
+            <!-- RIGHT MAIN EDITOR: FULL PAGE SPACIOUS SCRIPT FORM -->
+            <main class="flex-1 min-w-0 space-y-6 w-full">
+              <form id="scriptPageForm" onsubmit="event.preventDefault(); handleSaveScriptPage('${client.id}');" class="space-y-6">
+                <input type="hidden" id="spScriptId" value="${activeScript ? activeScript.id : ''}">
+                <input type="hidden" id="spLinkedIdeaId" value="${linkedIdeaId}">
+
+                <!-- SECTION: NASLOV & METAPODATKI -->
+                <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-7 shadow-xl space-y-5">
+                  <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Delovni naslov scenarija *</label>
+                    <input id="spTitle" type="text" required value="${escapeHtml(sTitle)}" placeholder="npr. 3 največje napake pri pripravi kvasa in vzhajanju kruha" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-3.5 text-base sm:text-lg font-bold text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition">
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <div>
+                      <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1.5">Format vsebine</label>
+                      <select id="spFormat" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+                        <option value="Reels / Video" ${sFormat.includes('Reels') || sFormat.includes('Video') ? 'selected' : ''}>🎬 Reels / Kratek video (9:16)</option>
+                        <option value="Vrtiljak (Carousel)" ${sFormat.includes('Vrtiljak') || sFormat.includes('Carousel') ? 'selected' : ''}>📚 Vrtiljak (Carousel)</option>
+                        <option value="Fotografija / Grafika" ${sFormat.includes('Foto') || sFormat.includes('Grafik') ? 'selected' : ''}>🖼️ Fotografija / Grafika</option>
+                        <option value="Zgodba (Story)" ${sFormat.includes('Story') || sFormat.includes('Zgodba') ? 'selected' : ''}>📱 Zgodba (Story)</option>
+                        <option value="Tekstovna objava / Članek" ${sFormat.includes('Tekst') || sFormat.includes('Članek') ? 'selected' : ''}>📝 Tekstovna objava / Članek</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1.5">Vsebinski steber</label>
+                      <select id="spPillar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+                        ${pillarList.map(pName => `
+                          <option value="${escapeHtml(pName)}" ${sPillar === pName ? 'selected' : ''}>${escapeHtml(pName)}</option>
+                        `).join('')}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1.5">Status scenarija</label>
+                      <select id="spStatus" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30 font-semibold">
+                        <option value="draft" ${sStatus === 'draft' ? 'selected' : ''}>📝 Osnutek</option>
+                        <option value="ready" ${sStatus === 'ready' ? 'selected' : ''}>🎬 Pripravljeno za snemanje</option>
+                        <option value="filmed" ${sStatus === 'filmed' ? 'selected' : ''}>📹 Posneto / V montaži</option>
+                        <option value="scheduled" ${sStatus === 'scheduled' ? 'selected' : ''}>🗓️ Načrtovano v koledarju</option>
+                        <option value="published" ${sStatus === 'published' ? 'selected' : ''}>✅ Objavljeno</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1">
+                    <div>
+                      <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1.5">Ciljna publika / Bolečina kupca</label>
+                      <input id="spTarget" type="text" value="${escapeHtml(sTarget)}" placeholder="npr. Domači peki, ki jim testo ne vzhaja ali se hlebec sesede..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+                    </div>
+                    <div>
+                      <label class="block font-bold uppercase tracking-wider text-slate-400 mb-1.5">Glavno sporočilo (Ključni takeaway)</label>
+                      <input id="spCoreMessage" type="text" value="${escapeHtml(sCoreMessage)}" placeholder="npr. Temperatura vode je ključna – kvas potrebuje med 35 in 38°C..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SECTION 1: HOOK (0-3s) -->
+                <div class="bg-gradient-to-br from-slate-900/90 to-amber-950/20 border border-amber-500/30 rounded-3xl p-5 sm:p-7 shadow-xl space-y-4">
+                  <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                    <h3 class="text-sm font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                      <i data-lucide="zap" class="w-4 h-4"></i> 1. Faza: HOOK (0–3 sekunde) — Ustavitev drsenja (Stop-scroll)
+                    </h3>
+                    <span class="text-[11px] text-amber-400/80 bg-amber-500/10 px-2.5 py-0.5 rounded-full font-semibold border border-amber-500/20">
+                      Kritične prve 3 sekunde
+                    </span>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+                    <div class="space-y-1.5">
+                      <label class="block font-bold text-slate-200 flex items-center gap-1.5">
+                        <i data-lucide="mic" class="w-3.5 h-3.5 text-amber-400"></i> Verbalni hook (Govor & napisi na ekranu)
+                      </label>
+                      <textarea id="spHookVerbal" rows="4" placeholder="Npr. 'Če ti kruh po peki vedno pade skupaj, 100% delaš to napako...'" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30">${escapeHtml(sHookVerbal)}</textarea>
+                      <p class="text-[11px] text-slate-500">Prvih 5 do 8 izgovorjenih besed ali velik krepak napis na vrhu videa.</p>
+                    </div>
+
+                    <div class="space-y-1.5">
+                      <label class="block font-bold text-slate-200 flex items-center gap-1.5">
+                        <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-400"></i> Vizualni hook (Kaj gledalec vidi v 1. sekundi)
+                      </label>
+                      <textarea id="spHookVisual" rows="4" placeholder="Npr. Zvok hrustanja skorje, dinamičen prerez toplega hlebca s paro, hitro približevanje kamere..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30">${escapeHtml(sHookVisual)}</textarea>
+                      <p class="text-[11px] text-slate-500">Močna akcija, rekvizit, hitro gibanje ali nepričakovan kader.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SECTION 2: JEDRO & VREDNOST (BODY) -->
+                <div class="bg-gradient-to-br from-slate-900/90 to-indigo-950/20 border border-indigo-500/30 rounded-3xl p-5 sm:p-7 shadow-xl space-y-4">
+                  <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                    <h3 class="text-sm font-black text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                      <i data-lucide="play-circle" class="w-4 h-4"></i> 2. Faza: JEDRO & VREDNOST — Kadri in govorna zgodba
+                    </h3>
+                    <span class="text-[11px] text-indigo-300 bg-indigo-500/10 px-2.5 py-0.5 rounded-full font-semibold border border-indigo-500/20">
+                      Snemalna knjiga + Voiceover
+                    </span>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+                    <div class="space-y-1.5">
+                      <label class="block font-bold text-slate-200 flex items-center gap-1.5">
+                        <i data-lucide="video" class="w-3.5 h-3.5 text-indigo-400"></i> Vizualni potek (Kadri / B-roll / Prikaz)
+                      </label>
+                      <textarea id="spBodyVisual" rows="10" placeholder="Kader 1: Merjenje temperature z digitalnim termometrom&#10;Kader 2: Dodajanje žličke sladkorja kvasu&#10;Kader 3: Penjenje v prozornem kozarcu (makro posnetek)&#10;Kader 4: Pokrivanje posode s toplo vlažno krpo&#10;Kader 5: Prerez zlatega hlebca..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 leading-relaxed">${escapeHtml(sBodyVisual)}</textarea>
+                      <p class="text-[11px] text-slate-500">Zapišite kote, gibanje kamere in kaj se dogaja na ekranu.</p>
+                    </div>
+
+                    <div class="space-y-1.5">
+                      <label class="block font-bold text-slate-200 flex items-center gap-1.5">
+                        <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-400"></i> Govorno besedilo (Voiceover / Govor v kamero)
+                      </label>
+                      <textarea id="spBodyAudio" rows="10" placeholder="Točka 1: Večina ljudi meni, da bolj kot je voda topla, hitreje bo testo vzhajalo. To je napaka!&#10;Točka 2: Kvasovke odmrejo že pri 42 stopinjah. Voda mora biti prijetno mlačna (35–38°C).&#10;Točka 3: Vedno dodajte pol žličke sladkorja, ki nahrani kvasovke preden zamesite moko...&#10;Točka 4: Pustite vzhajati v prostoru brez prepiha." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 leading-relaxed">${escapeHtml(sBodyAudio)}</textarea>
+                      <p class="text-[11px] text-slate-500">Natančne besede, poudarki in premori med stavki.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SECTION 3: CALL TO ACTION -->
+                <div class="bg-gradient-to-br from-slate-900/90 to-emerald-950/20 border border-emerald-500/30 rounded-3xl p-5 sm:p-7 shadow-xl space-y-4">
+                  <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                    <h3 class="text-sm font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                      <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i> 3. Faza: CALL TO ACTION (CTA) — Zaključno dejanje
+                    </h3>
+                    <span class="text-[11px] text-emerald-300 bg-emerald-500/10 px-2.5 py-0.5 rounded-full font-semibold border border-emerald-500/20">
+                      En sam jasen poziv
+                    </span>
+                  </div>
+
+                  <div class="space-y-1.5 text-xs">
+                    <textarea id="spCta" rows="3" placeholder="Npr. 'Shrani ta recept za naslednji vikend in v komentar napiši 'KVAS', če želiš naš celoten brezplačni vodnik za peko!' ali 'Klikni na povezavo v opisu za nakup sveže moke.'" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/30">${escapeHtml(sCta)}</textarea>
+                    <p class="text-[11px] text-slate-500">Gledalec naj stori točno eno dejanje: komentar, shranitev, delitev ali klik na povezavo.</p>
+                  </div>
+                </div>
+
+                <!-- SECTION 4: TEHNIČNA IN PRODUKCIJSKA NAVODILA -->
+                <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-7 shadow-xl space-y-4">
+                  <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                    <h3 class="text-sm font-black text-purple-400 uppercase tracking-wider flex items-center gap-2">
+                      <i data-lucide="sliders" class="w-4 h-4"></i> 4. Faza: TEHNIČNA IN PRODUKCIJSKA NAVODILA
+                    </h3>
+                    <span class="text-[11px] text-slate-400 font-semibold">Za snemalca in montažerja</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label class="block font-bold text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i data-lucide="sun" class="w-3.5 h-3.5 text-purple-400"></i> Lokacija & Osvetlitev
+                      </label>
+                      <input id="spLocation" type="text" value="${escapeHtml(sLocation)}" placeholder="npr. Kuhinjski otok, naravna svetloba iz leve, nevtralno ozadje" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+                    </div>
+
+                    <div>
+                      <label class="block font-bold text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i data-lucide="volume-2" class="w-3.5 h-3.5 text-purple-400"></i> Zvok & Glasba
+                      </label>
+                      <input id="spAudio" type="text" value="${escapeHtml(sAudio)}" placeholder="npr. Brezžični mikrofon, poudarjen ASMR zvok droži, v ozadju nežen akustičen ritem" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+                    </div>
+
+                    <div>
+                      <label class="block font-bold text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i data-lucide="box" class="w-3.5 h-3.5 text-purple-400"></i> Rekviziti & Izdelki
+                      </label>
+                      <input id="spProps" type="text" value="${escapeHtml(sProps)}" placeholder="npr. Termometer, prozorna posoda, steklen kozarec, svež hlebec za prelom" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+                    </div>
+
+                    <div>
+                      <label class="block font-bold text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i data-lucide="scissors" class="w-3.5 h-3.5 text-purple-400"></i> Montaža & Napisi na ekranu
+                      </label>
+                      <input id="spEditing" type="text" value="${escapeHtml(sEditing)}" placeholder="npr. Dinamični podnapisi s rumenim poudarkom, skokoviti rezi (jump cuts), zvočni učinek 'pop'" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-300 mb-1">Dodatne opombe za produkcijo</label>
+                    <textarea id="spProductionNotes" rows="2" placeholder="Morebitne dodatne opombe glede snemanja ali opreme..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30">${escapeHtml(sProductionNotes)}</textarea>
+                  </div>
+                </div>
+
+                <!-- BOTTOM ACTION FOOTER -->
+                <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+                  <button onclick="openClientWorkspace('${client.id}', 'calendar')" type="button" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition">
+                    ← Prekliči in nazaj v delovni prostor
+                  </button>
+
+                  <div class="flex items-center gap-3 ml-auto">
+                    <button type="button" onclick="handleSaveScriptPageAndPlanPost('${client.id}')" class="px-4 py-2.5 text-xs font-bold text-sky-200 bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 rounded-xl transition flex items-center gap-1.5 active:scale-95 shadow-md">
+                      <i data-lucide="calendar" class="w-4 h-4 text-sky-400"></i> Shrani in načrtuj v koledar →
+                    </button>
+
+                    <button type="button" onclick="handleSaveScriptPage('${client.id}')" class="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-xl shadow-lg shadow-purple-950/40 border border-purple-500/30 transition flex items-center gap-2 active:scale-95">
+                      <i data-lucide="save" class="w-4 h-4"></i> Shrani scenarij
+                    </button>
+                  </div>
+                </div>
+
+              </form>
+            </main>
+
+          </div>
+
+        </div>
+      `;
+
+      lucide.createIcons({ root: container });
     }
 
-    async function handleSaveScript(e, andPlanPost = false) {
-      if (e) e.preventDefault();
-      const clientId = document.getElementById('scriptModalClientId').value;
+    async function handleSaveScriptPage(clientId, andPlanPost = false) {
       const client = clients.find(c => c.id === clientId);
       if (!client) return null;
 
       if (!client.crm) client.crm = {};
       if (!client.crm.scripts) client.crm.scripts = [];
 
-      const existingId = document.getElementById('scriptModalScriptId').value;
+      const scriptIdInput = document.getElementById('spScriptId');
+      const existingId = scriptIdInput?.value?.trim();
+
+      const title = document.getElementById('spTitle')?.value?.trim();
+      if (!title) {
+        alert("Prosimo, vnesite vsaj naslov scenarija.");
+        return null;
+      }
+
       const scriptObj = {
         id: existingId || ('script_' + Date.now()),
-        linked_idea_id: document.getElementById('scriptModalLinkedIdeaId').value || null,
-        title: document.getElementById('scriptModalTitle').value.trim(),
-        format: document.getElementById('scriptModalFormat').value,
-        pillar: document.getElementById('scriptModalPillar').value,
-        target: document.getElementById('scriptModalTarget').value.trim(),
-        core_message: document.getElementById('scriptModalCoreMessage').value.trim(),
-        hook_verbal: document.getElementById('scriptModalHookVerbal').value.trim(),
-        hook_visual: document.getElementById('scriptModalHookVisual').value.trim(),
-        body_visual: document.getElementById('scriptModalBodyVisual').value.trim(),
-        body_audio: document.getElementById('scriptModalBodyAudio').value.trim(),
-        cta: document.getElementById('scriptModalCta').value.trim(),
-        production_notes: document.getElementById('scriptModalProductionNotes').value.trim(),
-        status: 'ready',
+        linked_idea_id: document.getElementById('spLinkedIdeaId')?.value || null,
+        title: title,
+        format: document.getElementById('spFormat')?.value || 'Reels / Video',
+        pillar: document.getElementById('spPillar')?.value || '',
+        status: document.getElementById('spStatus')?.value || 'ready',
+        target: document.getElementById('spTarget')?.value?.trim() || '',
+        core_message: document.getElementById('spCoreMessage')?.value?.trim() || '',
+        hook_verbal: document.getElementById('spHookVerbal')?.value?.trim() || '',
+        hook_visual: document.getElementById('spHookVisual')?.value?.trim() || '',
+        body_visual: document.getElementById('spBodyVisual')?.value?.trim() || '',
+        body_audio: document.getElementById('spBodyAudio')?.value?.trim() || '',
+        cta: document.getElementById('spCta')?.value?.trim() || '',
+        location: document.getElementById('spLocation')?.value?.trim() || '',
+        audio: document.getElementById('spAudio')?.value?.trim() || '',
+        props: document.getElementById('spProps')?.value?.trim() || '',
+        editing: document.getElementById('spEditing')?.value?.trim() || '',
+        production_notes: document.getElementById('spProductionNotes')?.value?.trim() || '',
         updated_at: new Date().toISOString()
       };
 
       if (existingId) {
         const idx = client.crm.scripts.findIndex(s => s.id === existingId);
         if (idx >= 0) client.crm.scripts[idx] = scriptObj;
+        else client.crm.scripts.unshift(scriptObj);
       } else {
         client.crm.scripts.unshift(scriptObj);
       }
 
       await saveCurrentWorkspace(false);
       showToast('Scenarij je uspešno shranjen!');
-      closeScriptModal();
-      renderWorkspaceTabContent();
+
+      if (!andPlanPost) {
+        renderScriptwriterStudio(client, scriptObj.id);
+      }
+
       return scriptObj;
     }
 
-    async function handleSaveScriptAndPlanPost() {
-      const script = await handleSaveScript(null, true);
+    async function handleSaveScriptPageAndPlanPost(clientId) {
+      const script = await handleSaveScriptPage(clientId, true);
       if (!script) return;
-      const clientId = document.getElementById('scriptModalClientId').value;
-      
+
       const briefParts = [];
       if (script.hook_verbal || script.hook_visual) {
-        briefParts.push(`🎬 HOOK:\n• Verbalni: ${script.hook_verbal || '/'}\n• Vizualni: ${script.hook_visual || '/'}`);
+        briefParts.push(`🎬 HOOK (0-3s):\n• Verbalni: ${script.hook_verbal || '/'}\n• Vizualni: ${script.hook_visual || '/'}`);
       }
       if (script.body_visual || script.body_audio) {
         briefParts.push(`📋 JEDRO:\n• Kadri: ${script.body_visual || '/'}\n• Govor: ${script.body_audio || '/'}`);
       }
-      if (script.production_notes) {
-        briefParts.push(`⚙️ PRODUKCIJSKA NAVODILA:\n${script.production_notes}`);
+      if (script.location || script.audio || script.props || script.editing || script.production_notes) {
+        briefParts.push(`⚙️ PRODUKCIJSKA NAVODILA:\n${[
+          script.location ? `• Lokacija: ${script.location}` : '',
+          script.audio ? `• Zvok: ${script.audio}` : '',
+          script.props ? `• Rekviziti: ${script.props}` : '',
+          script.editing ? `• Montaža: ${script.editing}` : '',
+          script.production_notes ? `• Opombe: ${script.production_notes}` : ''
+        ].filter(Boolean).join('\n')}`);
       }
 
+      openClientWorkspace(clientId, 'calendar');
       openAddPostModal(
         clientId,
         null,
@@ -5595,18 +5879,29 @@
       );
     }
 
-    async function handleDeleteCurrentScript() {
-      if (!confirm("Ali želite izbrisati ta scenarij?")) return;
-      const clientId = document.getElementById('scriptModalClientId').value;
-      const scriptId = document.getElementById('scriptModalScriptId').value;
+    async function handleDeleteScriptPage(clientId, scriptId) {
+      if (!confirm("Ali ste prepričani, da želite izbrisati ta scenarij?")) return;
       const client = clients.find(c => c.id === clientId);
-      if (!client || !scriptId) return;
+      if (!client) return;
 
       client.crm.scripts = (client.crm.scripts || []).filter(s => s.id !== scriptId);
       await saveCurrentWorkspace(false);
-      closeScriptModal();
       showToast('Scenarij je izbrisan');
-      renderWorkspaceTabContent();
+      renderScriptwriterStudio(client, null);
+    }
+
+    // Aliases for any remaining callers
+    async function handleSaveScript(e, andPlanPost = false) {
+      return handleSaveScriptPage(currentClientId, andPlanPost);
+    }
+
+    async function handleSaveScriptAndPlanPost() {
+      return handleSaveScriptPageAndPlanPost(currentClientId);
+    }
+
+    async function handleDeleteCurrentScript() {
+      const scriptId = document.getElementById('spScriptId')?.value;
+      if (scriptId) return handleDeleteScriptPage(currentClientId, scriptId);
     }
 
     // -------------------------------------------------------------
