@@ -718,6 +718,126 @@
         </div>
       </div>
 
+  <!-- MODAL: EXPORT MD DATOTEKA ZA AI AGENTA -->
+  <div id="exportMdModal" class="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 hidden" onclick="closeExportMdModal()">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto space-y-6" onclick="event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between pb-4 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-indigo-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/10">
+            <i data-lucide="file-code" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base sm:text-lg font-black text-white">MD Datoteke za AI Agenta</h3>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Markdown .md</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Izvoz strukturiranega konteksta za ChatGPT, Claude, Gemini, Cursor ali Antigravity agenta.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeExportMdModal()" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- 3 Export Option Cards -->
+      <div class="space-y-3.5">
+        
+        <!-- Card 1: Smernice podjetja -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                <i data-lucide="help-circle" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                  1. Smernice podjetja
+                  <span class="text-[10px] font-bold text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-md border border-amber-500/30">Vprašanja & Odgovori</span>
+                </h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Vseh 20 izvornih odgovorov naročnika (vrednote, zgodba, vizija, produkti, kupci in omejitve).</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-900 justify-end">
+            <button type="button" onclick="copyMdFileContent('guidelines')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5 active:scale-95">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopiraj v odložišče
+            </button>
+            <button type="button" onclick="downloadMdFile('guidelines')" class="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-600/20 active:scale-95">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Prenesi smernice_podjetja.md
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2: Strategija Blagovne znamke -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center shrink-0">
+                <i data-lucide="award" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                  2. Strategija Blagovne znamke
+                  <span class="text-[10px] font-bold text-indigo-300 bg-indigo-500/15 px-2 py-0.5 rounded-md border border-indigo-500/30">Koraki 2, 3, 4, 5</span>
+                </h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Tržna raziskava, pozicioniranje, USP, persona, ton komunikacije, distribucija formatov ter vsebinski stebri s temami in KPI.</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-900 justify-end">
+            <button type="button" onclick="copyMdFileContent('strategy')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5 active:scale-95">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopiraj v odložišče
+            </button>
+            <button type="button" onclick="downloadMdFile('strategy')" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Prenesi strategija_znamke.md
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 3: Koledar objav -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                  3. Koledar objav
+                  <span class="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded-md border border-emerald-500/30">Mesečni načrt</span>
+                </h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Vse načrtovane objave s termini, kanali, formati, uvodnimi trnki (hook), scenariji in CTA pozivi.</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-900 justify-end">
+            <button type="button" onclick="copyMdFileContent('calendar')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5 active:scale-95">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopiraj v odložišče
+            </button>
+            <button type="button" onclick="downloadMdFile('calendar')" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Prenesi koledar_objav.md
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer & Master Download -->
+      <div class="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+        <button type="button" onclick="downloadMdFile('master')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs transition flex items-center gap-2 shadow-lg shadow-purple-600/25 active:scale-95">
+          <i data-lucide="package" class="w-4 h-4"></i>
+          <span>Prenesi Master AI paket (Vsi 3 dokumenti v enem)</span>
+        </button>
+        <button type="button" onclick="closeExportMdModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition">
+          Zapri
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- MODAL: CREATE NEW CLIENT -->
   <div id="createModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-slate-100">
@@ -1232,6 +1352,7 @@
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           toggleWorkspaceTodoDrawer(false);
+          closeExportMdModal();
         }
       });
     });
@@ -2555,6 +2676,10 @@
 
           <!-- Upper Right Corner Action Buttons -->
           <div class="flex flex-wrap items-center lg:justify-end gap-2 shrink-0">
+            <button onclick="openExportMdModal('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+              <span>MD datoteka</span>
+            </button>
             <button id="wsTodoDrawerTriggerBtn" onclick="toggleWorkspaceTodoDrawer(true)" type="button" class="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-indigo-300 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 rounded-xl transition active:scale-95 shadow-xs">
               <i data-lucide="check-square" class="w-3.5 h-3.5 text-indigo-400"></i>
               <span>Potek dela</span>
@@ -2613,9 +2738,14 @@
               <span class="text-xs font-bold text-slate-600">/</span>
               <span class="text-xs font-black text-white">${tabTitles[activeWorkspaceTab] || activeWorkspaceTab}</span>
             </div>
-            <button type="button" onclick="toggleWorkspaceTodoDrawer(true)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 rounded-xl transition active:scale-95">
-              <i data-lucide="check-square" class="w-3.5 h-3.5 text-indigo-400"></i> Odpri potek dela (To-Do)
-            </button>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="openExportMdModal('${client.id}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition active:scale-95">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> MD datoteka
+              </button>
+              <button type="button" onclick="toggleWorkspaceTodoDrawer(true)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 rounded-xl transition active:scale-95">
+                <i data-lucide="check-square" class="w-3.5 h-3.5 text-indigo-400"></i> Odpri potek dela (To-Do)
+              </button>
+            </div>
           </div>
         `;
       }
@@ -7782,6 +7912,665 @@ Odgovori se samodejno sproti shranjujejo. Hvala za vaš čas!`;
         default: return 'bg-slate-800 text-slate-300 border-slate-700';
       }
     }
+  
+    // -------------------------------------------------------------
+    // AI AGENT MARKDOWN EXPORT ENGINE (MD DATOTEKA)
+    // -------------------------------------------------------------
+    let currentExportMdClientId = null;
+
+    function openExportMdModal(clientId) {
+      currentExportMdClientId = clientId || currentClientId;
+      const modal = document.getElementById('exportMdModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons({ root: modal });
+      }
+    }
+
+    function closeExportMdModal() {
+      const modal = document.getElementById('exportMdModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // Helper: sanitize client name for filenames
+    function getMdFilenamePrefix(client) {
+      const raw = (client.company_name || 'narocnik').toLowerCase().trim();
+      return raw.replace(/[^a-z0-9_-]/g, '_').replace(/_+/g, '_').substring(0, 30);
+    }
+
+    // 1. Smernice podjetja (Vprašalnik naročnika)
+    function generateGuidelinesMarkdown(client) {
+      if (!client) return '';
+      const answers = client.answers || {};
+      const fields = answers.fields || {};
+      const chips = answers.chips || {};
+      const prods = answers.q16_products || [];
+      const prefix = client.company_name || 'Naročnik';
+      const today = new Date().toISOString().split('T')[0];
+
+      let md = `# SMERNICE PODJETJA & VPRAŠALNIK NAROČNIKA: ${prefix.toUpperCase()}\n`;
+      md += `> **Naročnik / Podjetje:** ${client.company_name || '/'}\n`;
+      md += `> **Kontaktna oseba:** ${client.contact_person || '/'} | **Email:** ${client.email || '/'} | **Telefon:** ${client.phone || '/'} | **Splet:** ${client.website || '/'}\n`;
+      md += `> **Status profila:** ${CLIENT_STATUSES[client.status]?.label || client.status || 'Aktivno'} | **Datum izvoza:** ${today}\n\n`;
+
+      md += `---\n\n`;
+      md += `## 🎯 SISTEMSKA NAVODILA ZA AI AGENTA (GROUND TRUTH)\n`;
+      md += `Ta dokument vsebuje avtentične in izvorne podatke ter odgovore neposredno od naročnika. Predstavlja temeljno resnico (Ground Truth) o podjetju, njegovi zgodbi, poslanstvu, vrednotah, ponudbi in ciljnih kupcih.\n`;
+      md += `**Navodilo za asistenta:** Kadar ustvarjaš vsebine, scenarije, objave, prodajna besedila ali marketinške kampanje, dosledno upoštevaj te smernice. Ne izmišljuj si dejstev o nastanku, vrednotah ali ponudbi, temveč zvesto izhajaj iz spodnjih odgovorov.\n\n`;
+      md += `---\n\n`;
+
+      md += `## SKLOP 1: PREDSTAVITEV PODJETJA\n\n`;
+      
+      // Q1
+      md += `### 1. Predstavitev dejavnosti in poslovanja\n`;
+      md += `*Vprašanje: Kako bi na kratko predstavili svoje podjetje nekomu, ki zanj še nikoli ni slišal?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q1_text ? fields.q1_text.trim() : '*(Ni podanega besedilnega opisa)*'}\n\n`;
+      if (chips.q1_business_type?.length || chips.q1_reach?.length) {
+        md += `- **Tip poslovanja:** ${(chips.q1_business_type || []).join(', ') || '/'}\n`;
+        md += `- **Geografski doseg:** ${(chips.q1_reach || []).join(', ') || '/'}\n\n`;
+      }
+
+      // Q2
+      md += `### 2. Nastanek in razlog začetka zgodbe podjetja\n`;
+      md += `*Vprašanje: Kako in zakaj se je začela zgodba vašega podjetja?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q2_text ? fields.q2_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q2_origins?.length) {
+        md += `- **Izvor / povod za nastanek:** ${chips.q2_origins.join(', ')}\n\n`;
+      }
+
+      // Q3
+      md += `### 3. Dolgoročna vizija podjetja\n`;
+      md += `*Vprašanje: Kakšna je vaša dolgoročna vizija za podjetje?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q3_text ? fields.q3_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q3_vision_tags?.length) {
+        md += `- **Ključne usmeritve vizije:** ${chips.q3_vision_tags.join(', ')}\n\n`;
+      }
+
+      // Q4
+      md += `### 4. Temeljne vrednote podjetja\n`;
+      md += `*Vprašanje: Katere so ključne vrednote vašega podjetja?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q4_text ? fields.q4_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q4_values?.length) {
+        md += `- **Izpostavljene vrednote:** ${chips.q4_values.join(', ')}\n\n`;
+      }
+
+      // Q5
+      md += `### 5. Cenovni razred in pozicioniranje na trgu\n`;
+      md += `*Vprašanje: Kateri so vaši glavni izdelki ali storitve in cenovni razred?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q5_text ? fields.q5_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q5_price_range?.length) {
+        md += `- **Cenovni razred:** ${chips.q5_price_range.join(', ')}\n\n`;
+      }
+
+      md += `---\n\n`;
+      md += `## SKLOP 2: PRODUKTI & KONKURENCA\n\n`;
+
+      // Q6
+      md += `### 6. Glavni izdelki / storitve (TOP prodajni zadetki)\n`;
+      md += `*Vprašanje: Katerih 5 izdelkov ali storitev trenutno prodate največ?*\n\n`;
+      const q6List = [fields.q6_top1, fields.q6_top2, fields.q6_top3, fields.q6_top4, fields.q6_top5].filter(Boolean);
+      if (q6List.length > 0) {
+        q6List.forEach((prod, i) => {
+          md += `${i + 1}. **${prod}**\n`;
+        });
+        md += `\n`;
+      } else {
+        md += `*(Ni specifično naštetih produktov)*\n\n`;
+      }
+
+      // Q7
+      md += `### 7. Konkurenčna prednost (Zakaj ravno vi)\n`;
+      md += `*Vprašanje: Zakaj stranke izberejo ravno vas in ne konkurence?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q7_text ? fields.q7_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q7_advantages?.length) {
+        md += `- **Prednosti podjetja:** ${chips.q7_advantages.join(', ')}\n\n`;
+      }
+
+      // Q8
+      md += `### 8. Glavni konkurenti in vzorniki / navdihi\n`;
+      md += `*Vprašanje: Kdo so vaši glavni konkurenti in ali obstajajo podjetja, ki so vam za vzor?*\n\n`;
+      md += `- **Konkurenti:** ${fields.q8_competitors ? fields.q8_competitors.trim() : '/'}\n`;
+      md += `- **Vzorniki / profili za navdih:** ${fields.q8_inspiration ? fields.q8_inspiration.trim() : '/'}\n\n`;
+
+      md += `---\n\n`;
+      md += `## SKLOP 3: CILJNA PUBLIKA & ZGODBA\n\n`;
+
+      // Q9
+      md += `### 9. Želena izkušnja in občutki ob sodelovanju\n`;
+      md += `*Vprašanje: Kakšno izkušnjo ali občutek želite, da ima stranka ob sodelovanju z vami?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q9_text ? fields.q9_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q9_feelings?.length) {
+        md += `- **Želeni občutki kupca:** ${chips.q9_feelings.join(', ')}\n\n`;
+      }
+
+      // Q10
+      md += `### 10. Profil idealnega kupca (Ciljna skupina)\n`;
+      md += `*Vprašanje: Kdo so vaše najpogostejše stranke?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q10_text ? fields.q10_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q10_audience_type?.length || chips.q10_age_group?.length) {
+        md += `- **Tip kupcev:** ${(chips.q10_audience_type || []).join(', ') || '/'}\n`;
+        md += `- **Starostna skupina:** ${(chips.q10_age_group || []).join(', ') || '/'}\n\n`;
+      }
+
+      // Q11
+      md += `### 11. Bolečine, težave in potrebe kupcev\n`;
+      md += `*Vprašanje: S kakšnimi težavami, potrebami ali željami se stranke najpogosteje obračajo na vas?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q11_text ? fields.q11_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q11_painpoints?.length) {
+        md += `- **Identificirani izzivi / bolečine strank:** ${chips.q11_painpoints.join(', ')}\n\n`;
+      }
+
+      // Q12
+      md += `### 12. Pogosta vprašanja, ugovori in dejavniki nakupa\n`;
+      md += `*Vprašanje: Kaj stranke pred nakupom ali sodelovanjem najbolj zanima ali jih morda bega?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q12_text ? fields.q12_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q12_questions?.length) {
+        md += `- **Pogosta vprašanja strank:** ${chips.q12_questions.join(', ')}\n`;
+      }
+      if (chips.q12_converters?.length) {
+        md += `- **Glavni dejavniki, ki prepričajo v nakup:** ${chips.q12_converters.join(', ')}\n`;
+      }
+      md += `\n`;
+
+      // Q13
+      md += `### 13. Želene bodoče stranke (Bodoči segmenti)\n`;
+      md += `*Vprašanje: Kakšne stranke bi si najbolj želeli v prihodnje?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q13_text ? fields.q13_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q13_future_clients?.length) {
+        md += `- **Želeni novi segmenti:** ${chips.q13_future_clients.join(', ')}\n\n`;
+      }
+
+      md += `---\n\n`;
+      md += `## SKLOP 4: TRŽENJE & PRISOTNOST\n\n`;
+
+      // Q14
+      md += `### 14. Glavni poslovni in marketinški cilji (Prvi 3 meseci)\n`;
+      md += `*Vprašanje: Kateri so vaši glavni poslovni cilji v naslednjih 3 mesecih?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q14_text ? fields.q14_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q14_short_goals?.length) {
+        md += `- **Cilji za 3 mesece:** ${chips.q14_short_goals.join(', ')}\n\n`;
+      }
+
+      // Q15
+      md += `### 15. Dolgoročni cilji (1–2 leti)\n`;
+      md += `*Vprašanje: Kje vidite podjetje čez 1 do 2 leti?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q15_text ? fields.q15_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q15_long_goals?.length) {
+        md += `- **Dolgoročni strateški cilji:** ${chips.q15_long_goals.join(', ')}\n\n`;
+      }
+
+      // Q16
+      md += `### 16. Produkti / storitve v ospredju za promocijo\n`;
+      md += `*Vprašanje: Kateri izdelki ali storitve so trenutno v ospredju in jih želite najbolj izpostaviti?*\n\n`;
+      if (prods.length > 0) {
+        prods.forEach((p, idx) => {
+          const pName = typeof p === 'string' ? p : p.name;
+          md += `${idx + 1}. **${pName}**\n`;
+        });
+        md += `\n`;
+      } else {
+        md += `*(Ni specifično naštetih produktov)*\n\n`;
+      }
+
+      // Q17
+      md += `### 17. 3 ključne besede za opis znamke\n`;
+      const q17Words = [fields.q17_word1, fields.q17_word2, fields.q17_word3].filter(Boolean);
+      md += `**Izbrane besede:** ${q17Words.length > 0 ? q17Words.map(w => `\`${w}\``).join(' • ') : '/'}\n\n`;
+
+      // Q18
+      md += `### 18. Želeni prvi vtis obiskovalca\n`;
+      md += `*Vprašanje: Kakšen vtis želite pustiti pri ljudeh, ko pomislijo na vašo blagovno znamko?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q18_text ? fields.q18_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q18_impressions?.length) {
+        md += `- **Ključni vtisi:** ${chips.q18_impressions.join(', ')}\n\n`;
+      }
+
+      // Q19
+      md += `### 19. Ton komunikacije in vzdušje na omrežjih\n`;
+      md += `*Vprašanje: Kakšen ton komunikacije in vzdušje želite na družbenih omrežjih?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q19_text ? fields.q19_text.trim() : '*(Ni podanega opisa)*'}\n\n`;
+      if (chips.q19_address_form?.length) {
+        md += `- **Oblika nagovora:** ${chips.q19_address_form.join(', ')}\n`;
+      }
+      if (chips.q19_tone_chips?.length) {
+        md += `- **Značilnosti tona:** ${chips.q19_tone_chips.join(', ')}\n`;
+      }
+      md += `\n`;
+
+      // Q20
+      md += `### 20. Omejitve in 'NO-GO' cone\n`;
+      md += `*Vprašanje: Ali obstajajo teme, sporočila ali načini komunikacije, ki jih v nobenem primeru ne želite uporabljati?*\n\n`;
+      md += `**Odgovor naročnika:**\n${fields.q20_text ? fields.q20_text.trim() : '*(Ni navedenih prepovedi)*'}\n\n`;
+      if (chips.q20_nogo?.length) {
+        md += `- **Strogo prepovedano (NO-GO):** ${chips.q20_nogo.join(', ')}\n\n`;
+      }
+
+      return md;
+    }
+
+    // Helper to extract effective value from CRM or questionnaire default
+    function getMdFieldVal(client, parentPath, fieldName, defaultFn) {
+      const state = getCrmFieldState(client, parentPath, fieldName, defaultFn);
+      return (state && state.value) ? String(state.value).trim() : '';
+    }
+
+    // 2. Strategija Blagovne znamke (Koraki 2, 3, 4, 5)
+    function generateBrandStrategyMarkdown(client) {
+      if (!client) return '';
+      const crm = client.crm || {};
+      const company = client.company_name || 'Naročnik';
+      const today = new Date().toISOString().split('T')[0];
+
+      let md = `# STRATEGIJA BLAGOVNE ZNAMKE & VSEBINSKI VODNIK: ${company.toUpperCase()}\n`;
+      md += `> **Podjetje:** ${company}\n`;
+      md += `> **Vloga dokumenta:** Celovite strateške smernice za AI Content & Copywriting Agenta\n`;
+      md += `> **Vključeni koraki:** 2. Tržna raziskava • 3. Strategija znamke • 4. Strategija omrežij • 5. Vsebinska strategija\n`;
+      md += `> **Datum izvoza:** ${today}\n\n`;
+
+      md += `---\n\n`;
+      md += `## 🤖 SISTEMSKI PROMPT ZA AI AGENTA\n`;
+      md += `Deluješ kot strateški vodja marketinga, kreativni direktor in copywriter za znamko **${company}**.\n`;
+      md += `Vsaka tvoja ideja, scenarij za video (Reels, TikTok), objava, oglas ali prodajno sporočilo mora dosledno odražati ta dokument:\n`;
+      md += `1. **Pozicioniranje in USP:** Jasno utrjuj našo unikatno prednost pred konkurenco.\n`;
+      md += `2. **Ton komunikacije:** Strogo uporabljaj odobrene besede in se izogibaj prepovedanim izrazom.\n`;
+      md += `3. **Ciljna skupina:** Nagovarjaj točno določeno primarno persono in rešuj njene bolečine (pain points).\n`;
+      md += `4. **Vsebinski stebri:** Vsebine umeščaj v opredeljene stebre in uporabljaj pripravljene ključne teme in CTA-je.\n`;
+      md += `5. **Marketinški cilji:** Delaj v smeri definiranih kratkoročnih in dolgoročnih ciljev ter KPI-jev.\n\n`;
+      md += `---\n\n`;
+
+      // -------------------------------------------------------------
+      // KORAK 2: TRŽNA RAZISKAVA
+      // -------------------------------------------------------------
+      md += `# 1. TRŽNA RAZISKAVA & ANALIZA (Korak 2)\n\n`;
+
+      const comps = crm.market_research?.competitors || [];
+      md += `## 1.1 Analiza konkurentov\n`;
+      if (comps.length > 0) {
+        comps.forEach((comp, idx) => {
+          md += `### Konkurent ${idx + 1}: ${comp.name || 'Neimenovan'}\n`;
+          if (comp.website) md += `- **Spletna stran:** ${comp.website}\n`;
+          md += `- **Pozicioniranje:** ${comp.positioning || '/'}\n`;
+          md += `- **Prednosti konkurenta:** ${comp.strengths || '/'}\n`;
+          md += `- **Slabosti konkurenta:** ${comp.weaknesses || '/'}\n`;
+          md += `- **Njihov vsebinski pristop:** ${comp.content_approach || '/'}\n\n`;
+        });
+      } else {
+        md += `*(Podatki o konkurentih še niso vneseni)*\n\n`;
+      }
+
+      md += `## 1.2 Tržne priložnosti & Vrzeli\n`;
+      const trends = getMdFieldVal(client, 'market_research.opportunities', 'trends');
+      const needs = getMdFieldVal(client, 'market_research.opportunities', 'customer_needs', (a) => (a.fields?.q11_text || a.chips?.q11_painpoints?.join(', ')));
+      const opps = getMdFieldVal(client, 'market_research.opportunities', 'content_opps');
+      const diff = getMdFieldVal(client, 'market_research.opportunities', 'differentiation', (a) => (a.fields?.q7_text || a.chips?.q7_advantages?.join(', ')));
+
+      md += `- **Tržni trendi v panogi:**\n  ${trends ? trends.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Nezadovoljene potrebe kupcev:**\n  ${needs ? needs.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Vsebinske priložnosti (Content Gaps):**\n  ${opps ? opps.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Potencial za diferenciacijo (Zakaj smo 10x boljši):**\n  ${diff ? diff.replace(/\n/g, '\n  ') : '/'}\n\n`;
+
+      md += `## 1.3 Poglobljen vpogled v kupce (Customer Insights)\n`;
+      const qCust = getMdFieldVal(client, 'market_research.customer_insights', 'questions', (a) => (a.fields?.q12_text || a.chips?.q12_questions?.join(', ')));
+      const objCust = getMdFieldVal(client, 'market_research.customer_insights', 'objections', (a) => (a.chips?.q12_converters?.join(', ')));
+
+      md += `- **Pogosta vprašanja strank:**\n  ${qCust ? qCust.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Glavni nakupni ugovori (Kaj jih zadržuje pred nakupom):**\n  ${objCust ? objCust.replace(/\n/g, '\n  ') : '/'}\n\n`;
+
+      md += `---\n\n`;
+
+      // -------------------------------------------------------------
+      // KORAK 3: STRATEGIJA ZNAMKE
+      // -------------------------------------------------------------
+      md += `# 2. STRATEGIJA ZNAMKE (Korak 3)\n\n`;
+
+      md += `## 2.1 Pozicioniranje & Poslanstvo\n`;
+      const pos = getMdFieldVal(client, 'brand_strategy', 'positioning', (a) => a.fields?.q1_text);
+      const purpose = getMdFieldVal(client, 'brand_strategy', 'purpose', (a) => (a.fields?.q3_text || a.fields?.q2_text));
+      const usp = getMdFieldVal(client, 'brand_strategy', 'usp', (a) => a.fields?.q7_text);
+
+      md += `### Tržno pozicioniranje (Brand Positioning)\n${pos || '/'}\n\n`;
+      md += `### Poslanstvo & Namen (Brand Purpose)\n${purpose || '/'}\n\n`;
+      md += `### Edinstvena prodajna prednost (USP)\n${usp || '/'}\n\n`;
+
+      md += `## 2.2 Ciljna skupina & Persona\n`;
+      const pAud = getMdFieldVal(client, 'brand_strategy.target_audience', 'primary', (a) => a.fields?.q10_text);
+      const sAud = getMdFieldVal(client, 'brand_strategy.target_audience', 'secondary', (a) => a.fields?.q13_text);
+      const pains = getMdFieldVal(client, 'brand_strategy.target_audience', 'problems', (a) => a.fields?.q11_text);
+      const motives = getMdFieldVal(client, 'brand_strategy.target_audience', 'motivations', (a) => (a.chips?.q12_converters?.join(', ') || a.fields?.q9_text));
+
+      md += `- **Primarna ciljna skupina (Idealni kupec):**\n  ${pAud ? pAud.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Sekundarna / bodoča ciljna skupina:**\n  ${sAud ? sAud.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Glavne bolečine in izzivi (Pain points):**\n  ${pains ? pains.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Nakupni motivi (Zakaj se odločijo za nakup):**\n  ${motives ? motives.replace(/\n/g, '\n  ') : '/'}\n\n`;
+
+      md += `## 2.3 Osebnost & Ključna sporočila\n`;
+      const personality = getMdFieldVal(client, 'brand_strategy', 'personality', (a) => (a.fields?.q17_word1 || a.fields?.q18_text));
+      const messaging = getMdFieldVal(client, 'brand_strategy', 'messaging', (a) => (a.fields?.q7_text || a.fields?.q3_text));
+
+      md += `### Osebnost znamke (Brand Personality)\n${personality || '/'}\n\n`;
+      md += `### Glavna sporočila (Key Messaging)\n${messaging || '/'}\n\n`;
+
+      md += `## 2.4 Ton komunikacije & Omejitve (Tone of Voice)\n`;
+      const wordsUse = getMdFieldVal(client, 'brand_strategy.tone_of_voice', 'words_to_use', (a) => (a.chips?.q19_address_form?.join(', ') || a.fields?.q19_text));
+      const wordsAvoid = getMdFieldVal(client, 'brand_strategy.tone_of_voice', 'words_to_avoid');
+      const rulesTone = getMdFieldVal(client, 'brand_strategy.tone_of_voice', 'rules');
+
+      md += `- **Besede in izrazi za UPORABO (Power words):**\n  ${wordsUse ? wordsUse.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Prepovedane besede in fraze (Words to Avoid):**\n  ${wordsAvoid ? wordsAvoid.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Pravila komuniciranja:**\n  ${rulesTone ? rulesTone.replace(/\n/g, '\n  ') : '/'}\n\n`;
+
+      md += `---\n\n`;
+
+      // -------------------------------------------------------------
+      // KORAK 4: STRATEGIJA OMREŽIJ & DISTRIBUCIJA PRODUKCIJE
+      // -------------------------------------------------------------
+      md += `# 3. STRATEGIJA OMREŽIJ & DISTRIBUCIJA PRODUKCIJE (Korak 4)\n\n`;
+
+      const plan = (typeof getClientProductionPlan === 'function') ? getClientProductionPlan(client) : {};
+      const dist = (typeof calculateDistributionFromPlan === 'function') ? calculateDistributionFromPlan(plan) : { coreMonthly: 0, totalPostsMonthly: 0, multiplier: '1.0' };
+
+      md += `## 3.1 Produkcijski načrt & Multiplikator\n`;
+      md += `- **Izvirnih produkcijskih kosov mesečno:** **${dist.coreMonthly}**\n`;
+      md += `- **Skupaj načrtovanih objav na vseh omrežjih:** **${dist.totalPostsMonthly}** mesečno\n`;
+      md += `- **Distribucijski multiplikator:** **${dist.multiplier}×** (iz 1 vsebine na več platform)\n\n`;
+
+      md += `## 3.2 Formati vsebin in cross-posting distribucija\n`;
+      if (typeof PRODUCTION_FORMATS !== 'undefined' && Array.isArray(PRODUCTION_FORMATS)) {
+        md += `| Format | Tedensko | Mesečno | Distribucija na kanale |\n`;
+        md += `|---|---|---|---|\n`;
+        PRODUCTION_FORMATS.forEach(fmt => {
+          const item = plan[fmt.key] || { weekly: 0, platforms: fmt.defaultPlatforms };
+          const weekly = parseInt(item.weekly, 10) || 0;
+          const monthly = weekly * 4;
+          const plats = (item.platforms || []).join(', ') || 'Brez';
+          md += `| **${fmt.name}** (${fmt.sub}) | ${weekly}×/ted | ${monthly}×/mes | ${plats} |\n`;
+        });
+        md += `\n`;
+      }
+
+      md += `---\n\n`;
+
+      // -------------------------------------------------------------
+      // KORAK 5: VSEBINSKA STRATEGIJA, CILJI & KPI
+      // -------------------------------------------------------------
+      md += `# 4. VSEBINSKA STRATEGIJA, CILJI & KPI (Korak 5)\n\n`;
+
+      md += `## 4.1 Vsebinski stebri (Content Pillars)\n`;
+      const pillars = (crm.content_strategy?.content_pillars || []).filter(p => p.key);
+      if (pillars.length > 0) {
+        pillars.forEach((sel, pIdx) => {
+          const opt = (typeof CONTENT_PILLAR_OPTIONS !== 'undefined') ? CONTENT_PILLAR_OPTIONS.find(o => o.key === sel.key) : null;
+          const pillarName = opt?.name || sel.name || sel.key;
+          const pillarDesc = opt?.desc || sel.purpose || '';
+
+          md += `### Steber ${pIdx + 1}: ${pillarName}\n`;
+          if (pillarDesc) md += `*Namen in vloga stebra:* ${pillarDesc}\n\n`;
+
+          // 8 Tem
+          const topics = sel.customThemes || opt?.topics || [];
+          if (topics.length > 0) {
+            md += `#### 8 Ključnih tem / Idej za vsebine:\n`;
+            topics.forEach((t, tIdx) => {
+              const tTitle = typeof t === 'string' ? t : t.title;
+              const tDesc = typeof t === 'object' && t.desc ? ` - ${t.desc}` : '';
+              md += `${tIdx + 1}. **${tTitle}**${tDesc}\n`;
+            });
+            md += `\n`;
+          }
+
+          // 5 CTA
+          const ctas = sel.customCtas || opt?.ctas || [];
+          if (ctas.length > 0) {
+            md += `#### 5 Preizkušenih pozivov k dejanju (CTA):\n`;
+            ctas.forEach((c, cIdx) => {
+              const cText = typeof c === 'string' ? c : c.text;
+              const cTag = typeof c === 'object' && c.tag ? ` *[${c.tag}]*` : '';
+              md += `- "${cText}"${cTag}\n`;
+            });
+            md += `\n`;
+          }
+        });
+      } else {
+        md += `*(Vsebinski stebri še niso izbrani)*\n\n`;
+      }
+
+      md += `## 4.2 Vsebinska usmeritev & Pristop\n`;
+      const themes = getMdFieldVal(client, 'content_strategy.content_direction', 'themes', (a) => a.fields?.q1_text);
+      const recurring = getMdFieldVal(client, 'content_strategy.content_direction', 'recurring_topics');
+      const eduApp = getMdFieldVal(client, 'content_strategy.content_direction', 'educational_approach');
+      const promoApp = getMdFieldVal(client, 'content_strategy.content_direction', 'promotional_approach', (a) => a.fields?.q7_text);
+
+      md += `- **Glavne komunikacijske teme:**\n  ${themes ? themes.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Ponavljajoče se rubrike (Recurring formats):**\n  ${recurring ? recurring.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Izobraževalni pristop (Educational):**\n  ${eduApp ? eduApp.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Prodajni pristop (Promotional):**\n  ${promoApp ? promoApp.replace(/\n/g, '\n  ') : '/'}\n\n`;
+
+      md += `## 4.3 Marketinški cilji\n`;
+      const shortGoals = getMdFieldVal(client, 'content_strategy', 'objectives_short', (a) => (crm.social_media_strategy?.objectives_short || a.fields?.q14_text || a.chips?.q14_short_goals?.join(', ')));
+      const longGoals = getMdFieldVal(client, 'content_strategy', 'objectives_long', (a) => (crm.social_media_strategy?.objectives_long || a.fields?.q15_text || a.chips?.q15_long_goals?.join(', ')));
+
+      md += `- **Kratkoročni cilji (Prvi 3 meseci):**\n  ${shortGoals ? shortGoals.replace(/\n/g, '\n  ') : '/'}\n\n`;
+      md += `- **Dolgoročni cilji (1–2 leti):**\n  ${longGoals ? longGoals.replace(/\n/g, '\n  ') : '/'}\n\n`;
+
+      md += `## 4.4 Ključni kazalniki uspeha (KPI)\n`;
+      const kpis = crm.content_strategy?.kpis || crm.social_media_strategy?.kpis || [];
+      if (kpis.length > 0) {
+        md += `| Kazalnik (KPI) | Ciljna vrednost | Obdobje merjenja |\n`;
+        md += `|---|---|---|\n`;
+        kpis.forEach(k => {
+          md += `| **${k.name || '/'}** | ${k.target || '/'} | ${k.period || '/'} |\n`;
+        });
+        md += `\n`;
+      } else {
+        md += `*(KPI še niso določeni)*\n\n`;
+      }
+
+      return md;
+    }
+
+    // 3. Koledar objav (Načrtovane vsebine)
+    function generateContentCalendarMarkdown(client) {
+      if (!client) return '';
+      const crm = client.crm || {};
+      const company = client.company_name || 'Naročnik';
+      const posts = [...(crm.content_calendar || [])];
+      posts.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      const today = new Date().toISOString().split('T')[0];
+
+      let md = `# KOLEDAR OBJAV & VSEBINSKI NAČRT: ${company.toUpperCase()}\n`;
+      md += `> **Podjetje:** ${company}\n`;
+      md += `> **Skupaj objav v koledarju:** ${posts.length}\n`;
+      md += `> **Datum izvoza:** ${today}\n\n`;
+
+      md += `---\n\n`;
+      md += `## 🤖 NAVODILA ZA AI AGENTA\n`;
+      md += `Ta dokument predstavlja aktiven urnik in načrt objav za **${company}**.\n`;
+      md += `Uporabi ga za:\n`;
+      md += `1. Pisanje ali izpopolnjevanje celotnih scenarijev, uvodnih trnkov (hook-ov) in privlačnih opisov (captions) za posamezne objave.\n`;
+      md += `2. Preverjanje doslednosti vsebinskih stebrov in frekvence objavljanja skozi mesec.\n`;
+      md += `3. Predlaganje novih dopolnilnih objav, ki se naravno navezujejo na že načrtovane vsebine.\n\n`;
+      md += `---\n\n`;
+
+      // Status counters
+      const statusCounts = {};
+      const platformCounts = {};
+      posts.forEach(p => {
+        statusCounts[p.status] = (statusCounts[p.status] || 0) + 1;
+        statusCounts['total'] = (statusCounts['total'] || 0) + 1;
+        const plat = p.platform || p.channel || 'Ostalo';
+        platformCounts[plat] = (platformCounts[plat] || 0) + 1;
+      });
+
+      md += `## PREGLED STATISTIKE KOLEDARJA\n`;
+      md += `- **Objave po statusu:** `;
+      md += `Ideja: ${statusCounts['idea'] || 0} • V pripravi: ${statusCounts['in_progress'] || 0} • Pripravljeno: ${statusCounts['ready'] || 0} • Objavljeno: ${statusCounts['published'] || 0}\n`;
+      md += `- **Objave po omrežjih:** `;
+      md += Object.keys(platformCounts).map(plat => `${plat}: ${platformCounts[plat]}`).join(' • ') || 'Ni podatkov';
+      md += `\n\n---\n\n`;
+
+      md += `## KRONOLOŠKI SEZNAM NAČRTOVANIH OBJAV\n\n`;
+
+      if (posts.length > 0) {
+        posts.forEach((post, idx) => {
+          const statusLabels = {
+            idea: '💡 Ideja',
+            in_progress: '🟡 V pripravi',
+            ready: '🟢 Pripravljeno za objavo',
+            published: '✓ Objavljeno'
+          };
+          const statText = statusLabels[post.status] || post.status || 'V pripravi';
+          const postDate = post.date || 'Brez datuma';
+          const postTime = post.time ? ` ob ${post.time}` : '';
+          const postPlatform = post.platform || post.channel || 'Vsa omrežja';
+          const postFormat = post.format || 'Video / Reel';
+          const postPillar = post.pillar ? (typeof getPillarName === 'function' ? getPillarName(post.pillar) : post.pillar) : 'Splošno';
+
+          md += `### ${idx + 1}. [${postDate}${postTime}] - ${post.title || 'Neimenovana objava'}\n`;
+          md += `- **Omrežje / Kanal:** **${postPlatform}**\n`;
+          md += `- **Format objave:** ${postFormat}\n`;
+          md += `- **Vsebinski steber:** ${postPillar}\n`;
+          md += `- **Status:** ${statText}\n`;
+          if (post.hook) {
+            md += `- **Uvodni kavelj / Trnek (Hook):**\n  > "${post.hook.replace(/\n/g, '\n  > ')}"\n`;
+          }
+          if (post.content || post.caption || post.script) {
+            const bodyText = post.content || post.caption || post.script || '';
+            md += `- **Scenarij / Caption / Vsebina:**\n  ${bodyText.replace(/\n/g, '\n  ')}\n`;
+          }
+          if (post.cta) {
+            md += `- **Poziv k dejanju (CTA):** *${post.cta}*\n`;
+          }
+          if (post.notes) {
+            md += `- **Opombe za produkcijo / snemanje:** ${post.notes}\n`;
+          }
+          md += `\n---\n\n`;
+        });
+      } else {
+        md += `*(V koledarju trenutno ni vnesenih objav)*\n\n`;
+      }
+
+      return md;
+    }
+
+    // 4. Master paket (Vse v enem)
+    function generateMasterPackageMarkdown(client) {
+      if (!client) return '';
+      const company = client.company_name || 'Naročnik';
+      const today = new Date().toISOString().split('T')[0];
+
+      let md = `# MASTER AI MARKETING & STRATEGY PAKET: ${company.toUpperCase()}\n`;
+      md += `> **Podjetje:** ${company} | **Datum izvoza:** ${today}\n`;
+      md += `> Ta Master dokument združuje: 1. Smernice podjetja (Vprašalnik), 2. Strategijo blagovne znamke (Koraki 2-5), 3. Koledar objav.\n\n`;
+      md += `---\n\n`;
+      md += `## KAZALO VSEBINE\n`;
+      md += `1. [DEL 1: SMERNICE PODJETJA & VPRAŠALNIK NAROČNIKA](#del-1-smernice-podjetja--vprašalnik-naročnika)\n`;
+      md += `2. [DEL 2: STRATEGIJA BLAGOVNE ZNAMKE & VSEBINSKI VODNIK](#del-2-strategija-blagovne-znamke--vsebinski-vodnik)\n`;
+      md += `3. [DEL 3: KOLEDAR OBJAV & VSEBINSKI NAČRT](#del-3-koledar-objav--vsebinski-načrt)\n\n`;
+      md += `---\n\n`;
+
+      md += `# DEL 1: SMERNICE PODJETJA & VPRAŠALNIK NAROČNIKA\n\n`;
+      md += generateGuidelinesMarkdown(client);
+      md += `\n\n---\n\n`;
+
+      md += `# DEL 2: STRATEGIJA BLAGOVNE ZNAMKE & VSEBINSKI VODNIK\n\n`;
+      md += generateBrandStrategyMarkdown(client);
+      md += `\n\n---\n\n`;
+
+      md += `# DEL 3: KOLEDAR OBJAV & VSEBINSKI NAČRT\n\n`;
+      md += generateContentCalendarMarkdown(client);
+
+      return md;
+    }
+
+    // Download and Copy triggers
+    function downloadMdFile(type) {
+      const client = clients.find(c => c.id === (currentExportMdClientId || currentClientId));
+      if (!client) return;
+
+      const prefix = getMdFilenamePrefix(client);
+      let content = '';
+      let filename = '';
+
+      if (type === 'guidelines') {
+        content = generateGuidelinesMarkdown(client);
+        filename = `smernice_podjetja_${prefix}.md`;
+      } else if (type === 'strategy') {
+        content = generateBrandStrategyMarkdown(client);
+        filename = `strategija_znamke_${prefix}.md`;
+      } else if (type === 'calendar') {
+        content = generateContentCalendarMarkdown(client);
+        filename = `koledar_objav_${prefix}.md`;
+      } else if (type === 'master') {
+        content = generateMasterPackageMarkdown(client);
+        filename = `master_ai_paket_${prefix}.md`;
+      }
+
+      if (!content) return;
+
+      const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast(`Datoteka ${filename} je bila prenesena!`);
+    }
+
+    function copyMdFileContent(type) {
+      const client = clients.find(c => c.id === (currentExportMdClientId || currentClientId));
+      if (!client) return;
+
+      let content = '';
+      let label = 'Vsebina';
+
+      if (type === 'guidelines') {
+        content = generateGuidelinesMarkdown(client);
+        label = 'Smernice podjetja';
+      } else if (type === 'strategy') {
+        content = generateBrandStrategyMarkdown(client);
+        label = 'Strategija znamke';
+      } else if (type === 'calendar') {
+        content = generateContentCalendarMarkdown(client);
+        label = 'Koledar objav';
+      } else if (type === 'master') {
+        content = generateMasterPackageMarkdown(client);
+        label = 'Master AI paket';
+      }
+
+      if (!content) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(content).then(() => {
+          showToast(`${label} je kopirana v odložišče!`);
+        }).catch(() => {
+          fallbackCopyText(content, label);
+        });
+      } else {
+        fallbackCopyText(content, label);
+      }
+    }
+
+    function fallbackCopyText(text, label) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast(`${label} je kopirana v odložišče!`);
+      } catch (err) {
+        showToast('Kopiranje ni uspelo, uporabite prenos datoteke.');
+      }
+      document.body.removeChild(ta);
+    }
+
   </script>
 </body>
 </html>
