@@ -956,6 +956,42 @@
     </div>
   </div>
 
+  <!-- MODAL: DODAJ VSEBINSKI STEBER -->
+  <div id="addPillarModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-5 h-5 text-purple-400"></i> Dodaj vsebinski steber
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">Izberite vsebinski steber za strategijo naročnika (priporočeno 3–5 stebrov).</p>
+        </div>
+        <button onclick="closeAddPillarModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="addPillarModalGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <!-- Injected dynamically by renderAddPillarModalContent() -->
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 flex justify-end">
+        <button type="button" onclick="closeAddPillarModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition">
+          Zapri
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PODROBNOSTI VSEBINSKEGA STEBRA (8 TEM & 5 CTA-JEV) -->
+  <div id="pillarDetailModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-5 sm:p-7 shadow-2xl text-slate-100 max-h-[92vh] flex flex-col">
+      <div id="pillarDetailModalContent" class="overflow-y-auto pr-1 space-y-6">
+        <!-- Injected by renderPillarDetailModalContent -->
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: ADD / EDIT CONTENT POST (PLANIRANJE OBJAVE) -->
   <div id="postModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
@@ -3913,43 +3949,94 @@
 
           <!-- Content Pillars -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
               <div>
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                   <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Vsebinski stebri (Content Pillars)
                 </h3>
-                <p class="text-xs text-slate-400 mt-0.5">Izberite vsebinske stebre, ki jih bo naročnik uporabljal (priporočeno 3–5).</p>
+                <p class="text-xs text-slate-400 mt-0.5">Prikazani so izbrani stebri naročnika. Kliknite na kartico stebra za pregled 8 tem in 5 CTA-jev.</p>
               </div>
-              <span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold">${pillars.filter(p => p.key).length} / ${CONTENT_PILLAR_OPTIONS.length} izbranih</span>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold">
+                  ${pillars.filter(p => p.key).length} / ${CONTENT_PILLAR_OPTIONS.length} izbranih
+                </span>
+                <button type="button" onclick="openAddPillarModal('${client.id}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-xl transition shadow-xs active:scale-95 cursor-pointer">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Dodaj steber
+                </button>
+              </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-              ${CONTENT_PILLAR_OPTIONS.map(opt => {
-                const sel = pillars.find(p => p.key === opt.key);
-                return `
-                  <div class="rounded-2xl border transition ${sel ? opt.selClass : 'bg-slate-950 border-slate-800 hover:border-slate-700'}">
-                    <button type="button" onclick="togglePillarOption('${opt.key}')" class="w-full text-left p-4 flex items-start gap-3">
-                      <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${opt.iconClass}">
-                        <i data-lucide="${opt.icon}" class="w-4 h-4"></i>
-                      </div>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between gap-2">
-                          <h4 class="text-sm font-bold text-white">${opt.name}</h4>
-                          <span class="w-5 h-5 rounded-md border flex items-center justify-center text-[11px] font-bold ${sel ? 'bg-emerald-500 border-emerald-400 text-white' : 'border-slate-600 text-transparent'}">✓</span>
+            ${pillars.filter(p => p.key).length === 0 ? `
+              <div class="py-10 px-4 rounded-2xl bg-slate-950/60 border border-dashed border-slate-800 text-center space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center mx-auto">
+                  <i data-lucide="layers" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-white">Noben vsebinski steber še ni izbran</h4>
+                  <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">Dodajte ključne vsebinske stebre. Za vsak steber boste s klikom na kartico odprli 8 glavnih tem in 5 preizkušenih CTA-jev.</p>
+                </div>
+                <button type="button" onclick="openAddPillarModal('${client.id}')" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-xl transition shadow-md active:scale-95 cursor-pointer">
+                  <i data-lucide="plus" class="w-4 h-4"></i> Dodaj vsebinski steber
+                </button>
+              </div>
+            ` : `
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                ${pillars.filter(p => p.key).map(sel => {
+                  const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === sel.key) || {
+                    key: sel.key,
+                    name: sel.name || 'Steber',
+                    icon: 'layers',
+                    desc: sel.purpose || '',
+                    iconClass: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+                    selClass: 'bg-slate-950 border-purple-500/40 hover:border-purple-400'
+                  };
+                  return `
+                    <div onclick="openPillarDetailModal('${client.id}', '${sel.key}')" class="group relative rounded-2xl border p-4.5 transition cursor-pointer ${opt.selClass || 'bg-slate-950 border-slate-800 hover:border-slate-700'} hover:shadow-lg hover:shadow-purple-950/20 flex flex-col justify-between">
+                      <div>
+                        <div class="flex items-start justify-between gap-3 mb-2.5">
+                          <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${opt.iconClass}">
+                              <i data-lucide="${opt.icon}" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                              <h4 class="text-sm font-bold text-white group-hover:text-purple-300 transition">${opt.name}</h4>
+                              <span class="text-[10px] text-purple-300/90 font-medium">8 tem • 5 CTA-jev</span>
+                            </div>
+                          </div>
+                          <button type="button" onclick="event.stopPropagation(); handleRemovePillar('${client.id}', '${sel.key}')" title="Odstrani steber" class="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 flex items-center justify-center transition shrink-0 cursor-pointer">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                          </button>
                         </div>
-                        <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">${opt.desc}</p>
+                        <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">${opt.desc}</p>
+
+                        ${(sel.topics || sel.cta) ? `
+                          <div class="mt-3 pt-2.5 border-t border-slate-800/80 space-y-1">
+                            ${sel.topics ? `<p class="text-[11px] text-slate-300 truncate"><span class="text-slate-500 font-semibold">Teme:</span> ${escapeHtml(sel.topics)}</p>` : ''}
+                            ${sel.cta ? `<p class="text-[11px] text-indigo-300 truncate"><span class="text-slate-500 font-semibold">CTA:</span> ${escapeHtml(sel.cta)}</p>` : ''}
+                          </div>
+                        ` : ''}
                       </div>
-                    </button>
-                    ${sel ? `
-                      <div class="px-4 pb-4 space-y-2 text-xs">
-                        <input type="text" oninput="handleUpdatePillarField('${opt.key}', 'topics', this.value)" value="${escapeHtml(sel.topics || '')}" placeholder="Glavne teme (npr. ${opt.topicsHint})" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-slate-600">
-                        <input type="text" oninput="handleUpdatePillarField('${opt.key}', 'cta', this.value)" value="${escapeHtml(sel.cta || '')}" placeholder="Primarni CTA (npr. ${opt.ctaHint})" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-slate-600">
+
+                      <div class="mt-3.5 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
+                        <span class="text-purple-400 group-hover:text-purple-300 font-semibold flex items-center gap-1">
+                          Pregled 8 tem & 5 CTA <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                        </span>
+                        <span class="text-slate-500 text-[10px]">Klikni kartico</span>
                       </div>
-                    ` : ''}
+                    </div>
+                  `;
+                }).join('')}
+
+                <!-- Add More Pillar Card -->
+                <button type="button" onclick="openAddPillarModal('${client.id}')" class="min-h-[140px] rounded-2xl border-2 border-dashed border-slate-800 hover:border-purple-500/50 bg-slate-950/40 hover:bg-purple-500/5 transition flex flex-col items-center justify-center p-5 text-center group cursor-pointer">
+                  <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:bg-purple-500/20 group-hover:scale-105 flex items-center justify-center transition mb-2">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
                   </div>
-                `;
-              }).join('')}
-            </div>
+                  <span class="text-xs font-bold text-slate-200 group-hover:text-purple-300 transition">+ Dodaj nov steber</span>
+                  <span class="text-[11px] text-slate-500 mt-0.5">Izberite izmed razpoložljivih stebrov</span>
+                </button>
+              </div>
+            `}
 
             ${pillars.some(p => !p.key) ? `
               <div class="p-3 rounded-2xl bg-amber-950/30 border border-amber-500/30 text-xs space-y-2">
@@ -4924,15 +5011,491 @@
       renderWorkspaceTabContent();
     }
 
-    // Content Pillars helpers (6 predefined options)
+    // Content Pillars helpers (6 predefined options with 8 topics and 5 CTAs each)
     const CONTENT_PILLAR_OPTIONS = [
-      { key: 'edukacija', name: 'Edukacija', icon: 'graduation-cap', desc: 'Nasveti, vodiči in razlage, ki gradijo strokovnost in zaupanje.', topicsHint: 'nasveti, how-to, miti in dejstva', ctaHint: 'Shrani za kasneje', iconClass: 'bg-sky-500/15 text-sky-300', selClass: 'bg-sky-950/30 border-sky-500/50' },
-      { key: 'zabava', name: 'Zabava', icon: 'smile', desc: 'Trendi, humor in relatable vsebine za večji doseg in deljenja.', topicsHint: 'trendi, memi, izzivi', ctaHint: 'Označi prijatelja', iconClass: 'bg-amber-500/15 text-amber-300', selClass: 'bg-amber-950/30 border-amber-500/50' },
-      { key: 'navdih', name: 'Navdih', icon: 'sparkles', desc: 'Zgodbe, vrednote in transformacije za čustveno povezavo.', topicsHint: 'zgodba znamke, pred/po, vrednote', ctaHint: 'Deli zgodbo', iconClass: 'bg-purple-500/15 text-purple-300', selClass: 'bg-purple-950/30 border-purple-500/50' },
-      { key: 'za_kulisami', name: 'Za kulisami', icon: 'camera', desc: 'Proces, ekipa in vsakdan podjetja – pristnost in transparentnost.', topicsHint: 'proces izdelave, ekipa, dan v življenju', ctaHint: 'Spremljaj nas', iconClass: 'bg-emerald-500/15 text-emerald-300', selClass: 'bg-emerald-950/30 border-emerald-500/50' },
-      { key: 'skupnost', name: 'Skupnost & socialni dokaz', icon: 'users', desc: 'Mnenja strank, UGC in interakcija s sledilci.', topicsHint: 'mnenja strank, UGC, ankete', ctaHint: 'Povej svoje mnenje', iconClass: 'bg-rose-500/15 text-rose-300', selClass: 'bg-rose-950/30 border-rose-500/50' },
-      { key: 'promocija', name: 'Promocija & prodaja', icon: 'shopping-bag', desc: 'Predstavitev izdelkov/storitev, ponudbe in akcije za konverzije.', topicsHint: 'izdelki, ponudbe, novosti', ctaHint: 'Naroči zdaj', iconClass: 'bg-indigo-500/15 text-indigo-300', selClass: 'bg-indigo-950/40 border-indigo-500/50' }
+      {
+        key: 'edukacija',
+        name: 'Edukacija',
+        icon: 'graduation-cap',
+        desc: 'Nasveti, vodiči in razlage, ki gradijo strokovnost in zaupanje.',
+        topicsHint: 'nasveti, how-to, miti in dejstva',
+        ctaHint: 'Shrani za kasneje',
+        iconClass: 'bg-sky-500/15 text-sky-300 border border-sky-500/30',
+        selClass: 'bg-sky-950/30 border-sky-500/50',
+        topics: [
+          { title: '"How-to" vodiči po korakih', desc: 'Praktični postopki za samostojno rešitev specifičnega problema ciljne publike.' },
+          { title: 'Razbijanje mitov v industriji', desc: '"3 največje zmote o naši panogi, v katere večina še vedno zmotno verjame".' },
+          { title: 'Primerjave in analiza alternativ', desc: '"Opcija A proti Opciji B – kaj se vam bolj izplača in zakaj?".' },
+          { title: 'Pogoste napake začetnikov', desc: '"5 najdražjih napak, ki jih ljudje delajo pri tej temi in kako se jim pravočasno izogniti".' },
+          { title: 'Pojasnila strokovnih izrazov', desc: 'Poenostavitev zapletenega koncepta, formule ali tehnologije v enostavnem jeziku.' },
+          { title: 'Mini kontrolni seznami (Checklists)', desc: 'Hiter kontrolni seznam za preverjanje stanja, varnosti ali kakovosti pred odločitvijo.' },
+          { title: 'Trendi in novosti v panogi', desc: 'Kaj se v panogi spreminja, kaj prihaja in kako se pravočasno prilagoditi za prednost.' },
+          { title: 'Priporočena orodja in viri', desc: 'Pregled najboljših orodij, metod ali pripomočkov, ki publiki prihranijo čas in denar.' }
+        ],
+        ctas: [
+          { text: 'Shrani to objavo, ko jo boš naslednjič potreboval.', tag: 'Bookmark / Save', desc: 'Spodbuja shranjevanje vsebine, kar algoritmi nagrajujejo z visokim dosegom.' },
+          { text: 'Deli ta nasvet s prijateljem ali kolegom, ki to nujno potrebuje.', tag: 'Deljenje', desc: 'Poveča organski doseg in pripelje nove sledilce iz iste ciljne skupine.' },
+          { text: 'Katera od teh točk te je najbolj presenetila? Zapiši v komentar.', tag: 'Komentarji', desc: 'Spodbuja aktivno debato in dvig engagementa pod objavo.' },
+          { text: 'Klikni povezavo v opisu profila za celoten brezplačen vodič.', tag: 'Link v bio', desc: 'Usmerja promet na spletno stran, pristajalno stran ali prenos gradiva.' },
+          { text: 'Napiši besedo "VODIČ" v ZS in ti takoj pošljemo celotno gradivo.', tag: 'DM Avtomatizacija', desc: 'Izjemno visok conversion rate preko neposrednih zasebnih sporočil.' }
+        ]
+      },
+      {
+        key: 'zabava',
+        name: 'Zabava',
+        icon: 'smile',
+        desc: 'Trendi, humor in relatable vsebine za večji doseg in deljenja.',
+        topicsHint: 'trendi, memi, izzivi',
+        ctaHint: 'Označi prijatelja',
+        iconClass: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
+        selClass: 'bg-amber-950/30 border-amber-500/50',
+        topics: [
+          { title: '"POV" vsakdanje situacije kupca', desc: '"POV: Ko poskušaš rešiti problem sam, preden ugotoviš, da obstaja lažja pot".' },
+          { title: 'Industrijski memi in humor', desc: 'Zabavne resnice in prigode, ki jih razumejo samo vaši kupci ali ljudje iz stroke.' },
+          { title: 'Pričakovanja proti realnosti', desc: 'Humorna primerjava tega, kako si vsi predstavljajo proces vs. kako dejansko izgleda.' },
+          { title: 'Trendi z zvoki in filtri', desc: 'Prilagoditev trenutno vročih TikTok in Reels zvočnih trendov na vašo specifično nišo.' },
+          { title: 'Napačni odgovori samo ("Wrong answers only")', desc: 'Interaktiven humorističen format, ki množično aktivira komentarje in smeh.' },
+          { title: 'Tipične osebnosti / Karakterji kupcev', desc: '"Obstajata samo 2 tipa ljudi pri tem opravilu – v katerega spadaš ti?".' },
+          { title: 'Dan, ko gre vse narobe', desc: 'Samokritičen in simpatičen pogled na drobne spodrsljaje, s katerimi se lahko poistoveti vsak.' },
+          { title: 'Sarkastični / Kontroverzni "hot takes"', desc: 'Zabavno pretiravanje ali nepričakovano šaljivo mnenje, ki v trenutku spodbudi debato.' }
+        ],
+        ctas: [
+          { text: 'Označi tistega prijatelja, ki vedno točno tako odreagira.', tag: 'Tag prijatelja', desc: 'Preizkušen vir viralnega širjenja med prijatelji in sodelavci.' },
+          { text: 'Povej po pravici: 1 ali 2? Zapiši številko v komentar.', tag: 'Mini anketa', desc: 'Enostavna interakcija z nizkim pragom za sodelovanje v komentarjih.' },
+          { text: 'Deli naprej za dober nasmeh danes!', tag: 'Story deljenje', desc: 'Spodbuja deljenje v Instagram/Facebook Story za dodaten doseg.' },
+          { text: 'Priznaj v komentarju, kolikokrat se ti je to že zgodilo? 😂', tag: 'Poistovetenje', desc: 'Ustvarja pristno čustveno vez in visoko stopnjo odzivnosti.' },
+          { text: 'Spremljaj nas za dnevno dozo humorja in realnosti iz naše branže.', tag: 'Nov sledilec', desc: 'Neposreden poziv k sledenju profilu za zabavne vsebine.' }
+        ]
+      },
+      {
+        key: 'navdih',
+        name: 'Navdih',
+        icon: 'sparkles',
+        desc: 'Zgodbe, vrednote in transformacije za čustveno povezavo.',
+        topicsHint: 'zgodba znamke, pred/po, vrednote',
+        ctaHint: 'Deli zgodbo',
+        iconClass: 'bg-purple-500/15 text-purple-300 border border-purple-500/30',
+        selClass: 'bg-purple-950/30 border-purple-500/50',
+        topics: [
+          { title: 'Zgodba o transformaciji (Pred / Po)', desc: 'Resnična pot stranke iz začetne stiske ali dvoma v navdušujoč uspeh.' },
+          { title: 'Zakaj smo začeli (Izvorni "Why")', desc: 'Iskrena zgodba ustanovitelja o prelomnem trenutku in rojstvu poslanstva znamke.' },
+          { title: 'Vrednote in principi delovanja', desc: 'Zakaj določenih kompromisov nikoli ne sprejmemo in kaj nam pomeni brezkompromisna kakovost.' },
+          { title: 'Premagovanje težkih ovir', desc: 'Iskren zapis o trenutku, ko je bilo najtežje, in ključnih življenjskih naukih, ki so sledili.' },
+          { title: 'Navdihujoč citat z lastnim razmišljanjem', desc: 'Globok vpogled v filozofijo dela ali življenjski slog vaše ciljne publike.' },
+          { title: 'Vizija za prihodnost', desc: 'Kam usmerjamo podjetje in kakšen pozitiven odtis želimo pustiti v skupnosti.' },
+          { title: 'Dosežek ali mejnik podjetja', desc: 'Praznovanje pomembne obletnice, tisočega naročila ali osvojene nagrade.' },
+          { title: 'Zgodba o osebni rasti člana ekipe', desc: 'Pot sodelavca, njegova strast do dela in kako skupaj rastemo kot celota.' }
+        ],
+        ctas: [
+          { text: 'Katera misel iz zgodbe je najbolj odmevala v tebi? Zapiši spodaj.', tag: 'Čustven odziv', desc: 'Spodbuja pristne, globlje komentarje, ki krepijo zaupanje v znamko.' },
+          { text: 'Deli to zgodbo z nekom, ki danes potrebuje kanček dodatnega navdiha.', tag: 'Deljenje zgodbe', desc: 'Organsko širjenje z močnim čustvenim nabojem.' },
+          { text: 'Če si se tudi ti že kdaj znašel v podobni situaciji, stisni ❤️.', tag: 'Srček / Všeček', desc: 'Hiter mikropoziv za potrditev skupnih vrednot in izkušenj.' },
+          { text: 'Pošlji nam sporočilo s svojo zgodbo – z veseljem jo preberemo.', tag: 'Povezava v DM', desc: 'Gradi intimno, pristno razmerje ena-na-ena s sledilci.' },
+          { text: 'Pridruži se naši poti – klikni "Sledi" za navdihujoče zgodbe vsak teden.', tag: 'Sledenje poti', desc: 'Poziv k dolgoročnemu spremljanju rasti in vizije podjetja.' }
+        ]
+      },
+      {
+        key: 'za_kulisami',
+        name: 'Za kulisami',
+        icon: 'camera',
+        desc: 'Proces, ekipa in vsakdan podjetja – pristnost in transparentnost.',
+        topicsHint: 'proces izdelave, ekipa, dan v življenju',
+        ctaHint: 'Spremljaj nas',
+        iconClass: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
+        selClass: 'bg-emerald-950/30 border-emerald-500/50',
+        topics: [
+          { title: 'Dan v življenju (Day in the life)', desc: 'Dinamičen vpogled v tipičen delovni dan v delavnici, pisarni, kuhinji ali na terenu.' },
+          { title: 'Kako nastaja izdelek ali storitev', desc: 'Faze od začetne skice in surovih materialov do končnega pakiranja in odpreme.' },
+          { title: 'Predstavitev ekipe ("Obrazi za znamko")', desc: 'Kdo so ljudje za izdelki, kakšne so njihove vloge in njihove zabavne posebnosti.' },
+          { title: 'Nadzor kakovosti in testiranje', desc: 'Prikaz strogih standardov, s katerimi poskrbimo, da kupec prejme zgolj vrhunsko kakovost.' },
+          { title: 'Pakiranje naročil in odprava pošiljk', desc: 'Priljubljen sproščujoč (ASMR) ali energičen proces zlaganja, pakiranja in pošiljanja.' },
+          { title: 'Oprema, orodja in prostor delovanja', desc: 'Predstavitev specializiranih orodij, strojev in ambienta, kjer ustvarjamo.' },
+          { title: 'Priprave na nov projekt ali lansiranje', desc: 'Skrivnostni utrinki iz zakulisja pred uradno premiero nove ponudbe.' },
+          { title: 'Iskreni spodrsljaji ("Bloopers")', desc: 'Zabavni in nepopolni trenutki med snemanjem ali delom, ki pokažejo pristno človeško plat.' }
+        ],
+        ctas: [
+          { text: 'Kateri del našega procesa te najbolj zanima? Napiši v komentar za naslednji video.', tag: 'Ideja za vsebino', desc: 'Občinstvo neposredno soodloča o naslednjih temah videov.' },
+          { text: 'Raje vidiš končni izdelek ali celoten postopek izdelave? Glasuj spodaj.', tag: 'A/B Glasovanje', desc: 'Hitra interakcija za raziskavo preferenc občinstva.' },
+          { text: 'Stisni ❤️ v podporo naši ekipi, ki se vsak dan trudi za vas.', tag: 'Podpora ekipi', desc: 'Ustvarja toplo, človeško povezavo med kupci in zaposlenimi.' },
+          { text: 'Bi si želel videti več takšnih vpogledov v zakulisje? Zapiši "DA"!', tag: 'Potrditev formata', desc: 'Enostaven odziv z enim klikom za dvig algoritma.' },
+          { text: 'Spremljaj naše Story objave za sprotne utrinke iz današnjega dne.', tag: 'Story ogledi', desc: 'Poveča gledanost začasnih zgodb (Stories) in dnevno prisotnost.' }
+        ]
+      },
+      {
+        key: 'skupnost',
+        name: 'Skupnost & socialni dokaz',
+        icon: 'users',
+        desc: 'Mnenja strank, UGC in interakcija s sledilci.',
+        topicsHint: 'mnenja strank, UGC, ankete',
+        ctaHint: 'Povej svoje mnenje',
+        iconClass: 'bg-rose-500/15 text-rose-300 border border-rose-500/30',
+        selClass: 'bg-rose-950/30 border-rose-500/50',
+        topics: [
+          { title: 'Ocene in priporočila zadovoljnih strank', desc: 'Avtentične izjave, ocene z zvezdicami ali posnetki zaslona sporočil navdušenih kupcev.' },
+          { title: 'UGC videoposnetki in unboxingi uporabnikov', desc: 'Videoposnetki realnih kupcev pri odpiranju paketa ali vsakodnevni uporabi izdelka.' },
+          { title: 'Odgovarjanje na vprašanja skupnosti (Q&A)', desc: 'Odgovori na najpogostejša vprašanja, dvome in dileme, ki jih stranke pošiljajo v DM.' },
+          { title: 'Študija primera z merljivimi rezultati (Case study)', desc: 'Podroben pregled problema, uporabljene rešitve in točnih rezultatov stranke.' },
+          { title: 'Skupnostno odločanje in ankete', desc: '"Pomagajte nam izbrati novo barvo, okus ali embalažo za naslednjo serijo".' },
+          { title: 'Aktivacije in nagradne igre za sledilce', desc: 'Privlačen izziv ali nagradna igra, ki nagrajuje zvestobo in sodelovanje skupnosti.' },
+          { title: 'Video odgovori na komentarje', desc: 'Neposreden odgovor na zanimiv ali kritičen komentar sledilca z novim videom.' },
+          { title: 'Predstavitev zveste stranke (Customer Spotlight)', desc: 'Kratka zgodba o dolgoletnem naročniku ali kupcu in kako mu izdelek lajša vsakdan.' }
+        ],
+        ctas: [
+          { text: 'Objavi sliko z našim izdelkom in nas označi za možnost objave!', tag: 'UGC poziv', desc: 'Spodbuja ustvarjanje uporabniških vsebin (UGC) brez dodatnih stroškov.' },
+          { text: 'Imaš vprašanje za naš naslednji Q&A? Zapiši ga v komentar.', tag: 'Vprašanja za Q&A', desc: 'Generira vsebino za prihodnje objave in vključuje publiko.' },
+          { text: 'Preberi še več kot 100+ resničnih ocen strank na povezavi v opisu profila.', tag: 'Povezava do ocen', desc: 'Premaguje prodajne ugovore in gradi neprebojno zaupanje.' },
+          { text: 'Deli svojo izkušnjo spodaj – vsak vaš komentar nam pomeni ogromno.', tag: 'Zbiranje ocen', desc: 'Spodbuja javno pohvalo in priporočila pod samo objavo.' },
+          { text: 'Pošlji to objavo nekomu, ki še vedno okleva ali se splača poskusiti.', tag: 'Premagovanje dvomov', desc: 'Socialni dokaz, ki ga obstoječi kupci posredujejo novim potencialnim kupcem.' }
+        ]
+      },
+      {
+        key: 'promocija',
+        name: 'Promocija & prodaja',
+        icon: 'shopping-bag',
+        desc: 'Predstavitev izdelkov/storitev, ponudbe in akcije za konverzije.',
+        topicsHint: 'izdelki, ponudbe, novosti',
+        ctaHint: 'Naroči zdaj',
+        iconClass: 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30',
+        selClass: 'bg-indigo-950/40 border-indigo-500/50',
+        topics: [
+          { title: 'Predstavitev ključnega izdelka ("Hero Product")', desc: 'Glavne prednosti, funkcije in natančen prikaz rešitve problema, ki ga kupec ima.' },
+          { title: 'Časovno omejena akcija ali popust', desc: 'Privlačna prodajna ponudba z jasno določenim rokom veljavnosti in prihrankom.' },
+          { title: 'Brezplačna demonstracija ali uvodni posvet', desc: 'Vabilo na brezplačen 15-minutni posvet, vzorec ali preizkus brez tveganja.' },
+          { title: 'Lansiranje novega izdelka ali storitve', desc: 'Ekskluzivno razkritje novosti s prednaročili ali posebnimi otvoritvenimi ugodnostmi.' },
+          { title: 'Paketi izdelkov in "Bundle" prihranki', desc: 'Predstavitev paketne ponudbe, ki kupcu prinaša celovito rešitev in večji prihranek.' },
+          { title: 'Garancija zadovoljstva in varnost nakupa', desc: 'Odprava strahu pred nakupom s poudarkom na garanciji, vračilu denarja ali hitri podpori.' },
+          { title: 'Omejena zaloga ali zadnji kosi (Urgency)', desc: '"Na voljo le še zadnjih 10 kosov" ali "Zadnjih 48 ur pred zaključkom naročil".' },
+          { title: 'Primerjava stroškov in donosnosti (ROI)', desc: 'Koliko denarja ali časa stranka privarčuje z investicijo v vaš izdelek ali storitev.' }
+        ],
+        ctas: [
+          { text: 'Naroči svojega na povezavi v opisu profila, dokler so zaloge še na voljo.', tag: 'Direkten nakup', desc: 'Jasen in nedvoumen poziv k takojšnjemu nakupu na spletni strani.' },
+          { text: 'Napiši besedo "ŽELIM" v komentar ali ZS za prevzem 10% popusta.', tag: 'Koda za popust', desc: 'Učinkovit magnet za pridobivanje vročih prodajnih kontaktov v DM.' },
+          { text: 'Rezerviraj svoj brezplačen 20-minutni posvet prek povezave v opisu.', tag: 'Rezervacija posveta', desc: 'Idealen CTA za storitve, agencije in B2B prodajo.' },
+          { text: 'Izkoristi akcijsko ceno do nedelje do polnoči na naši spletni strani.', tag: 'Časovna omejitev', desc: 'Ustvarja nujnost (FOMO) za hitro zaključevanje nakupnih odločitev.' },
+          { text: 'Še oklevaš? Pošlji nam vprašanje v ZS in ti takoj pomagamo pri izbiri.', tag: 'Pomoč pri izbiri', desc: 'Reševanje specifičnih pomislekov neposredno v klepetu.' }
+        ]
+      }
     ];
+
+    function openAddPillarModal(clientId = null) {
+      const cId = clientId || currentClientId;
+      const client = clients.find(c => c.id === cId);
+      if (!client) return;
+
+      renderAddPillarModalContent(client.id);
+      const modal = document.getElementById('addPillarModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        lucide.createIcons({ root: modal });
+      }
+    }
+
+    function closeAddPillarModal() {
+      const modal = document.getElementById('addPillarModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderAddPillarModalContent(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      const container = document.getElementById('addPillarModalGrid');
+      if (!container) return;
+
+      const currentPillars = client.crm?.content_strategy?.content_pillars || [];
+
+      container.innerHTML = CONTENT_PILLAR_OPTIONS.map(opt => {
+        const isAdded = currentPillars.some(p => p.key === opt.key);
+        return `
+          <div class="p-4 rounded-2xl border transition ${isAdded ? 'bg-slate-900/60 border-purple-500/40 shadow-sm' : 'bg-slate-950 border-slate-800 hover:border-slate-700'} flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${opt.iconClass}">
+                  <i data-lucide="${opt.icon}" class="w-5 h-5"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-xs font-bold text-white">${opt.name}</h4>
+                  <span class="text-[10px] text-purple-300 font-medium">8 tem • 5 CTA-jev</span>
+                </div>
+                ${isAdded ? `
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center gap-1">
+                    ✓ Dodano
+                  </span>
+                ` : ''}
+              </div>
+              <p class="text-[11px] text-slate-400 leading-relaxed">${opt.desc}</p>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+              <span class="text-[10px] text-slate-500">
+                ${isAdded ? 'Že vključeno v strategijo' : 'Razpoložljivo za izbiro'}
+              </span>
+              ${isAdded ? `
+                <button type="button" onclick="handleRemovePillar('${client.id}', '${opt.key}'); renderAddPillarModalContent('${client.id}');" class="px-2.5 py-1 text-[11px] font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition cursor-pointer">
+                  Odstrani
+                </button>
+              ` : `
+                <button type="button" onclick="handleAddPillar('${client.id}', '${opt.key}')" class="px-3 py-1.5 text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-xl transition shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Dodaj ta steber
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons({ root: container });
+    }
+
+    function handleAddPillar(clientId, key) {
+      const cId = clientId || currentClientId;
+      const client = clients.find(c => c.id === cId);
+      if (!client) return;
+      if (!client.crm) client.crm = {};
+      if (!client.crm.content_strategy) client.crm.content_strategy = {};
+      if (!client.crm.content_strategy.content_pillars) client.crm.content_strategy.content_pillars = [];
+
+      const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === key);
+      if (!opt) return;
+
+      const existing = client.crm.content_strategy.content_pillars.find(p => p.key === key);
+      if (!existing) {
+        client.crm.content_strategy.content_pillars.push({
+          key: opt.key,
+          name: opt.name,
+          purpose: opt.desc,
+          topics: '',
+          cta: ''
+        });
+      }
+
+      client.strategyStats = calculateStrategyStats(client.crm, client.answers);
+      updateWorkspaceTodoStatus(client);
+      saveCurrentWorkspace(false);
+      renderWorkspaceTabContent();
+      renderAddPillarModalContent(client.id);
+      showToast(`Steber "${opt.name}" je bil uspešno dodan!`, 'success');
+    }
+
+    function handleRemovePillar(clientId, key) {
+      const cId = clientId || currentClientId;
+      const client = clients.find(c => c.id === cId);
+      if (!client?.crm?.content_strategy?.content_pillars) return;
+      const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === key);
+      const name = opt ? opt.name : key;
+
+      if (!confirm(`Ali res želite odstraniti vsebinski steber "${name}"?`)) return;
+
+      client.crm.content_strategy.content_pillars = client.crm.content_strategy.content_pillars.filter(p => p.key !== key && p.name !== key);
+      client.strategyStats = calculateStrategyStats(client.crm, client.answers);
+      updateWorkspaceTodoStatus(client);
+      saveCurrentWorkspace(false);
+      renderWorkspaceTabContent();
+      showToast(`Steber "${name}" je bil odstranjen.`, 'info');
+    }
+
+    function openPillarDetailModal(clientId, pillarKey) {
+      const cId = clientId || currentClientId;
+      const client = clients.find(c => c.id === cId);
+      if (!client) return;
+      const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === pillarKey);
+      if (!opt) return;
+
+      const pillar = client.crm?.content_strategy?.content_pillars?.find(p => p.key === pillarKey) || {
+        key: opt.key,
+        name: opt.name,
+        purpose: opt.desc,
+        topics: '',
+        cta: ''
+      };
+
+      const modal = document.getElementById('pillarDetailModal');
+      const container = document.getElementById('pillarDetailModalContent');
+      if (!modal || !container) return;
+
+      container.innerHTML = `
+        <!-- Top Header -->
+        <div class="flex items-start justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${opt.iconClass}">
+              <i data-lucide="${opt.icon}" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-lg font-bold text-white">${opt.name}</h3>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">Vsebinski steber</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1 max-w-xl">${opt.desc}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="handleRemovePillar('${client.id}', '${opt.key}'); closePillarDetailModal();" class="px-3 py-1.5 text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Odstrani steber
+            </button>
+            <button type="button" onclick="closePillarDetailModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 8 Glavnih tem -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-purple-300 flex items-center gap-2">
+                <i data-lucide="book-open" class="w-4 h-4"></i> 8 Glavnih tem za steber "${opt.name}"
+              </h4>
+              <p class="text-[11px] text-slate-400 mt-0.5">Najbolj preverjene in efektivne smeri vsebine. Kliknite "+ Uporabi" za prenos med zapiske naročnika.</p>
+            </div>
+            <span class="px-2 py-0.5 rounded-md bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[10px] font-bold">8 tem</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            ${opt.topics.map((t, idx) => `
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-purple-500/40 transition group flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-1">
+                    <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">#${idx + 1}</span>
+                    <button type="button" onclick="appendTopicByIndex('${opt.key}', ${idx})" class="text-[11px] font-bold text-purple-400 hover:text-purple-300 hover:underline flex items-center gap-1 cursor-pointer">
+                      + Uporabi <i data-lucide="corner-down-right" class="w-3 h-3"></i>
+                    </button>
+                  </div>
+                  <h5 class="text-xs font-bold text-white group-hover:text-purple-200 transition">${escapeHtml(t.title)}</h5>
+                  <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">${escapeHtml(t.desc)}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- 5 Najbolj efektivnih CTA-jev -->
+        <div class="space-y-3 pt-3 border-t border-slate-800">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-2">
+                <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i> 5 Najbolj efektivnih CTA-jev za "${opt.name}"
+              </h4>
+              <p class="text-[11px] text-slate-400 mt-0.5">Visoko konverzijski pozivi k dejanju. Kliknite "✓ Izberi ta CTA" za nastavitev primarnega CTA-ja naročnika.</p>
+            </div>
+            <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">5 CTA-jev</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            ${opt.ctas.map((c, idx) => `
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/40 transition group flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-1.5 mb-1.5">
+                    <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300">CTA ${idx + 1}</span>
+                    <span class="text-[10px] font-semibold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded">${escapeHtml(c.tag)}</span>
+                  </div>
+                  <p class="text-xs font-bold text-white group-hover:text-emerald-200 transition">"${escapeHtml(c.text)}"</p>
+                  <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">${escapeHtml(c.desc)}</p>
+                </div>
+                <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex justify-end">
+                  <button type="button" onclick="setCtaByIndex('${opt.key}', ${idx})" class="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 hover:underline flex items-center gap-1 cursor-pointer">
+                    ✓ Izberi ta CTA
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Nastavitve naročnika za ta steber -->
+        <div class="space-y-3 pt-3 border-t border-slate-800 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+            <i data-lucide="edit-3" class="w-4 h-4 text-indigo-400"></i> Zapiski & Prilagoditev naročnika za ta steber
+          </h4>
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">Glavne teme naročnika (kliknite zgoraj za dodajanje ali dopišite lastne)</label>
+              <textarea id="modalPillarTopicsInput" rows="2" placeholder="npr. ${opt.topics.slice(0, 2).map(t => t.title).join(', ')}..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">${escapeHtml(pillar.topics || '')}</textarea>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">Primarni CTA naročnika (kliknite zgoraj za izbiro ali napišite po meri)</label>
+              <input type="text" id="modalPillarCtaInput" value="${escapeHtml(pillar.cta || '')}" placeholder="npr. ${escapeHtml(opt.ctas[0]?.text || '')}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30">
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+          <button type="button" onclick="closePillarDetailModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition cursor-pointer">
+            Zapri
+          </button>
+          <button type="button" onclick="savePillarDetailModal('${client.id}', '${opt.key}')" class="px-5 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-md transition active:scale-95 flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="save" class="w-4 h-4"></i> Shrani nastavitve stebra
+          </button>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      lucide.createIcons({ root: modal });
+    }
+
+    function closePillarDetailModal() {
+      const modal = document.getElementById('pillarDetailModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function appendTopicByIndex(pillarKey, topicIdx) {
+      const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === pillarKey);
+      if (!opt || !opt.topics[topicIdx]) return;
+      const textarea = document.getElementById('modalPillarTopicsInput');
+      if (!textarea) return;
+      const topicTitle = opt.topics[topicIdx].title;
+      if (!textarea.value.trim()) {
+        textarea.value = topicTitle;
+      } else if (!textarea.value.includes(topicTitle)) {
+        textarea.value += ', ' + topicTitle;
+      }
+      showToast(`Tema dodana: "${topicTitle}"`, 'info');
+    }
+
+    function setCtaByIndex(pillarKey, ctaIdx) {
+      const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === pillarKey);
+      if (!opt || !opt.ctas[ctaIdx]) return;
+      const input = document.getElementById('modalPillarCtaInput');
+      if (!input) return;
+      const ctaText = opt.ctas[ctaIdx].text;
+      input.value = ctaText;
+      showToast(`CTA nastavljen: "${ctaText}"`, 'info');
+    }
+
+    function savePillarDetailModal(clientId, pillarKey) {
+      const cId = clientId || currentClientId;
+      const client = clients.find(c => c.id === cId);
+      if (!client) return;
+      if (!client.crm) client.crm = {};
+      if (!client.crm.content_strategy) client.crm.content_strategy = {};
+      if (!client.crm.content_strategy.content_pillars) client.crm.content_strategy.content_pillars = [];
+
+      let pillar = client.crm.content_strategy.content_pillars.find(p => p.key === pillarKey);
+      const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === pillarKey);
+
+      if (!pillar && opt) {
+        pillar = {
+          key: opt.key,
+          name: opt.name,
+          purpose: opt.desc,
+          topics: '',
+          cta: ''
+        };
+        client.crm.content_strategy.content_pillars.push(pillar);
+      }
+
+      if (!pillar) return;
+
+      const topicsInput = document.getElementById('modalPillarTopicsInput');
+      const ctaInput = document.getElementById('modalPillarCtaInput');
+
+      if (topicsInput) pillar.topics = topicsInput.value.trim();
+      if (ctaInput) pillar.cta = ctaInput.value.trim();
+
+      saveCurrentWorkspace(false);
+      renderWorkspaceTabContent();
+      closePillarDetailModal();
+      showToast('Nastavitve stebra so uspešno shranjene!', 'success');
+    }
 
     function togglePillarOption(key) {
       const client = clients.find(c => c.id === currentClientId);
@@ -4943,16 +5506,10 @@
       const list = client.crm.content_strategy.content_pillars;
       const existing = list.findIndex(p => p.key === key);
       if (existing >= 0) {
-        list.splice(existing, 1);
+        handleRemovePillar(client.id, key);
       } else {
-        const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === key);
-        if (!opt) return;
-        list.push({ key, name: opt.name, purpose: opt.desc, topics: '', cta: '' });
+        handleAddPillar(client.id, key);
       }
-      client.strategyStats = calculateStrategyStats(client.crm, client.answers);
-      updateWorkspaceTodoStatus(client);
-      saveCurrentWorkspace(false);
-      renderWorkspaceTabContent();
     }
 
     function handleUpdatePillarField(key, field, val) {
