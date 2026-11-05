@@ -864,27 +864,25 @@
           </select>
         </div>
 
-        <!-- Title & Platform -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="sm:col-span-2">
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Naslov objave / delovni naziv *</label>
-            <input id="postModalTitleInput" type="text" required placeholder="npr. 3 napake pri pripravi kvasa" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-          </div>
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Platforma *</label>
-            <select id="postModalPlatform" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-              <option value="Instagram">Instagram</option>
-              <option value="TikTok">TikTok</option>
-              <option value="Facebook">Facebook</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="YouTube">YouTube</option>
-              <option value="Pinterest">Pinterest</option>
-            </select>
-          </div>
+        <!-- Title -->
+        <div>
+          <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Naslov objave / delovni naziv *</label>
+          <input id="postModalTitleInput" type="text" required placeholder="npr. 3 napake pri pripravi kvasa" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
         </div>
 
         <!-- Date, Time, Format -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Format vsebine *</label>
+            <select id="postModalFormat" onchange="handlePostModalFormatChange(this.value)" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+              <option value="Reels / Video">🎬 Reels / Kratek video (9:16)</option>
+              <option value="Vrtiljak (Carousel)">📚 Vrtiljak (Carousel)</option>
+              <option value="Fotografija / Grafika">🖼️ Fotografija / Grafika</option>
+              <option value="Zgodba (Story)">📱 Zgodba (Story)</option>
+              <option value="Tekstovna objava / Članek">📝 Tekstovna objava / Članek</option>
+              <option value="Daljši video">🎥 Daljši video (16:9)</option>
+            </select>
+          </div>
           <div>
             <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Datum objave *</label>
             <input id="postModalDate" type="date" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
@@ -893,16 +891,21 @@
             <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Ura objave</label>
             <input id="postModalTime" type="time" value="18:00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
           </div>
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Format *</label>
-            <select id="postModalFormat" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-              <option value="Reels / Video">Reels / Kratek video</option>
-              <option value="Vrtiljak (Carousel)">Vrtiljak (Carousel)</option>
-              <option value="Fotografija / Grafika">Fotografija / Grafika</option>
-              <option value="Zgodba (Story)">Zgodba (Story)</option>
-              <option value="Daljši video">Daljši video</option>
-            </select>
+        </div>
+
+        <!-- Cross-posting platform selection pills -->
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] flex items-center gap-1.5">
+              <i data-lucide="share-2" class="w-3.5 h-3.5 text-indigo-400"></i> Ciljna omrežja za objavo (Cross-posting) *
+            </label>
+            <span id="postModalPlatformSummary" class="text-[11px] text-indigo-400 font-bold">1 izbrano omrežje</span>
           </div>
+          <div id="postModalPlatformPills" class="flex flex-wrap gap-2 pt-1">
+            <!-- Injected by renderPostModalPlatformPills -->
+          </div>
+          <p class="text-[10px] text-slate-500">En vsebinski kos bo avtomatsko razporejen na vsa označena omrežja.</p>
+          <input type="hidden" id="postModalPlatform" value="Instagram">
         </div>
 
         <!-- Pillar & Objective -->
@@ -3435,10 +3438,10 @@
     function renderWsSocialStrategy(client) {
       const crm = client.crm || {};
       const strat = crm.social_media_strategy || {};
+      const plan = getClientProductionPlan(client);
+      const dist = calculateDistributionFromPlan(plan);
       const platforms = strat.platforms || [];
       const kpis = strat.kpis || [];
-
-      const availablePlatforms = ['Instagram', 'TikTok', 'Facebook', 'LinkedIn', 'YouTube', 'Pinterest'];
       const isDone = isStepDone(client, 'social_strategy');
 
       return `
@@ -3452,13 +3455,13 @@
               </div>
               <div>
                 <div class="flex items-center gap-2">
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">Korak 5: Strategija omrežij</h4>
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">Korak 5: Strategija omrežij & produkcije</h4>
                   <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
                     ${isDone ? '✓ Opravljeno' : 'V pripravi'}
                   </span>
                 </div>
                 <p class="text-[11px] text-slate-400 mt-0.5">
-                  ${isDone ? `${platforms.length} izbranih družbenih omrežij z določeno vlogo.` : 'Izberite omrežja in opredelite cilje ali označite korak kot opravljen.'}
+                  ${dist.coreMonthly} izvirnih produkcijskih kosov mesečno → razporejeno v ${dist.totalPostsMonthly} objav na kanalih (${dist.multiplier}× multiplikator).
                 </p>
               </div>
             </div>
@@ -3470,134 +3473,178 @@
             </div>
           </div>
 
-          <!-- Platform Selection & Configuration -->
-          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <!-- Production & Cross-Posting Distribution -->
+          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
               <div>
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                  <i data-lucide="share-2" class="w-4 h-4 text-blue-400"></i> Izbira in vloga omrežij
+                  <i data-lucide="clapperboard" class="w-4 h-4 text-emerald-400"></i> Agencijska produkcija & Cross-posting distribucija
                 </h3>
-                <p class="text-xs text-slate-400 mt-0.5">Določite katera omrežja bomo upravljali in z kakšno frekvenco.</p>
+                <p class="text-xs text-slate-400 mt-0.5">Določite koliko izvirnih vsebin posnamemo/oblikujemo in na katera omrežja se vsak vsebinski kos objavi.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1.5 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold flex items-center gap-1.5">
+                  <i data-lucide="zap" class="w-3.5 h-3.5 text-indigo-400"></i> 1 vsebina = več omrežij
+                </span>
               </div>
             </div>
 
-            <!-- Platform toggles -->
-            <div class="flex flex-wrap gap-2 pt-1">
-              ${availablePlatforms.map(platName => {
-                const isSelected = platforms.some(p => p.name === platName);
+            <!-- Formats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${PRODUCTION_FORMATS.map(fmt => {
+                const item = plan[fmt.key] || { weekly: 0, platforms: fmt.defaultPlatforms };
+                const weekly = parseInt(item.weekly, 10) || 0;
+                const monthly = weekly * WEEKS_PER_MONTH;
+                const activePlatforms = item.platforms || [];
+                const pubWeekly = weekly * activePlatforms.length;
+                const pubMonthly = pubWeekly * WEEKS_PER_MONTH;
+
                 return `
-                  <button type="button" onclick="togglePlatformSelection('${platName}')" class="px-3.5 py-2 rounded-xl text-xs font-bold border transition flex items-center gap-2 ${
-                    isSelected ? 'bg-indigo-600 text-white border-indigo-500 shadow-md' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-                  }">
-                    <i data-lucide="${getPlatformIcon(platName)}" class="w-3.5 h-3.5"></i>
-                    <span>${platName}</span>
-                    <span>${isSelected ? '✓' : '+'}</span>
-                  </button>
+                  <div class="rounded-2xl bg-slate-950 border ${weekly > 0 ? 'border-slate-700 shadow-lg' : 'border-slate-800/80'} p-4 flex flex-col justify-between gap-3 text-xs">
+                    <div>
+                      <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                          <div class="w-9 h-9 rounded-xl ${fmt.badgeBg} flex items-center justify-center shrink-0">
+                            <i data-lucide="${fmt.icon}" class="w-4 h-4"></i>
+                          </div>
+                          <div>
+                            <h4 class="font-bold text-white text-sm leading-tight">${fmt.name}</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5 line-clamp-1">${fmt.sub}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Stepper and Counts -->
+                      <div class="mt-4 flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                        <div>
+                          <span class="text-[10px] uppercase font-bold text-slate-400 block">Produkcija</span>
+                          <span class="text-xs font-bold ${weekly > 0 ? 'text-white' : 'text-slate-500'}">${monthly}× mesečno</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                          <button type="button" onclick="changeProductionWeeklyCount('${fmt.key}', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition flex items-center justify-center ${weekly === 0 ? 'opacity-30 cursor-not-allowed' : 'active:scale-95'}">−</button>
+                          <span class="w-14 text-center font-extrabold ${weekly > 0 ? 'text-emerald-400' : 'text-slate-500'} text-xs">${weekly}×/ted</span>
+                          <button type="button" onclick="changeProductionWeeklyCount('${fmt.key}', 1)" class="w-7 h-7 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center active:scale-95">+</button>
+                        </div>
+                      </div>
+
+                      <!-- Platform cross-posting selection -->
+                      <div class="mt-3 space-y-1.5">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Distribucija na omrežja (Cross-post):</label>
+                        <div class="flex flex-wrap gap-1.5">
+                          ${fmt.allowedPlatforms.map(platName => {
+                            const isChecked = activePlatforms.includes(platName);
+                            return `
+                              <button type="button" onclick="toggleProductionPlatform('${fmt.key}', '${platName}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold border transition flex items-center gap-1 ${
+                                isChecked ? 'bg-indigo-600 text-white border-indigo-500 shadow-xs' : 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'
+                              }">
+                                <i data-lucide="${getPlatformIcon(platName)}" class="w-3 h-3"></i>
+                                <span>${platName}</span>
+                                <span class="text-[10px]">${isChecked ? '✓' : '+'}</span>
+                              </button>
+                            `;
+                          }).join('')}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Output summary badge -->
+                    <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                      <span class="text-slate-400">Skupaj objav:</span>
+                      <span class="font-bold ${pubWeekly > 0 ? 'text-indigo-300' : 'text-slate-500'}">
+                        ${pubWeekly} tedensko / ${pubMonthly} mesečno
+                      </span>
+                    </div>
+                  </div>
                 `;
               }).join('')}
             </div>
 
-            <!-- Configured platforms details -->
-            <div class="space-y-4 pt-3">
-              ${platforms.map((plat, idx) => {
-                const types = PLATFORM_POST_TYPES[plat.name] || [];
-                const counts = plat.post_types || {};
-                const weeklyTotal = getPlatformWeeklyTotal(plat);
-                const activeTypes = types.filter(t => (counts[t] || 0) > 0);
-                return `
-                <div class="p-4 sm:p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 text-xs">
-                  <div class="flex flex-wrap items-center justify-between gap-2">
-                    <h4 class="text-sm font-bold text-white flex items-center gap-2">
-                      <i data-lucide="${getPlatformIcon(plat.name)}" class="w-4 h-4 text-indigo-400"></i> ${plat.name}
-                    </h4>
-                    <div class="flex items-center gap-2">
-                      <span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-bold">${weeklyTotal}× tedensko</span>
-                      <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold">${weeklyTotal * WEEKS_PER_MONTH}× mesečno</span>
-                    </div>
+            <!-- Distribution & Volume Summary -->
+            <div class="p-5 rounded-3xl bg-gradient-to-br from-indigo-950/60 via-slate-900 to-emerald-950/40 border border-indigo-500/30 space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="space-y-1">
+                  <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i data-lucide="calculator" class="w-4 h-4 text-emerald-400"></i> Skupni izračun produkcije in objav
+                  </h4>
+                  <p class="text-xs text-slate-300">
+                    Proizvedemo <strong>${dist.coreWeekly} kosov/teden</strong> (${dist.coreMonthly}/mesec), kar ustvari <strong>${dist.totalPostsWeekly} objav/teden</strong> (${dist.totalPostsMonthly}/mesec) na vseh kanalih.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs">
+                    <span class="text-slate-400 text-[10px] block uppercase font-bold">Produkcija</span>
+                    <strong class="text-emerald-400 text-sm">${dist.coreMonthly}</strong> <span class="text-slate-400 text-[11px]">kosov/mes</span>
                   </div>
-
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label class="block font-bold text-slate-400 mb-1">Vloga omrežja</label>
-                      <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'role', this.value)" value="${escapeHtml(plat.role || '')}" placeholder="Vloga (npr. Dvig prepoznavnosti & grajenje skupnosti)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
-                    </div>
-                    <div>
-                      <label class="block font-bold text-slate-400 mb-1">Primarni KPI</label>
-                      <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'kpi', this.value)" value="${escapeHtml(plat.kpi || '')}" placeholder="npr. Doseg, shranjevanja, ogledi" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
-                    </div>
+                  <div class="px-3 py-1.5 rounded-xl bg-indigo-600/30 border border-indigo-500/50 text-xs">
+                    <span class="text-indigo-300 text-[10px] block uppercase font-bold">Na kanalih</span>
+                    <strong class="text-indigo-200 text-sm">${dist.totalPostsMonthly}</strong> <span class="text-indigo-300 text-[11px]">objav/mes</span>
                   </div>
-
-                  <div>
-                    <label class="block font-bold text-slate-400 mb-2">Tipi objav in tedenska pogostost</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                      ${types.map(t => {
-                        const n = counts[t] || 0;
-                        const safeT = t.replace(/'/g, "\\'");
-                        return `
-                          <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border ${n > 0 ? 'bg-indigo-950/40 border-indigo-500/40' : 'bg-slate-900 border-slate-800'}">
-                            <span class="font-semibold ${n > 0 ? 'text-white' : 'text-slate-400'}">${escapeHtml(t)}</span>
-                            <div class="flex items-center gap-1 shrink-0">
-                              <button type="button" onclick="changePostTypeCount(${idx}, '${safeT}', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition ${n === 0 ? 'opacity-40 cursor-not-allowed' : ''}">−</button>
-                              <span class="w-12 text-center font-bold ${n > 0 ? 'text-indigo-300' : 'text-slate-500'}">${n}×/ted</span>
-                              <button type="button" onclick="changePostTypeCount(${idx}, '${safeT}', 1)" class="w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition">+</button>
-                            </div>
-                          </div>
-                        `;
-                      }).join('')}
-                    </div>
+                  <div class="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs">
+                    <span class="text-emerald-300 text-[10px] block uppercase font-bold">Multiplikator</span>
+                    <strong class="text-emerald-300 text-sm">${dist.multiplier}×</strong>
                   </div>
+                </div>
+              </div>
 
-                  <!-- Platform summary -->
-                  <div class="rounded-xl border border-slate-800 overflow-hidden">
-                    <table class="w-full text-xs">
-                      <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] tracking-wider">
+              <!-- Breakdown per platform table with roles & KPIs -->
+              <div class="rounded-2xl border border-slate-800 bg-slate-950/80 overflow-hidden text-xs">
+                <table class="w-full">
+                  <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th class="text-left px-3.5 py-2.5 font-bold">Omrežje</th>
+                      <th class="text-left px-3.5 py-2.5 font-bold">Vsebina na kanalu</th>
+                      <th class="text-right px-3.5 py-2.5 font-bold">Tedensko</th>
+                      <th class="text-right px-3.5 py-2.5 font-bold">Mesečno</th>
+                      <th class="text-left px-3.5 py-2.5 font-bold">Vloga omrežja & Primarni KPI</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/70">
+                    ${platforms.length > 0 ? platforms.map((plat, idx) => {
+                      const weekly = dist.platformCounts[plat.name] || 0;
+                      const monthly = weekly * WEEKS_PER_MONTH;
+                      const formatList = dist.platformFormats[plat.name] || {};
+                      const formatItems = Object.entries(formatList).map(([fName, fCount]) => `${fName} (${fCount}×)`).join(', ');
+
+                      return `
                         <tr>
-                          <th class="text-left px-3 py-2 font-bold">Tip vsebine</th>
-                          <th class="text-right px-3 py-2 font-bold">Tedensko</th>
-                          <th class="text-right px-3 py-2 font-bold">Mesečno</th>
+                          <td class="px-3.5 py-3 font-bold text-white whitespace-nowrap">
+                            <span class="inline-flex items-center gap-2">
+                              <i data-lucide="${getPlatformIcon(plat.name)}" class="w-4 h-4 text-indigo-400"></i>
+                              ${escapeHtml(plat.name)}
+                            </span>
+                          </td>
+                          <td class="px-3.5 py-3 text-slate-300">
+                            ${formatItems || '<span class="text-slate-500">Brez dodeljenih formatov</span>'}
+                          </td>
+                          <td class="px-3.5 py-3 text-right font-extrabold text-indigo-300 whitespace-nowrap">
+                            ${weekly}×
+                          </td>
+                          <td class="px-3.5 py-3 text-right font-extrabold text-emerald-300 whitespace-nowrap">
+                            ${monthly}×
+                          </td>
+                          <td class="px-3.5 py-3 min-w-[280px]">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'role', this.value)" value="${escapeHtml(plat.role || '')}" placeholder="Vloga (npr. Zavedanje & doseg)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500">
+                              <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'kpi', this.value)" value="${escapeHtml(plat.kpi || '')}" placeholder="KPI (npr. Ogledi, shranjevanja)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500">
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        ${activeTypes.length > 0 ? activeTypes.map(t => `
-                          <tr class="border-t border-slate-800/70">
-                            <td class="px-3 py-1.5 text-slate-200">${escapeHtml(t)}</td>
-                            <td class="px-3 py-1.5 text-right text-slate-200 font-semibold">${counts[t]}</td>
-                            <td class="px-3 py-1.5 text-right text-slate-200 font-semibold">${counts[t] * WEEKS_PER_MONTH}</td>
-                          </tr>
-                        `).join('') : `
-                          <tr class="border-t border-slate-800/70"><td colspan="3" class="px-3 py-3 text-center text-slate-500">Dodajte vsaj en tip objave z gumbom +</td></tr>
-                        `}
-                      </tbody>
-                      <tfoot>
-                        <tr class="border-t border-slate-700 bg-slate-900/80">
-                          <td class="px-3 py-2 font-bold text-white">Skupaj ${plat.name}</td>
-                          <td class="px-3 py-2 text-right font-extrabold text-indigo-300">${weeklyTotal}</td>
-                          <td class="px-3 py-2 text-right font-extrabold text-emerald-300">${weeklyTotal * WEEKS_PER_MONTH}</td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-                </div>
-              `;
-              }).join('')}
+                      `;
+                    }).join('') : `
+                      <tr><td colspan="5" class="px-4 py-4 text-center text-slate-500">Ni izbranih omrežij. Nastavite tedensko kvoto pri formatih zgoraj.</td></tr>
+                    `}
+                  </tbody>
+                  <tfoot class="bg-slate-900/90 border-t border-slate-800 font-bold">
+                    <tr>
+                      <td colspan="2" class="px-3.5 py-2.5 text-white">SKUPAJ (Objave na vseh omrežjih)</td>
+                      <td class="px-3.5 py-2.5 text-right text-indigo-300 font-extrabold">${dist.totalPostsWeekly}× / teden</td>
+                      <td class="px-3.5 py-2.5 text-right text-emerald-300 font-extrabold">${dist.totalPostsMonthly}× / mesec</td>
+                      <td class="px-3.5 py-2.5 text-slate-400 text-[11px] font-normal">Iz ${dist.coreMonthly} originalno posnetih/oblikovanih kosov</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
-
-            ${platforms.length > 0 ? (() => {
-              const grandWeekly = platforms.reduce((s, p) => s + getPlatformWeeklyTotal(p), 0);
-              return `
-                <div class="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/60 to-emerald-950/40 border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div class="space-y-1">
-                    <div class="font-bold text-white text-sm flex items-center gap-2"><i data-lucide="calculator" class="w-4 h-4 text-indigo-300"></i> Skupni obseg vsebine (vsa omrežja)</div>
-                    <div class="text-slate-300">${platforms.map(p => `${escapeHtml(p.name)}: <strong>${getPlatformWeeklyTotal(p)}</strong>/ted`).join(' · ')}</div>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span class="px-3 py-1.5 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 font-extrabold">${grandWeekly} objav / teden</span>
-                    <span class="px-3 py-1.5 rounded-xl bg-emerald-600/25 border border-emerald-500/40 text-emerald-200 font-extrabold">${grandWeekly * WEEKS_PER_MONTH} objav / mesec</span>
-                  </div>
-                </div>
-                <p class="text-[10px] text-slate-500">Mesečni izračun = tedensko × ${WEEKS_PER_MONTH} tedne.</p>
-              `;
-            })() : ''}
           </div>
 
           <!-- Marketing Objectives -->
@@ -3996,49 +4043,138 @@
       const posts = client.crm?.content_calendar || [];
       posts.sort((a,b) => new Date(b.date || '2000') - new Date(a.date || '2000'));
 
+      const plan = getClientProductionPlan(client);
+      const dist = calculateDistributionFromPlan(plan);
+
+      // Quota tracker counts
+      const counts = {
+        video: posts.filter(p => (p.format || '').includes('Video') || (p.format || '').includes('Reels')).length,
+        carousel: posts.filter(p => (p.format || '').includes('Vrtiljak') || (p.format || '').includes('Carousel')).length,
+        image: posts.filter(p => (p.format || '').includes('Fotografija') || (p.format || '').includes('Grafika') || (p.format || '').includes('Slika')).length,
+        story: posts.filter(p => (p.format || '').includes('Zgodba') || (p.format || '').includes('Story')).length,
+        text: posts.filter(p => (p.format || '').includes('Tekst') || (p.format || '').includes('Članek')).length
+      };
+
+      const totalPlanned = posts.length;
+      const totalQuota = dist.coreMonthly || 0;
+      const totalPercent = totalQuota > 0 ? Math.min(100, Math.round((totalPlanned / totalQuota) * 100)) : 100;
+
       return `
         <div class="space-y-6">
           
+          <!-- Header Actions -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
             <div>
               <h3 class="text-sm font-bold text-white flex items-center gap-2">
                 <i data-lucide="calendar" class="w-4 h-4 text-sky-400"></i> Koledar objav za ${escapeHtml(client.company_name)}
               </h3>
-              <p class="text-xs text-slate-400 mt-0.5">Načrtovanje, vsebinski statusi in priprava objav.</p>
+              <p class="text-xs text-slate-400 mt-0.5">Načrtovanje, vsebinski statusi in usklajenost z mesečnimi kvotami.</p>
             </div>
 
-            <button onclick="openAddPostModal('${client.id}')" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5 shadow-md">
-              <i data-lucide="plus" class="w-4 h-4"></i> + Nova objava
-            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="switchWorkspaceTab('social_strategy')" class="px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700">
+                ⚙️ Uredi kvoto produkcije
+              </button>
+              <button onclick="openAddPostModal('${client.id}')" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5 shadow-md">
+                <i data-lucide="plus" class="w-4 h-4"></i> + Nova objava
+              </button>
+            </div>
+          </div>
+
+          <!-- Production Quota Tracker -->
+          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
+                  <i data-lucide="target" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">Sledenje mesečni kvoti produkcije</h4>
+                  <p class="text-[11px] text-slate-400">Načrtovanih <strong>${totalPlanned}</strong> od ciljnih <strong>${totalQuota}</strong> izvirnih kosov (${totalPercent}%)</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold">
+                  Skupaj objav na kanalih: ${posts.reduce((sum, p) => sum + ((p.platforms && p.platforms.length) ? p.platforms.length : 1), 0)} / ${dist.totalPostsMonthly}
+                </span>
+              </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+              <div class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: ${totalPercent}%"></div>
+            </div>
+
+            <!-- Format items breakdown -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1 text-xs">
+              ${PRODUCTION_FORMATS.map(fmt => {
+                const planItem = plan[fmt.key] || { weekly: 0 };
+                const quota = (parseInt(planItem.weekly, 10) || 0) * WEEKS_PER_MONTH;
+                const planned = counts[fmt.key] || 0;
+                const pct = quota > 0 ? Math.min(100, Math.round((planned / quota) * 100)) : 100;
+                const isMet = quota > 0 && planned >= quota;
+
+                return `
+                  <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="font-bold text-white flex items-center gap-1.5 truncate">
+                        <i data-lucide="${fmt.icon}" class="w-3.5 h-3.5 ${fmt.iconColor || 'text-indigo-400'}"></i> ${fmt.name.split(' ')[0]}
+                      </span>
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${isMet ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}">
+                        ${planned}/${quota}
+                      </span>
+                    </div>
+                    <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                      <div class="${isMet ? 'bg-emerald-400' : 'bg-indigo-500'} h-full rounded-full transition-all" style="width: ${pct}%"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
           </div>
 
           <!-- Posts Table / List -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 shadow-xl">
             ${posts.length > 0 ? `
               <div class="divide-y divide-slate-800">
-                ${posts.map(p => `
-                  <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="py-3 px-2 hover:bg-slate-950/60 rounded-xl transition flex flex-wrap items-center justify-between gap-3 cursor-pointer">
-                    <div class="flex items-center gap-3 min-w-0">
-                      <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
-                        <i data-lucide="${getPlatformIcon(p.platform)}" class="w-4 h-4"></i>
+                ${posts.map(p => {
+                  const postPlatforms = (Array.isArray(p.platforms) && p.platforms.length > 0) ? p.platforms : [p.platform || 'Instagram'];
+                  return `
+                    <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="py-3.5 px-2.5 hover:bg-slate-950/60 rounded-2xl transition flex flex-wrap items-center justify-between gap-3 cursor-pointer">
+                      <div class="flex items-center gap-3.5 min-w-0">
+                        <!-- Multi-platform badges -->
+                        <div class="flex items-center -space-x-1.5 shrink-0">
+                          ${postPlatforms.map(plat => `
+                            <div class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-700 text-indigo-300 flex items-center justify-center shadow-xs" title="${escapeHtml(plat)}">
+                              <i data-lucide="${getPlatformIcon(plat)}" class="w-4 h-4"></i>
+                            </div>
+                          `).join('')}
+                        </div>
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2">
+                            <h4 class="text-xs sm:text-sm font-bold text-white truncate">${escapeHtml(p.title)}</h4>
+                            ${postPlatforms.length > 1 ? `
+                              <span class="px-2 py-0.5 rounded-md bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold shrink-0">
+                                ${postPlatforms.length} omrežja
+                              </span>
+                            ` : ''}
+                          </div>
+                          <p class="text-[11px] text-slate-400 truncate mt-0.5">
+                            ${p.format || 'Format nedoločen'} • Steber: ${p.pillar || 'Brez'}
+                          </p>
+                        </div>
                       </div>
-                      <div class="min-w-0">
-                        <h4 class="text-xs sm:text-sm font-bold text-white truncate">${escapeHtml(p.title)}</h4>
-                        <p class="text-[11px] text-slate-400 truncate mt-0.5">
-                          ${p.format || 'Format nedoločen'} • Steber: ${p.pillar || 'Brez'}
-                        </p>
-                      </div>
-                    </div>
 
-                    <div class="flex items-center gap-4 shrink-0 text-xs">
-                      <span class="text-slate-300 font-mono">${p.date ? formatDate(p.date) : 'Ni datuma'} ${p.time || ''}</span>
-                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getProdStatusColor(p.prod_status)}">
-                        ${getProdStatusLabel(p.prod_status)}
-                      </span>
-                      <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+                      <div class="flex items-center gap-4 shrink-0 text-xs">
+                        <span class="text-slate-300 font-mono">${p.date ? formatDate(p.date) : 'Ni datuma'} ${p.time || ''}</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getProdStatusColor(p.prod_status)}">
+                          ${getProdStatusLabel(p.prod_status)}
+                        </span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+                      </div>
                     </div>
-                  </div>
-                `).join('')}
+                  `;
+                }).join('')}
               </div>
             ` : `
               <div class="py-12 text-center text-slate-500">
@@ -4421,58 +4557,188 @@
       renderWorkspaceTabContent();
     }
 
-    // Platforms helper
-    function togglePlatformSelection(platName) {
-      const client = clients.find(c => c.id === currentClientId);
-      if (!client) return;
+    // -------------------------------------------------------------
+    // CORE PRODUCTION FORMATS & CROSS-POSTING DISTRIBUTION ENGINE
+    // -------------------------------------------------------------
+    const WEEKS_PER_MONTH = 4;
+    const PRODUCTION_FORMATS = [
+      {
+        key: 'video',
+        name: 'Kratki vertikalni video',
+        sub: 'Reels / TikTok / FB Reels / Shorts (9:16)',
+        icon: 'film',
+        iconColor: 'text-emerald-400',
+        badgeBg: 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300',
+        defaultPlatforms: ['Instagram', 'TikTok', 'Facebook'],
+        allowedPlatforms: ['Instagram', 'TikTok', 'Facebook', 'YouTube', 'LinkedIn', 'Pinterest'],
+        calendarFormat: 'Reels / Video'
+      },
+      {
+        key: 'carousel',
+        name: 'Vrtiljak / Carousel',
+        sub: 'Izobraževalni drsniki, TikTok foto vsebina, FB albumi, LinkedIn PDF',
+        icon: 'copy',
+        iconColor: 'text-indigo-400',
+        badgeBg: 'bg-indigo-500/15 border border-indigo-500/30 text-indigo-300',
+        defaultPlatforms: ['Instagram', 'TikTok', 'Facebook'],
+        allowedPlatforms: ['Instagram', 'TikTok', 'Facebook', 'LinkedIn', 'Pinterest'],
+        calendarFormat: 'Vrtiljak (Carousel)'
+      },
+      {
+        key: 'image',
+        name: 'Statična slika / Grafika',
+        sub: 'Fotografije izdelkov, citati, vizualna obvestila',
+        icon: 'image',
+        iconColor: 'text-amber-400',
+        badgeBg: 'bg-amber-500/15 border border-amber-500/30 text-amber-300',
+        defaultPlatforms: ['Instagram', 'Facebook'],
+        allowedPlatforms: ['Instagram', 'Facebook', 'LinkedIn', 'Pinterest'],
+        calendarFormat: 'Fotografija / Grafika'
+      },
+      {
+        key: 'story',
+        name: 'Zgodbe / Stories (24h)',
+        sub: 'Vsakodnevna utripa, ankete, hitre povezave, Q&A',
+        icon: 'smartphone',
+        iconColor: 'text-rose-400',
+        badgeBg: 'bg-rose-500/15 border border-rose-500/30 text-rose-300',
+        defaultPlatforms: ['Instagram', 'Facebook'],
+        allowedPlatforms: ['Instagram', 'Facebook', 'TikTok'],
+        calendarFormat: 'Zgodba (Story)'
+      },
+      {
+        key: 'text',
+        name: 'Tekstovna objava / Članek',
+        sub: 'Strokovna mnenja, novice, LinkedIn diskusije',
+        icon: 'file-text',
+        iconColor: 'text-sky-400',
+        badgeBg: 'bg-sky-500/15 border border-sky-500/30 text-sky-300',
+        defaultPlatforms: ['LinkedIn', 'Facebook'],
+        allowedPlatforms: ['LinkedIn', 'Facebook'],
+        calendarFormat: 'Tekstovna objava / Članek'
+      }
+    ];
+
+    function getClientProductionPlan(client) {
+      if (!client) return {};
       if (!client.crm) client.crm = {};
       if (!client.crm.social_media_strategy) client.crm.social_media_strategy = {};
-      if (!client.crm.social_media_strategy.platforms) client.crm.social_media_strategy.platforms = [];
 
-      const list = client.crm.social_media_strategy.platforms;
-      const existingIdx = list.findIndex(p => p.name === platName);
+      if (!client.crm.social_media_strategy.production_plan) {
+        // Sensible default production plan
+        client.crm.social_media_strategy.production_plan = {
+          video: { weekly: 2, platforms: ['Instagram', 'TikTok', 'Facebook'] },
+          carousel: { weekly: 1, platforms: ['Instagram', 'TikTok', 'Facebook'] },
+          image: { weekly: 1, platforms: ['Instagram', 'Facebook'] },
+          story: { weekly: 0, platforms: ['Instagram', 'Facebook'] },
+          text: { weekly: 0, platforms: ['LinkedIn', 'Facebook'] }
+        };
+        syncPlatformsFromProductionPlan(client);
+      }
+      return client.crm.social_media_strategy.production_plan;
+    }
 
-      if (existingIdx >= 0) {
-        list.splice(existingIdx, 1);
-      } else {
-        list.push({
-          name: platName,
-          role: 'Dvig prepoznavnosti in interakcije',
-          frequency: '0x tedensko',
-          kpi: 'Doseg & shranjevanja',
-          post_types: {}
+    function calculateDistributionFromPlan(plan) {
+      let coreWeekly = 0;
+      const platformCounts = {};
+      const platformFormats = {};
+
+      PRODUCTION_FORMATS.forEach(fmt => {
+        const item = plan[fmt.key] || { weekly: 0, platforms: fmt.defaultPlatforms };
+        const w = parseInt(item.weekly, 10) || 0;
+        coreWeekly += w;
+        const plats = item.platforms || [];
+        plats.forEach(p => {
+          platformCounts[p] = (platformCounts[p] || 0) + w;
+          if (!platformFormats[p]) platformFormats[p] = {};
+          if (w > 0) platformFormats[p][fmt.name] = (platformFormats[p][fmt.name] || 0) + w;
         });
+      });
+
+      const coreMonthly = coreWeekly * WEEKS_PER_MONTH;
+      const totalPostsWeekly = Object.values(platformCounts).reduce((a, b) => a + b, 0);
+      const totalPostsMonthly = totalPostsWeekly * WEEKS_PER_MONTH;
+      const multiplier = coreWeekly > 0 ? (totalPostsWeekly / coreWeekly).toFixed(1) : '1.0';
+
+      return {
+        coreWeekly,
+        coreMonthly,
+        totalPostsWeekly,
+        totalPostsMonthly,
+        multiplier,
+        platformCounts,
+        platformFormats
+      };
+    }
+
+    function syncPlatformsFromProductionPlan(client) {
+      if (!client?.crm?.social_media_strategy) return;
+      const plan = client.crm.social_media_strategy.production_plan || {};
+      const dist = calculateDistributionFromPlan(plan);
+      const existingPlatforms = client.crm.social_media_strategy.platforms || [];
+      const existingMap = {};
+      existingPlatforms.forEach(p => { existingMap[p.name] = p; });
+
+      const activePlatformNames = Object.keys(dist.platformCounts).filter(k => dist.platformCounts[k] > 0);
+      // Keep any platform the user had already defined roles for
+      existingPlatforms.forEach(p => {
+        if (!activePlatformNames.includes(p.name) && (p.role || p.kpi)) {
+          activePlatformNames.push(p.name);
+        }
+      });
+
+      if (activePlatformNames.length === 0) {
+        // Fallback default
+        activePlatformNames.push('Instagram', 'TikTok', 'Facebook');
       }
 
-      saveCurrentWorkspace(false);
-      renderWorkspaceTabContent();
+      client.crm.social_media_strategy.platforms = activePlatformNames.map(platName => {
+        const prev = existingMap[platName] || {};
+        const weekly = dist.platformCounts[platName] || 0;
+        return {
+          name: platName,
+          role: prev.role || 'Dvig prepoznavnosti & grajenje skupnosti',
+          frequency: `${weekly}x tedensko`,
+          kpi: prev.kpi || 'Doseg & shranjevanja',
+          post_types: dist.platformFormats[platName] || prev.post_types || {}
+        };
+      });
+
+      client.strategyStats = calculateStrategyStats(client.crm, client.answers);
+      updateWorkspaceTodoStatus(client);
     }
 
-    // Post types available per platform
-    const WEEKS_PER_MONTH = 4;
-    const PLATFORM_POST_TYPES = {
-      Instagram: ['Reels', 'Carousel', 'Statična objava', 'Stories', 'Live'],
-      TikTok: ['Video', 'Foto carousel', 'Stories', 'Live'],
-      Facebook: ['Reels / video', 'Statična objava', 'Carousel / album', 'Stories', 'Tekstovna objava', 'Live'],
-      LinkedIn: ['Tekstovna objava', 'Objava s sliko', 'Dokument (PDF carousel)', 'Video', 'Članek', 'Anketa'],
-      YouTube: ['Dolgi video', 'Shorts', 'Community objava', 'Live'],
-      Pinterest: ['Statični pin', 'Video pin', 'Carousel pin']
-    };
-
-    function getPlatformWeeklyTotal(plat) {
-      const counts = plat?.post_types || {};
-      const allowed = PLATFORM_POST_TYPES[plat?.name] || Object.keys(counts);
-      return allowed.reduce((sum, t) => sum + (parseInt(counts[t], 10) || 0), 0);
-    }
-
-    function changePostTypeCount(idx, type, delta) {
+    function changeProductionWeeklyCount(formatKey, delta) {
       const client = clients.find(c => c.id === currentClientId);
-      const plat = client?.crm?.social_media_strategy?.platforms?.[idx];
-      if (!plat) return;
-      if (!plat.post_types) plat.post_types = {};
-      const next = Math.max(0, Math.min(50, (plat.post_types[type] || 0) + delta));
-      if (next === 0) delete plat.post_types[type]; else plat.post_types[type] = next;
-      plat.frequency = `${getPlatformWeeklyTotal(plat)}x tedensko`;
+      if (!client) return;
+      const plan = getClientProductionPlan(client);
+      if (!plan[formatKey]) {
+        const fmtDef = PRODUCTION_FORMATS.find(f => f.key === formatKey);
+        plan[formatKey] = { weekly: 0, platforms: fmtDef ? [...fmtDef.defaultPlatforms] : ['Instagram'] };
+      }
+      plan[formatKey].weekly = Math.max(0, Math.min(50, (parseInt(plan[formatKey].weekly, 10) || 0) + delta));
+      syncPlatformsFromProductionPlan(client);
+      scheduleAutoSave();
+      const prevY = window.scrollY;
+      renderWorkspaceTabContent();
+      window.scrollTo(window.scrollX, prevY);
+    }
+
+    function toggleProductionPlatform(formatKey, platName) {
+      const client = clients.find(c => c.id === currentClientId);
+      if (!client) return;
+      const plan = getClientProductionPlan(client);
+      if (!plan[formatKey]) {
+        const fmtDef = PRODUCTION_FORMATS.find(f => f.key === formatKey);
+        plan[formatKey] = { weekly: 0, platforms: fmtDef ? [...fmtDef.defaultPlatforms] : ['Instagram'] };
+      }
+      const current = plan[formatKey].platforms || [];
+      if (current.includes(platName)) {
+        plan[formatKey].platforms = current.filter(p => p !== platName);
+      } else {
+        plan[formatKey].platforms = [...current, platName];
+      }
+      syncPlatformsFromProductionPlan(client);
       scheduleAutoSave();
       const prevY = window.scrollY;
       renderWorkspaceTabContent();
@@ -4561,8 +4827,74 @@
     }
 
     // -------------------------------------------------------------
-    // POST MODAL & CONTENT ITEM WORKFLOW
+    // POST MODAL & MULTI-PLATFORM CROSS-POSTING WORKFLOW
     // -------------------------------------------------------------
+    window.postModalSelectedPlatforms = ['Instagram'];
+
+    function renderPostModalPlatformPills() {
+      const container = document.getElementById('postModalPlatformPills');
+      const summaryEl = document.getElementById('postModalPlatformSummary');
+      if (!container) return;
+
+      const available = ['Instagram', 'TikTok', 'Facebook', 'LinkedIn', 'YouTube', 'Pinterest'];
+      const selected = window.postModalSelectedPlatforms || ['Instagram'];
+
+      container.innerHTML = available.map(plat => {
+        const isSel = selected.includes(plat);
+        return `
+          <button type="button" onclick="togglePostModalPlatform('${plat}')" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 ${
+            isSel ? 'bg-indigo-600 text-white border-indigo-500 shadow-md' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+          }">
+            <i data-lucide="${getPlatformIcon(plat)}" class="w-3.5 h-3.5"></i>
+            <span>${plat}</span>
+            <span class="text-[10px]">${isSel ? '✓' : '+'}</span>
+          </button>
+        `;
+      }).join('');
+
+      if (summaryEl) {
+        summaryEl.textContent = `${selected.length} ${selected.length === 1 ? 'izbrano omrežje' : selected.length === 2 ? 'izbrani omrežji' : 'izbrana omrežja'}`;
+      }
+
+      const hiddenPlat = document.getElementById('postModalPlatform');
+      if (hiddenPlat) hiddenPlat.value = selected[0] || 'Instagram';
+      lucide.createIcons({ root: container });
+    }
+
+    function togglePostModalPlatform(platName) {
+      if (!window.postModalSelectedPlatforms) window.postModalSelectedPlatforms = [];
+      const idx = window.postModalSelectedPlatforms.indexOf(platName);
+      if (idx >= 0) {
+        if (window.postModalSelectedPlatforms.length > 1) {
+          window.postModalSelectedPlatforms.splice(idx, 1);
+        }
+      } else {
+        window.postModalSelectedPlatforms.push(platName);
+      }
+      renderPostModalPlatformPills();
+    }
+
+    function handlePostModalFormatChange(formatVal) {
+      const clientSelect = document.getElementById('postModalClientSelect');
+      const clientId = clientSelect ? clientSelect.value : currentClientId;
+      const client = clients.find(c => c.id === clientId);
+      const plan = getClientProductionPlan(client);
+      
+      let targetKey = 'video';
+      if (formatVal.includes('Carousel') || formatVal.includes('Vrtiljak')) targetKey = 'carousel';
+      else if (formatVal.includes('Fotografija') || formatVal.includes('Grafika')) targetKey = 'image';
+      else if (formatVal.includes('Story') || formatVal.includes('Zgodba')) targetKey = 'story';
+      else if (formatVal.includes('Tekst') || formatVal.includes('Članek')) targetKey = 'text';
+
+      if (plan && plan[targetKey] && plan[targetKey].platforms?.length > 0) {
+        window.postModalSelectedPlatforms = [...plan[targetKey].platforms];
+      } else {
+        const fmtDef = PRODUCTION_FORMATS.find(f => f.key === targetKey);
+        if (fmtDef) window.postModalSelectedPlatforms = [...fmtDef.defaultPlatforms];
+      }
+      renderPostModalPlatformPills();
+    }
+
     function openAddPostModal(presetClientId = null, presetDate = null) {
       document.getElementById('postModalTitle').innerText = 'Načrtuj novo vsebino';
       document.getElementById('postModalPostId').value = '';
@@ -4570,7 +4902,6 @@
       document.getElementById('postModalForm').reset();
 
       const clientId = presetClientId || currentClientId;
-      const clientWrapper = document.getElementById('postClientSelectWrapper');
       const clientSelect = document.getElementById('postModalClientSelect');
 
       clientSelect.innerHTML = clients.map(c => 
@@ -4582,6 +4913,13 @@
       } else {
         document.getElementById('postModalDate').value = new Date().toISOString().split('T')[0];
       }
+
+      // Preselect platforms based on client's video production plan
+      const client = clients.find(c => c.id === clientId);
+      const plan = getClientProductionPlan(client);
+      const defaultPlatforms = plan.video?.platforms || ['Instagram', 'TikTok', 'Facebook'];
+      window.postModalSelectedPlatforms = [...defaultPlatforms];
+      renderPostModalPlatformPills();
 
       document.getElementById('postModal').classList.remove('hidden');
       lucide.createIcons({ root: document.getElementById('postModal') });
@@ -4617,6 +4955,12 @@
       document.getElementById('postModalCta').value = post.cta || '';
       document.getElementById('postModalAssetLink').value = post.asset_link || '';
 
+      const postPlatforms = (Array.isArray(post.platforms) && post.platforms.length > 0)
+        ? post.platforms
+        : [post.platform || 'Instagram'];
+      window.postModalSelectedPlatforms = [...postPlatforms];
+      renderPostModalPlatformPills();
+
       document.getElementById('postModal').classList.remove('hidden');
       lucide.createIcons({ root: document.getElementById('postModal') });
     }
@@ -4635,10 +4979,15 @@
       if (!client.crm.content_calendar) client.crm.content_calendar = [];
 
       const existingPostId = document.getElementById('postModalPostId').value;
+      const selectedPlatforms = (window.postModalSelectedPlatforms && window.postModalSelectedPlatforms.length > 0)
+        ? window.postModalSelectedPlatforms
+        : [document.getElementById('postModalPlatform').value || 'Instagram'];
+
       const postObj = {
         id: existingPostId || ('post_' + Date.now()),
         title: document.getElementById('postModalTitleInput').value.trim(),
-        platform: document.getElementById('postModalPlatform').value,
+        platforms: selectedPlatforms,
+        platform: selectedPlatforms[0] || 'Instagram',
         date: document.getElementById('postModalDate').value,
         time: document.getElementById('postModalTime').value,
         format: document.getElementById('postModalFormat').value,
