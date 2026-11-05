@@ -994,7 +994,7 @@
 
   <!-- MODAL: ADD / EDIT CONTENT POST (PLANIRANJE OBJAVE) -->
   <div id="postModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[92vh] overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl text-slate-100">
       
       <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-800">
         <h3 id="postModalTitle" class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
@@ -1008,25 +1008,24 @@
       <form id="postModalForm" onsubmit="handleSavePost(event)" class="space-y-4 text-xs">
         <input type="hidden" id="postModalPostId">
         <input type="hidden" id="postModalClientId">
+        <input type="hidden" id="postModalTitleHidden">
+        <input type="hidden" id="postModalObjectiveHidden">
+        <input type="hidden" id="postModalPlatform" value="Instagram">
 
         <!-- Connect with Script or Idea -->
-        <div id="postModalScriptIdeaLinkWrapper" class="p-3 rounded-2xl bg-slate-950 border border-slate-800/90 flex flex-wrap items-center justify-between gap-2.5">
-          <div class="flex items-center gap-2">
-            <i data-lucide="link" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
-            <span class="text-[11px] font-bold text-slate-300">Poveži z idejo ali scenarijem:</span>
+        <div id="postModalScriptIdeaLinkWrapper" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/90 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <label class="font-bold uppercase tracking-wider text-slate-300 text-[11px] flex items-center gap-1.5">
+              <i data-lucide="film" class="w-3.5 h-3.5 text-indigo-400"></i> Poveži z napisanim scenarijem ali idejo
+            </label>
+            <span class="text-[10px] text-slate-500">Prenese vsebino & nastavitve</span>
           </div>
-          <select id="postModalScriptIdeaSelect" onchange="handleSelectScriptOrIdeaForPost(this.value)" class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-full">
-            <option value="">— Brez povezave (ročni vnos) —</option>
+          <select id="postModalScriptIdeaSelect" onchange="handleSelectScriptOrIdeaForPost(this.value)" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer">
+            <option value="">— Izberite scenarij ali idejo (ali ročni vnos) —</option>
           </select>
         </div>
 
-        <!-- Title -->
-        <div>
-          <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Naslov objave / delovni naziv *</label>
-          <input id="postModalTitleInput" type="text" required placeholder="npr. 3 napake pri pripravi kvasa" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition">
-        </div>
-
-        <!-- Format & Pillar (2 equal columns with full breathing room) -->
+        <!-- Format & Pillar (2 equal columns) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
             <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Format vsebine *</label>
@@ -1047,38 +1046,36 @@
           </div>
         </div>
 
-        <!-- Date & Time & Objective -->
+        <!-- Date & Time (2 equal columns) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Datum in ura objave *</label>
-            <div class="grid grid-cols-5 gap-2">
-              <div class="col-span-3">
-                <input id="postModalDate" type="date" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-              </div>
-              <div class="col-span-2">
-                <input id="postModalTime" type="time" value="18:00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 text-center">
-              </div>
-            </div>
+            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Datum objave *</label>
+            <input id="postModalDate" type="date" required onchange="handlePostDateChange(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
           </div>
           <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Glavni cilj objave</label>
-            <input id="postModalObjective" type="text" placeholder="npr. Dvig prepoznavnosti, shranjevanja..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Ura objave</label>
+            <input id="postModalTime" type="time" value="18:00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
           </div>
         </div>
 
-        <!-- Cross-posting platform selection pills -->
-        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
-          <div class="flex items-center justify-between">
-            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] flex items-center gap-1.5">
-              <i data-lucide="share-2" class="w-3.5 h-3.5 text-indigo-400"></i> Ciljna omrežja za objavo (Cross-posting) *
-            </label>
-            <span id="postModalPlatformSummary" class="text-[11px] text-indigo-400 font-bold">1 izbrano omrežje</span>
+        <!-- Weekly Recurrence Switch (with calendar year limit) -->
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center shrink-0">
+              <i data-lucide="repeat" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <label for="postModalRecurring" class="text-xs font-bold text-white cursor-pointer flex items-center gap-1.5">
+                Tedensko ponavljanje
+                <span class="text-[10px] font-semibold text-indigo-400 bg-indigo-500/15 px-2 py-0.5 rounded-full">Do konca leta</span>
+              </label>
+              <p id="postModalRecurringHint" class="text-[11px] text-slate-400 mt-0.5">Avtomatsko načrtuj objavo vsak teden na ta dan do 31. decembra.</p>
+            </div>
           </div>
-          <div id="postModalPlatformPills" class="flex flex-wrap gap-2 pt-1">
-            <!-- Injected by renderPostModalPlatformPills -->
-          </div>
-          <p class="text-[10px] text-slate-500">En vsebinski kos bo avtomatsko razporejen na vsa označena omrežja.</p>
-          <input type="hidden" id="postModalPlatform" value="Instagram">
+          <label class="relative inline-flex items-center cursor-pointer shrink-0">
+            <input type="checkbox" id="postModalRecurring" class="sr-only peer">
+            <div class="w-10 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+          </label>
         </div>
 
         <!-- Footer Actions -->
@@ -2033,13 +2030,17 @@
             </div>
 
             <div class="space-y-1 overflow-y-auto max-h-[75px] scrollbar-none">
-              ${dayPosts.map(p => `
-                <div onclick="openEditPostModal('${p.clientId}', '${p.id}')" title="${escapeHtml(p.clientName)}: ${escapeHtml(p.title)}" class="cursor-pointer text-[10px] p-1 rounded-md bg-indigo-950/80 border border-indigo-500/30 text-slate-200 truncate hover:bg-indigo-900 transition flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0"></span>
-                  <span class="font-bold text-indigo-300 shrink-0">${p.platform ? p.platform.substring(0,2) : 'IG'}</span>
-                  <span class="truncate">${escapeHtml(p.title)}</span>
-                </div>
-              `).join('')}
+              ${dayPosts.map(p => {
+                const theme = getPostFormatTheme(p.format);
+                return `
+                  <div onclick="openEditPostModal('${p.clientId}', '${p.id}')" title="${escapeHtml(p.clientName)}: ${escapeHtml(p.title)} (${theme.label})" class="cursor-pointer text-[10px] p-1 rounded-md border ${theme.cardClass} truncate transition flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full ${theme.dotClass} shrink-0"></span>
+                    <span class="font-bold ${theme.timeClass} shrink-0">${p.platform ? p.platform.substring(0,2) : 'IG'}</span>
+                    ${p.recurrence_id ? `<i data-lucide="repeat" class="w-2.5 h-2.5 ${theme.iconColor} shrink-0"></i>` : ''}
+                    <span class="truncate font-medium text-white">${escapeHtml(p.title)}</span>
+                  </div>
+                `;
+              }).join('')}
             </div>
           </div>
         `;
@@ -4254,6 +4255,86 @@
       return `${y}-${m}-${day}`;
     }
 
+    function parseYmd(dateStr) {
+      if (!dateStr) return new Date();
+      const parts = dateStr.split('-').map(Number);
+      return new Date(parts[0], (parts[1] || 1) - 1, parts[2] || 1, 12, 0, 0);
+    }
+
+    function getPostFormatTheme(format) {
+      const f = (format || '').toLowerCase();
+      if (f.includes('video') || f.includes('reels') || f.includes('tiktok') || f.includes('shorts')) {
+        return {
+          name: 'video',
+          label: 'Video / Reels',
+          cardClass: 'bg-emerald-950/85 border-emerald-500/50 text-emerald-100 hover:bg-emerald-900/90 hover:border-emerald-400',
+          badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          timeClass: 'text-emerald-400 font-bold',
+          dotClass: 'bg-emerald-400',
+          iconColor: 'text-emerald-400',
+          icon: 'film'
+        };
+      }
+      if (f.includes('carousel') || f.includes('vrtiljak')) {
+        return {
+          name: 'carousel',
+          label: 'Vrtiljak',
+          cardClass: 'bg-sky-950/85 border-sky-500/50 text-sky-100 hover:bg-sky-900/90 hover:border-sky-400',
+          badgeClass: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+          timeClass: 'text-sky-400 font-bold',
+          dotClass: 'bg-sky-400',
+          iconColor: 'text-sky-400',
+          icon: 'copy'
+        };
+      }
+      if (f.includes('fotografija') || f.includes('grafika') || f.includes('slika') || f.includes('image') || f.includes('photo')) {
+        return {
+          name: 'image',
+          label: 'Fotografija / Grafika',
+          cardClass: 'bg-amber-950/85 border-amber-500/50 text-amber-100 hover:bg-amber-900/90 hover:border-amber-400',
+          badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          timeClass: 'text-amber-400 font-bold',
+          dotClass: 'bg-amber-400',
+          iconColor: 'text-amber-400',
+          icon: 'image'
+        };
+      }
+      if (f.includes('story') || f.includes('zgodba')) {
+        return {
+          name: 'story',
+          label: 'Zgodba (24h)',
+          cardClass: 'bg-rose-950/85 border-rose-500/50 text-rose-100 hover:bg-rose-900/90 hover:border-rose-400',
+          badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+          timeClass: 'text-rose-400 font-bold',
+          dotClass: 'bg-rose-400',
+          iconColor: 'text-rose-400',
+          icon: 'smartphone'
+        };
+      }
+      if (f.includes('tekst') || f.includes('članek') || f.includes('clanek') || f.includes('text')) {
+        return {
+          name: 'text',
+          label: 'Članek / Tekst',
+          cardClass: 'bg-purple-950/85 border-purple-500/50 text-purple-100 hover:bg-purple-900/90 hover:border-purple-400',
+          badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+          timeClass: 'text-purple-400 font-bold',
+          dotClass: 'bg-purple-400',
+          iconColor: 'text-purple-400',
+          icon: 'file-text'
+        };
+      }
+      return {
+        name: 'default',
+        label: 'Objava',
+        cardClass: 'bg-indigo-950/85 border-indigo-500/50 text-indigo-100 hover:bg-indigo-900/90 hover:border-indigo-400',
+        badgeClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+        timeClass: 'text-indigo-400 font-bold',
+        dotClass: 'bg-indigo-400',
+        iconColor: 'text-indigo-400',
+        icon: 'calendar'
+      };
+    }
+
     function renderWsClientCalendar(client) {
       const posts = client.crm?.content_calendar || [];
       const ideas = client.crm?.ideas || [];
@@ -4446,6 +4527,26 @@
               </div>
             </div>
 
+            <!-- Format color legend -->
+            <div class="flex flex-wrap items-center gap-2 pt-1 pb-2 border-b border-slate-800/60 text-[11px]">
+              <span class="text-slate-400 font-semibold text-[10px] uppercase tracking-wider mr-1">Tipi objav:</span>
+              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-medium">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Video / Reels
+              </span>
+              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-sky-950/80 border border-sky-500/40 text-sky-300 font-medium">
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span> Vrtiljak (Carousel)
+              </span>
+              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-950/80 border border-amber-500/40 text-amber-300 font-medium">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span> Fotografija / Grafika
+              </span>
+              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-rose-950/80 border border-rose-500/40 text-rose-300 font-medium">
+                <span class="w-2 h-2 rounded-full bg-rose-400"></span> Zgodba (Story)
+              </span>
+              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-950/80 border border-purple-500/40 text-purple-300 font-medium">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span> Članek / Tekst
+              </span>
+            </div>
+
             <!-- VIEW 1: MONTH VIEW GRID -->
             ${wsCalendarViewMode === 'month' ? (() => {
               let gridHtml = `
@@ -4484,13 +4585,16 @@
                     <div class="space-y-1.5 overflow-y-auto max-h-[85px] scrollbar-none">
                       ${dayPosts.map(p => {
                         const postPlatforms = (Array.isArray(p.platforms) && p.platforms.length > 0) ? p.platforms : [p.platform || 'Instagram'];
+                        const theme = getPostFormatTheme(p.format);
                         return `
-                          <div onclick="event.stopPropagation(); openEditPostModal('${client.id}', '${p.id}')" title="${escapeHtml(p.title)}" class="text-[10px] p-1.5 rounded-xl bg-indigo-950/90 border border-indigo-500/40 text-slate-200 hover:bg-indigo-900 hover:border-indigo-400 transition space-y-0.5 shadow-xs">
+                          <div onclick="event.stopPropagation(); openEditPostModal('${client.id}', '${p.id}')" title="${escapeHtml(p.title)} (${theme.label})" class="text-[10px] p-1.5 rounded-xl border ${theme.cardClass} transition space-y-0.5 shadow-xs">
                             <div class="flex items-center justify-between gap-1 text-[9px]">
-                              <span class="font-mono text-indigo-300 font-bold">${p.time || '18:00'}</span>
-                              <div class="flex items-center gap-0.5">
+                              <span class="font-mono ${theme.timeClass}">${p.time || '18:00'}</span>
+                              <div class="flex items-center gap-1">
+                                ${p.recurrence_id ? `<i data-lucide="repeat" class="w-2.5 h-2.5 ${theme.iconColor}" title="Tedensko ponavljanje"></i>` : ''}
+                                <i data-lucide="${theme.icon}" class="w-2.5 h-2.5 ${theme.iconColor}" title="${escapeHtml(theme.label)}"></i>
                                 ${postPlatforms.map(plat => `
-                                  <i data-lucide="${getPlatformIcon(plat)}" class="w-2.5 h-2.5 text-indigo-300"></i>
+                                  <i data-lucide="${getPlatformIcon(plat)}" class="w-2.5 h-2.5 ${theme.iconColor}" title="${escapeHtml(plat)}"></i>
                                 `).join('')}
                               </div>
                             </div>
@@ -4544,22 +4648,31 @@
                         <div class="flex-1 space-y-2 overflow-y-auto">
                           ${dayPosts.length > 0 ? dayPosts.map(p => {
                             const postPlatforms = (Array.isArray(p.platforms) && p.platforms.length > 0) ? p.platforms : [p.platform || 'Instagram'];
+                            const theme = getPostFormatTheme(p.format);
                             return `
-                              <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="p-2.5 rounded-xl bg-slate-900 border border-slate-700/80 hover:border-indigo-500/60 hover:bg-slate-850 cursor-pointer transition space-y-2 text-xs shadow-xs">
+                              <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="p-2.5 rounded-xl border ${theme.cardClass} cursor-pointer transition space-y-2 text-xs shadow-xs">
                                 <div class="flex items-center justify-between text-[10px]">
-                                  <span class="font-mono font-bold text-indigo-300 bg-indigo-500/15 px-1.5 py-0.5 rounded">${p.time || '18:00'}</span>
+                                  <div class="flex items-center gap-1.5">
+                                    <span class="font-mono font-bold px-1.5 py-0.5 rounded ${theme.badgeClass}">${p.time || '18:00'}</span>
+                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold flex items-center gap-1 ${theme.badgeClass}">
+                                      <i data-lucide="${theme.icon}" class="w-2.5 h-2.5"></i>
+                                      ${theme.label}
+                                    </span>
+                                  </div>
                                   <div class="flex items-center gap-1">
+                                    ${p.recurrence_id ? `<i data-lucide="repeat" class="w-3 h-3 ${theme.iconColor}" title="Tedensko ponavljanje do konca leta"></i>` : ''}
                                     ${postPlatforms.map(plat => `
-                                      <i data-lucide="${getPlatformIcon(plat)}" class="w-3 h-3 text-indigo-400" title="${escapeHtml(plat)}"></i>
+                                      <i data-lucide="${getPlatformIcon(plat)}" class="w-3 h-3 ${theme.iconColor}" title="${escapeHtml(plat)}"></i>
                                     `).join('')}
                                   </div>
                                 </div>
                                 <h5 class="font-bold text-white leading-tight line-clamp-2">${escapeHtml(p.title)}</h5>
                                 <div class="flex flex-wrap items-center justify-between gap-1 text-[10px]">
-                                  <span class="text-slate-400 truncate max-w-[100px]">${p.pillar || 'Brez stebra'}</span>
-                                  <span class="px-1.5 py-0.2 rounded font-semibold border ${getProdStatusColor(p.prod_status)}">
-                                    ${getProdStatusLabel(p.prod_status).split('.')[1] || getProdStatusLabel(p.prod_status)}
+                                  <span class="text-slate-300/80 truncate max-w-[110px] flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full ${theme.dotClass}"></span>
+                                    ${p.pillar || 'Brez stebra'}
                                   </span>
+                                  ${p.recurrence_id ? `<span class="text-[9px] font-medium text-emerald-400/90 bg-emerald-950/60 px-1 py-0.5 rounded border border-emerald-500/30">Tedensko</span>` : ''}
                                 </div>
                               </div>
                             `;
@@ -4584,6 +4697,7 @@
                   <div class="divide-y divide-slate-800">
                     ${posts.map(p => {
                       const postPlatforms = (Array.isArray(p.platforms) && p.platforms.length > 0) ? p.platforms : [p.platform || 'Instagram'];
+                      const theme = getPostFormatTheme(p.format);
                       return `
                         <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="py-3.5 px-3 hover:bg-slate-950/60 rounded-2xl transition flex flex-wrap items-center justify-between gap-3 cursor-pointer">
                           <div class="flex items-center gap-3.5 min-w-0">
@@ -4598,6 +4712,14 @@
                             <div class="min-w-0">
                               <div class="flex items-center gap-2">
                                 <h4 class="text-xs sm:text-sm font-bold text-white truncate">${escapeHtml(p.title)}</h4>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold shrink-0 border ${theme.badgeClass}">
+                                  ${theme.label}
+                                </span>
+                                ${p.recurrence_id ? `
+                                  <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold shrink-0 flex items-center gap-1">
+                                    <i data-lucide="repeat" class="w-2.5 h-2.5"></i> Tedensko
+                                  </span>
+                                ` : ''}
                                 ${postPlatforms.length > 1 ? `
                                   <span class="px-2 py-0.5 rounded-md bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold shrink-0">
                                     ${postPlatforms.length} omrežja
@@ -4605,7 +4727,7 @@
                                 ` : ''}
                               </div>
                               <p class="text-[11px] text-slate-400 truncate mt-0.5">
-                                ${p.format || 'Format nedoločen'} • Steber: ${p.pillar || 'Brez'}
+                                Steber: ${p.pillar || 'Brez'}
                               </p>
                             </div>
                           </div>
@@ -6688,8 +6810,28 @@
       renderPostModalPlatformPills();
     }
 
+    function handlePostDateChange(dateStr) {
+      const hintEl = document.getElementById('postModalRecurringHint');
+      if (!hintEl) return;
+      if (!dateStr) {
+        hintEl.innerText = 'Ponavljaj vsak teden ob istem dnevu do 31. decembra tekočega leta.';
+        return;
+      }
+      const d = parseYmd(dateStr);
+      const daysSl = ["nedeljah", "ponedeljkih", "torkih", "sredah", "četrtkih", "petkih", "sobotah"];
+      const dayName = daysSl[d.getDay()];
+      const year = d.getFullYear();
+      hintEl.innerText = `Ponavljaj vsak teden ob ${dayName} do 31. decembra ${year}.`;
+    }
+
     function handleSelectScriptOrIdeaForPost(val) {
-      if (!val) return;
+      if (!val) {
+        const titleEl = document.getElementById('postModalTitleHidden');
+        if (titleEl) titleEl.value = '';
+        const objEl = document.getElementById('postModalObjectiveHidden');
+        if (objEl) objEl.value = '';
+        return;
+      }
       const clientId = document.getElementById('postModalClientId')?.value || currentClientId;
       const client = clients.find(c => c.id === clientId);
       if (!client) return;
@@ -6698,18 +6840,21 @@
         const scriptId = val.replace('script_', '');
         const script = (client.crm?.scripts || []).find(s => s.id === scriptId);
         if (!script) return;
-        document.getElementById('postModalTitleInput').value = script.title || '';
+        const titleEl = document.getElementById('postModalTitleHidden');
+        if (titleEl) titleEl.value = script.title || '';
+        const objEl = document.getElementById('postModalObjectiveHidden');
+        if (objEl) objEl.value = script.target || '';
         if (script.format) {
           document.getElementById('postModalFormat').value = script.format;
           handlePostModalFormatChange(script.format);
         }
         if (script.pillar) document.getElementById('postModalPillar').value = script.pillar;
-        if (script.target) document.getElementById('postModalObjective').value = script.target;
       } else if (val.startsWith('idea_')) {
         const ideaId = val.replace('idea_', '');
         const idea = (client.crm?.ideas || []).find(i => i.id === ideaId);
         if (!idea) return;
-        document.getElementById('postModalTitleInput').value = idea.title || '';
+        const titleEl = document.getElementById('postModalTitleHidden');
+        if (titleEl) titleEl.value = idea.title || '';
         if (idea.format) {
           document.getElementById('postModalFormat').value = idea.format;
           handlePostModalFormatChange(idea.format);
@@ -6727,6 +6872,14 @@
       const clientId = presetClientId || currentClientId;
       const client = clients.find(c => c.id === clientId);
       document.getElementById('postModalClientId').value = clientId;
+
+      // Reset hidden inputs & recurrence
+      const titleEl = document.getElementById('postModalTitleHidden');
+      if (titleEl) titleEl.value = prefillTitle || '';
+      const objEl = document.getElementById('postModalObjectiveHidden');
+      if (objEl) objEl.value = '';
+      const recCb = document.getElementById('postModalRecurring');
+      if (recCb) recCb.checked = false;
 
       // Populate pillar select
       const pillarSelect = document.getElementById('postModalPillar');
@@ -6748,16 +6901,17 @@
           html += `<optgroup label="💡 Zapisane ideje">${ideas.map(i => `<option value="idea_${i.id}" ${linkedScriptOrIdeaId === 'idea_' + i.id ? 'selected' : ''}>${escapeHtml(i.title)}</option>`).join('')}</optgroup>`;
         }
         linkSelect.innerHTML = html;
+        if (linkedScriptOrIdeaId) {
+          linkSelect.value = linkedScriptOrIdeaId;
+          handleSelectScriptOrIdeaForPost(linkedScriptOrIdeaId);
+        }
       }
 
-      if (presetDate) {
-        document.getElementById('postModalDate').value = presetDate;
-      } else {
-        document.getElementById('postModalDate').value = formatYmd(new Date());
-      }
+      const dateVal = presetDate || formatYmd(new Date());
+      document.getElementById('postModalDate').value = dateVal;
+      handlePostDateChange(dateVal);
 
       // Prefill fields if provided
-      if (prefillTitle) document.getElementById('postModalTitleInput').value = prefillTitle;
       if (prefillFormat) document.getElementById('postModalFormat').value = prefillFormat;
       if (prefillPillar && pillarSelect) pillarSelect.value = prefillPillar;
 
@@ -6802,13 +6956,21 @@
         linkSelect.innerHTML = html;
       }
 
-      document.getElementById('postModalTitleInput').value = post.title || '';
-      document.getElementById('postModalPlatform').value = post.platform || 'Instagram';
-      document.getElementById('postModalDate').value = post.date || '';
+      const titleEl = document.getElementById('postModalTitleHidden');
+      if (titleEl) titleEl.value = post.title || '';
+      const objEl = document.getElementById('postModalObjectiveHidden');
+      if (objEl) objEl.value = post.objective || '';
+
+      const recCb = document.getElementById('postModalRecurring');
+      if (recCb) recCb.checked = !!(post.recurrence_id || post.is_recurring);
+
+      const postDate = post.date || formatYmd(new Date());
+      document.getElementById('postModalDate').value = postDate;
+      handlePostDateChange(postDate);
+
       document.getElementById('postModalTime').value = post.time || '18:00';
       document.getElementById('postModalFormat').value = post.format || 'Reels / Video';
       if (pillarSelect && post.pillar) pillarSelect.value = post.pillar;
-      document.getElementById('postModalObjective').value = post.objective || '';
 
       const postPlatforms = (Array.isArray(post.platforms) && post.platforms.length > 0)
         ? post.platforms
@@ -6837,18 +6999,35 @@
       const existingPost = existingPostId ? client.crm.content_calendar.find(p => p.id === existingPostId) : null;
       const selectedPlatforms = (window.postModalSelectedPlatforms && window.postModalSelectedPlatforms.length > 0)
         ? window.postModalSelectedPlatforms
-        : [document.getElementById('postModalPlatform').value || 'Instagram'];
+        : [document.getElementById('postModalPlatform')?.value || 'Instagram'];
 
-      const postObj = {
-        id: existingPostId || ('post_' + Date.now()),
-        title: document.getElementById('postModalTitleInput').value.trim(),
+      const dateStr = document.getElementById('postModalDate').value || formatYmd(new Date());
+      const formatVal = document.getElementById('postModalFormat').value || 'Reels / Video';
+      const pillarVal = document.getElementById('postModalPillar')?.value?.trim() || '';
+
+      // Auto-derive title from linked script/idea or pillar/format
+      let postTitle = document.getElementById('postModalTitleHidden')?.value?.trim();
+      if (!postTitle) {
+        const linkSelect = document.getElementById('postModalScriptIdeaSelect');
+        if (linkSelect && linkSelect.value && linkSelect.options[linkSelect.selectedIndex]) {
+          postTitle = linkSelect.options[linkSelect.selectedIndex].text.replace(/^[🎬💡]\s*/, '').trim();
+        }
+      }
+      if (!postTitle) {
+        postTitle = pillarVal ? `${pillarVal} (${formatVal.split('/')[0].trim()})` : formatVal;
+      }
+
+      const postObjective = document.getElementById('postModalObjectiveHidden')?.value?.trim() || existingPost?.objective || '';
+      const isRecurring = document.getElementById('postModalRecurring')?.checked;
+
+      const basePostObj = {
+        title: postTitle,
         platforms: selectedPlatforms,
         platform: selectedPlatforms[0] || 'Instagram',
-        date: document.getElementById('postModalDate').value,
-        time: document.getElementById('postModalTime').value,
-        format: document.getElementById('postModalFormat').value,
-        pillar: document.getElementById('postModalPillar').value.trim(),
-        objective: document.getElementById('postModalObjective').value.trim(),
+        time: document.getElementById('postModalTime').value || '18:00',
+        format: formatVal,
+        pillar: pillarVal,
+        objective: postObjective,
         prod_status: existingPost?.prod_status || 'planned',
         pub_status: existingPost?.pub_status || 'scheduled',
         brief: existingPost?.brief || '',
@@ -6859,10 +7038,46 @@
       };
 
       if (existingPostId) {
+        // Editing existing post
+        const updatedPost = {
+          ...existingPost,
+          ...basePostObj,
+          id: existingPostId,
+          date: dateStr
+        };
         const idx = client.crm.content_calendar.findIndex(p => p.id === existingPostId);
-        if (idx >= 0) client.crm.content_calendar[idx] = postObj;
+        if (idx >= 0) client.crm.content_calendar[idx] = updatedPost;
       } else {
-        client.crm.content_calendar.push(postObj);
+        // New post - check recurrence
+        if (isRecurring) {
+          const startDate = parseYmd(dateStr);
+          const currentYear = startDate.getFullYear();
+          const recId = 'rec_' + Date.now();
+          let curr = new Date(startDate);
+          let count = 0;
+
+          while (curr.getFullYear() === currentYear) {
+            const instDateStr = formatYmd(curr);
+            const instPost = {
+              ...basePostObj,
+              id: 'post_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+              date: instDateStr,
+              recurrence_id: recId,
+              is_recurring: true
+            };
+            client.crm.content_calendar.push(instPost);
+            count++;
+            curr.setDate(curr.getDate() + 7);
+          }
+          showToast(`Ustvarjenih ${count} tedenskih objav do konca leta ${currentYear}!`);
+        } else {
+          const newPost = {
+            ...basePostObj,
+            id: 'post_' + Date.now(),
+            date: dateStr
+          };
+          client.crm.content_calendar.push(newPost);
+        }
       }
 
       closePostModal();
@@ -6881,7 +7096,11 @@
           })
           .eq('id', client.id);
 
-        showToast('Objava je uspešno načrtovana!');
+        if (!existingPostId && !isRecurring) {
+          showToast('Objava je uspešno načrtovana!');
+        } else if (existingPostId) {
+          showToast('Spremembe objave so shranjene!');
+        }
         updateTopLevelView();
       } catch (err) {
         console.error(err);
@@ -6890,13 +7109,27 @@
     }
 
     async function handleDeleteCurrentPost() {
-      if (!confirm("Ali ste prepričani, da želite izbrisati to objavo?")) return;
       const clientId = document.getElementById('postModalClientId').value || currentClientId;
       const postId = document.getElementById('postModalPostId').value;
       const client = clients.find(c => c.id === clientId);
       if (!client || !postId || !supabaseClient) return;
 
-      client.crm.content_calendar = (client.crm.content_calendar || []).filter(p => p.id !== postId);
+      const post = (client.crm?.content_calendar || []).find(p => p.id === postId);
+      if (!post) return;
+
+      let deleteAll = false;
+      if (post.recurrence_id) {
+        deleteAll = confirm("Ta objava se tedensko ponavlja.\n\nAli želite izbrisati VSE ponovitve te objave do konca leta?\n(Kliknite 'Prekliči' / 'Cancel' za izbris samo tega posameznega dneva)");
+      } else {
+        if (!confirm("Ali ste prepričani, da želite izbrisati to načrtovano objavo?")) return;
+      }
+
+      if (deleteAll && post.recurrence_id) {
+        client.crm.content_calendar = client.crm.content_calendar.filter(p => p.recurrence_id !== post.recurrence_id);
+      } else {
+        client.crm.content_calendar = client.crm.content_calendar.filter(p => p.id !== postId);
+      }
+
       closePostModal();
 
       try {
@@ -6913,7 +7146,7 @@
           })
           .eq('id', client.id);
 
-        showToast('Objava je bila izbrisana.');
+        showToast(deleteAll ? 'Vse ponavljajoče objave so bile izbrisane.' : 'Objava je bila izbrisana.');
         updateTopLevelView();
       } catch (err) {
         console.error(err);
