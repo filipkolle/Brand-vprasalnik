@@ -524,10 +524,26 @@
         </div>
       </div>
 
-      <!-- SLIDE-OVER DRAWER: POTEK DELA (STRATEGIJA TO-DO) -->
-      <div id="workspaceTodoDrawerOverlay" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm hidden transition-opacity duration-300" onclick="toggleWorkspaceTodoDrawer(false)">
-        <div class="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10" onclick="event.stopPropagation()">
-          <aside id="workspaceSidebar" class="w-screen max-w-md bg-slate-900 border-l border-slate-800 p-5 sm:p-6 flex flex-col justify-between shadow-2xl overflow-y-auto">
+      </section>
+
+    <!-- ============================================================ -->
+    <!-- VIEW F: FULL-PAGE PROFESSIONAL SCRIPTWRITING STUDIO -->
+    <!-- ============================================================ -->
+    <section id="view-scriptwriter" class="hidden space-y-6">
+      <div id="scriptwriterStudioContainer" class="space-y-6"></div>
+    </section>
+
+  </main>
+
+
+  <!-- ============================================================ -->
+  <!-- MODALS -->
+  <!-- ============================================================ -->
+
+  <!-- SLIDE-OVER DRAWER: POTEK DELA (STRATEGIJA TO-DO) -->
+      <div id="workspaceTodoDrawerOverlay" class="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md hidden transition-opacity duration-300" onclick="toggleWorkspaceTodoDrawer(false)">
+        <div class="fixed inset-y-0 right-0 max-w-full flex h-full pl-6 sm:pl-10" onclick="event.stopPropagation()">
+          <aside id="workspaceSidebar" class="w-screen max-w-md h-full bg-slate-900 border-l border-slate-800 p-5 sm:p-6 flex flex-col justify-between shadow-2xl overflow-y-auto">
             
             <div class="space-y-4">
               <!-- Drawer Header with close button -->
@@ -615,7 +631,7 @@
                       <span class="text-xs font-bold block truncate ws-step-title">4. Strategija omrežij</span>
                       <span id="wsBadge-social_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
                     </div>
-                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Kanali, cilji & taktika</span>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Kanali & distribucija produkcije</span>
                   </div>
                 </button>
 
@@ -629,7 +645,7 @@
                       <span class="text-xs font-bold block truncate ws-step-title">5. Vsebinska strategija</span>
                       <span id="wsBadge-content_strategy" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full"></span>
                     </div>
-                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Vsebinski stebri & formati</span>
+                    <span class="text-[11px] block truncate ws-step-sub text-slate-400">Stebri, cilji & KPI</span>
                   </div>
                 </button>
 
@@ -701,22 +717,6 @@
           </aside>
         </div>
       </div>
-
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- VIEW F: FULL-PAGE PROFESSIONAL SCRIPTWRITING STUDIO -->
-    <!-- ============================================================ -->
-    <section id="view-scriptwriter" class="hidden space-y-6">
-      <div id="scriptwriterStudioContainer" class="space-y-6"></div>
-    </section>
-
-  </main>
-
-
-  <!-- ============================================================ -->
-  <!-- MODALS -->
-  <!-- ============================================================ -->
 
   <!-- MODAL: CREATE NEW CLIENT -->
   <div id="createModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
@@ -1421,22 +1421,36 @@
       return { answeredCount: answered, percent, answeredList, missingList, qStatus };
     }
 
+    // Helper to evaluate if a smart field is filled (either customized in CRM or from questionnaire default)
+    function isSmartFieldFilled(client, parentPath, fieldName, defaultFn) {
+      if (!client) return false;
+      const parts = parentPath.split('.');
+      let target = client.crm || {};
+      for (const p of parts) {
+        if (!target) break;
+        target = target[p];
+      }
+      const val = target ? target[fieldName] : undefined;
+      if (val !== undefined && val !== null && String(val).trim().length > 0) {
+        return true;
+      }
+      if (defaultFn) {
+        const qVal = defaultFn(client.answers || {});
+        if (qVal && String(qVal).trim().length > 0) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     // Intelligent evaluation of step completion status
+    // Pravilo: Noben korak ne more biti označen kot opravljen dokler vsa polja v njem niso izpolnjena
     function isStepDone(client, stepId) {
       if (!client) return false;
       const crm = client.crm || {};
       const answers = client.answers || {};
-      const fields = answers.fields || {};
-      const chips = answers.chips || {};
       const stats = client.stats || calculateQuestionnaireStats(answers);
-      const completedSteps = crm.completed_steps || {};
 
-      // If user explicitly toggled this step
-      if (completedSteps[stepId] !== undefined) {
-        return Boolean(completedSteps[stepId]);
-      }
-
-      // Automatic intelligent evaluation based on content presence
       switch (stepId) {
         case 'overview':
           return true;
@@ -1444,53 +1458,72 @@
         case 'discovery':
           return stats.answeredCount === 20;
 
-        case 'research':
-          return Boolean(
-            (crm.market_research?.competitors?.length > 0) ||
-            (crm.market_research?.opportunities?.trends?.trim()) ||
-            (crm.market_research?.target_audience?.demographics?.trim()) ||
-            fields.q8_text?.trim()
-          );
+        case 'research': {
+          const comps = crm.market_research?.competitors || [];
+          if (comps.length === 0) return false;
+          const hasTrends = isSmartFieldFilled(client, 'market_research.opportunities', 'trends');
+          const hasNeeds = isSmartFieldFilled(client, 'market_research.opportunities', 'customer_needs', (a) => (a.fields?.q11_text || a.chips?.q11_painpoints?.join('')));
+          const hasContentOpps = isSmartFieldFilled(client, 'market_research.opportunities', 'content_opps');
+          const hasDiff = isSmartFieldFilled(client, 'market_research.opportunities', 'differentiation', (a) => (a.fields?.q7_text || a.chips?.q7_advantages?.join('')));
+          const hasQuestions = isSmartFieldFilled(client, 'market_research.customer_insights', 'questions', (a) => (a.fields?.q12_text || a.chips?.q12_questions?.join('')));
+          const hasObjections = isSmartFieldFilled(client, 'market_research.customer_insights', 'objections', (a) => a.chips?.q12_converters?.join(''));
+          return Boolean(hasTrends && hasNeeds && hasContentOpps && hasDiff && hasQuestions && hasObjections);
+        }
 
-        case 'brand_strategy':
-          return Boolean(
-            crm.brand_strategy?.positioning?.trim() ||
-            crm.brand_strategy?.usp?.trim() ||
-            crm.brand_strategy?.purpose?.trim() ||
-            crm.brand_strategy?.personality?.trim() ||
-            fields.q1_text?.trim() ||
-            fields.q7_text?.trim() ||
-            fields.q3_text?.trim() ||
-            fields.q10_text?.trim()
-          );
+        case 'brand_strategy': {
+          const hasPos = isSmartFieldFilled(client, 'brand_strategy', 'positioning', (a) => a.fields?.q1_text);
+          const hasPurpose = isSmartFieldFilled(client, 'brand_strategy', 'purpose', (a) => (a.fields?.q3_text || a.fields?.q2_text));
+          const hasUsp = isSmartFieldFilled(client, 'brand_strategy', 'usp', (a) => a.fields?.q7_text);
+          const hasPrimary = isSmartFieldFilled(client, 'brand_strategy.target_audience', 'primary', (a) => a.fields?.q10_text);
+          const hasSecondary = isSmartFieldFilled(client, 'brand_strategy.target_audience', 'secondary', (a) => a.fields?.q13_text);
+          const hasProblems = isSmartFieldFilled(client, 'brand_strategy.target_audience', 'problems', (a) => a.fields?.q11_text);
+          const hasMotivations = isSmartFieldFilled(client, 'brand_strategy.target_audience', 'motivations', (a) => (a.chips?.q12_converters?.join('') || a.fields?.q9_text));
+          const hasPersonality = isSmartFieldFilled(client, 'brand_strategy', 'personality', (a) => (a.fields?.q17_word1 || a.fields?.q18_text));
+          const hasMessaging = isSmartFieldFilled(client, 'brand_strategy', 'messaging', (a) => (a.fields?.q7_text || a.fields?.q3_text));
+          const hasWordsUse = isSmartFieldFilled(client, 'brand_strategy.tone_of_voice', 'words_to_use', (a) => (a.chips?.q19_address_form?.join('') || a.fields?.q19_text));
+          const hasWordsAvoid = isSmartFieldFilled(client, 'brand_strategy.tone_of_voice', 'words_to_avoid');
+          const hasRules = isSmartFieldFilled(client, 'brand_strategy.tone_of_voice', 'rules');
+          return Boolean(hasPos && hasPurpose && hasUsp && hasPrimary && hasSecondary && hasProblems && hasMotivations && hasPersonality && hasMessaging && hasWordsUse && hasWordsAvoid && hasRules);
+        }
 
-        case 'social_strategy':
-          return Boolean(
-            crm.social_media_strategy?.platforms?.length > 0 ||
-            crm.social_media_strategy?.objectives_short?.trim() ||
-            chips.q14_channels?.length > 0 ||
-            fields.q14_text?.trim()
-          );
+        case 'social_strategy': {
+          const plan = (typeof getClientProductionPlan === 'function') ? getClientProductionPlan(client) : {};
+          const dist = (typeof calculateDistributionFromPlan === 'function') ? calculateDistributionFromPlan(plan) : { coreMonthly: 0, totalPostsMonthly: 0 };
+          return Boolean(dist.coreMonthly > 0 && dist.totalPostsMonthly > 0);
+        }
 
-        case 'content_strategy':
-          return Boolean(
-            crm.content_strategy?.content_pillars?.length > 0 ||
-            crm.content_strategy?.content_direction?.themes?.trim() ||
-            fields.q16_text?.trim()
-          );
+        case 'content_strategy': {
+          const pillars = (crm.content_strategy?.content_pillars || []).filter(p => p.key);
+          if (pillars.length === 0) return false;
+          const hasThemes = isSmartFieldFilled(client, 'content_strategy.content_direction', 'themes', (a) => a.fields?.q1_text);
+          const hasRecurring = isSmartFieldFilled(client, 'content_strategy.content_direction', 'recurring_topics');
+          const hasEdu = isSmartFieldFilled(client, 'content_strategy.content_direction', 'educational_approach');
+          const hasPromo = isSmartFieldFilled(client, 'content_strategy.content_direction', 'promotional_approach', (a) => a.fields?.q7_text);
+          const hasShort = isSmartFieldFilled(client, 'content_strategy', 'objectives_short', (a) => (crm.social_media_strategy?.objectives_short || a.fields?.q14_text || a.chips?.q14_short_goals?.join('')));
+          const hasLong = isSmartFieldFilled(client, 'content_strategy', 'objectives_long', (a) => (crm.social_media_strategy?.objectives_long || a.fields?.q15_text || a.chips?.q15_long_goals?.join('')));
+          const kpis = crm.content_strategy?.kpis || crm.social_media_strategy?.kpis || [];
+          return Boolean(hasThemes && hasRecurring && hasEdu && hasPromo && hasShort && hasLong && kpis.length > 0);
+        }
 
-        case 'production_guidelines':
-          return Boolean(
-            crm.production_guidelines?.resources?.locations?.trim() ||
-            crm.production_guidelines?.rules?.video_style?.trim() ||
-            chips.q15_formats?.length > 0
-          );
+        case 'production_guidelines': {
+          const hasPeople = isSmartFieldFilled(client, 'production_guidelines.resources', 'people');
+          const hasLocations = isSmartFieldFilled(client, 'production_guidelines.resources', 'locations');
+          const hasAssetsLink = Boolean(crm.production_guidelines?.resources?.assets_link?.trim());
+          const hasProducts = isSmartFieldFilled(client, 'production_guidelines.resources', 'products', (a) => (a.fields?.q6_top1 || a.q16_products?.join('')));
+          const hasVideoStyle = isSmartFieldFilled(client, 'production_guidelines.rules', 'video_style');
+          const hasEditing = isSmartFieldFilled(client, 'production_guidelines.rules', 'editing');
+          const hasSound = isSmartFieldFilled(client, 'production_guidelines.rules', 'sound');
+          const hasCannotFilm = isSmartFieldFilled(client, 'production_guidelines.restrictions', 'cannot_film', (a) => (a.chips?.q20_nogo?.join('') || a.fields?.q20_text));
+          return Boolean(hasPeople && hasLocations && hasAssetsLink && hasProducts && hasVideoStyle && hasEditing && hasSound && hasCannotFilm);
+        }
 
         case 'client_calendar':
           return Boolean((crm.content_calendar?.length || 0) > 0);
 
-        case 'performance':
-          return Boolean((crm.content_calendar || []).some(p => p.status === 'published'));
+        case 'performance': {
+          const perf = crm.performance || [];
+          return Boolean(perf.length > 0 && perf.some(m => Boolean(m.views || m.leads || m.engagement || m.worked)));
+        }
 
         default:
           return false;
@@ -3037,32 +3070,6 @@
 
       return `
         <div class="space-y-6">
-          
-          <!-- Step Status Banner -->
-          <div class="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl">
-            <div class="flex items-center gap-3.5">
-              <div class="w-10 h-10 rounded-2xl ${isDone ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400' : 'bg-amber-500/15 border border-amber-500/30 text-amber-400'} flex items-center justify-center shrink-0">
-                <i data-lucide="${isDone ? 'check-circle-2' : 'clock'}" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">Korak 3: Tržna raziskava</h4>
-                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
-                    ${isDone ? '✓ Opravljeno' : 'V pripravi'}
-                  </span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">
-                  ${isDone ? 'Tržna raziskava in analiza konkurence vsebujeta podatke.' : 'Vnesite konkurente in analizo tržnih priložnosti ali označite korak kot opravljen.'}
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="toggleStepCompleted('research')" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition ${isDone ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs'} active:scale-95">
-                <i data-lucide="${isDone ? 'rotate-ccw' : 'check'}" class="w-3.5 h-3.5"></i>
-                <span>${isDone ? 'Označi kot v pripravi' : 'Označi kot opravljeno'}</span>
-              </button>
-            </div>
-          </div>
 
           <!-- Competitor Analysis Card -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
@@ -3240,32 +3247,6 @@
       const isDone = isStepDone(client, 'brand_strategy');
       return `
         <div class="space-y-6">
-          
-          <!-- Step Status Banner -->
-          <div class="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl">
-            <div class="flex items-center gap-3.5">
-              <div class="w-10 h-10 rounded-2xl ${isDone ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400' : 'bg-amber-500/15 border border-amber-500/30 text-amber-400'} flex items-center justify-center shrink-0">
-                <i data-lucide="${isDone ? 'check-circle-2' : 'clock'}" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">Korak 4: Strategija znamke</h4>
-                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
-                    ${isDone ? '✓ Opravljeno' : 'V pripravi'}
-                  </span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">
-                  ${isDone ? 'Vsa ključna polja strategije znamke so izpolnjena (avtomatsko prevzeta iz vprašalnika ali vnesena).' : 'Izpolnite ključna polja (pozicioniranje, poslanstvo, USP) ali označite korak kot opravljen.'}
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="toggleStepCompleted('brand_strategy')" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition ${isDone ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs'} active:scale-95">
-                <i data-lucide="${isDone ? 'rotate-ccw' : 'check'}" class="w-3.5 h-3.5"></i>
-                <span>${isDone ? 'Označi kot v pripravi' : 'Označi kot opravljeno'}</span>
-              </button>
-            </div>
-          </div>
 
           <!-- Core Positioning Card -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
@@ -3546,37 +3527,10 @@
       const plan = getClientProductionPlan(client);
       const dist = calculateDistributionFromPlan(plan);
       const platforms = strat.platforms || [];
-      const kpis = strat.kpis || [];
       const isDone = isStepDone(client, 'social_strategy');
 
       return `
         <div class="space-y-6">
-          
-          <!-- Step Status Banner -->
-          <div class="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl">
-            <div class="flex items-center gap-3.5">
-              <div class="w-10 h-10 rounded-2xl ${isDone ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400' : 'bg-amber-500/15 border border-amber-500/30 text-amber-400'} flex items-center justify-center shrink-0">
-                <i data-lucide="${isDone ? 'check-circle-2' : 'clock'}" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">Korak 5: Strategija omrežij & produkcije</h4>
-                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
-                    ${isDone ? '✓ Opravljeno' : 'V pripravi'}
-                  </span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">
-                  ${dist.coreMonthly} izvirnih produkcijskih kosov mesečno → razporejeno v ${dist.totalPostsMonthly} objav na kanalih (${dist.multiplier}× multiplikator).
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="toggleStepCompleted('social_strategy')" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition ${isDone ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs'} active:scale-95">
-                <i data-lucide="${isDone ? 'rotate-ccw' : 'check'}" class="w-3.5 h-3.5"></i>
-                <span>${isDone ? 'Označi kot v pripravi' : 'Označi kot opravljeno'}</span>
-              </button>
-            </div>
-          </div>
 
           <!-- Production & Cross-Posting Distribution -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
@@ -3752,76 +3706,6 @@
             </div>
           </div>
 
-          <!-- Marketing Objectives -->
-          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-            <h3 class="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
-              <i data-lucide="target" class="w-4 h-4 text-emerald-400"></i> Marketinški cilji
-            </h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              ${renderCrmSmartField({
-                client,
-                parentPath: 'social_media_strategy',
-                fieldName: 'objectives_short',
-                label: 'Kratkoročni cilji (Prvi 3 meseci)',
-                placeholder: 'Npr. Vzpostaviti profesionalen videz profila, doseči 50.000 mesečnega dosega...',
-                rows: 4,
-                defaultFn: (a) => {
-                  const f = a.fields || {};
-                  const c = a.chips || {};
-                  const parts = [];
-                  if (f.q14_text) parts.push(f.q14_text);
-                  if (c.q14_short_goals?.length) parts.push('Kratkoročni cilji (3 meseci):\n• ' + c.q14_short_goals.join('\n• '));
-                  return parts.join('\n\n');
-                }
-              })}
-
-              ${renderCrmSmartField({
-                client,
-                parentPath: 'social_media_strategy',
-                fieldName: 'objectives_long',
-                label: 'Dolgoročni cilji (1–2 leti)',
-                placeholder: 'Npr. Postati prva izbira za... Dvig mesečnih naročil za 30%...',
-                rows: 4,
-                defaultFn: (a) => {
-                  const f = a.fields || {};
-                  const c = a.chips || {};
-                  const parts = [];
-                  if (f.q15_text) parts.push(f.q15_text);
-                  if (c.q15_long_goals?.length) parts.push('Dolgoročni cilji (1–2 leti):\n• ' + c.q15_long_goals.join('\n• '));
-                  return parts.join('\n\n');
-                }
-              })}
-            </div>
-          </div>
-
-          <!-- KPI Tracker -->
-          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div>
-                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                  <i data-lucide="bar-chart-2" class="w-4 h-4 text-purple-400"></i> Ključni kazalniki uspeha (KPI)
-                </h3>
-                <p class="text-xs text-slate-400 mt-0.5">Določeni cilji in obdobje merjenja.</p>
-              </div>
-              <button onclick="handleAddKpiItem()" class="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Dodaj KPI
-              </button>
-            </div>
-
-            <div class="space-y-2 text-xs">
-              ${kpis.map((k, idx) => `
-                <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-3">
-                  <input type="text" oninput="handleUpdateKpi(${idx}, 'name', this.value)" value="${escapeHtml(k.name || '')}" placeholder="KPI (npr. Mesečni ogledi)" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
-                  <input type="text" oninput="handleUpdateKpi(${idx}, 'target', this.value)" value="${escapeHtml(k.target || '')}" placeholder="Cilj (npr. >100.000)" class="w-36 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
-                  <input type="text" oninput="handleUpdateKpi(${idx}, 'period', this.value)" value="${escapeHtml(k.period || '')}" placeholder="Obdobje (npr. Mesečno)" class="w-28 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
-                  <button onclick="handleDeleteKpi(${idx})" class="p-1.5 text-slate-500 hover:text-rose-400">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                </div>
-              `).join('')}
-            </div>
-          </div>
 
         </div>
       `;
@@ -3835,36 +3719,11 @@
       const strat = crm.content_strategy || {};
       const pillars = strat.content_pillars || [];
       const direction = strat.content_direction || {};
+      const kpis = strat.kpis || crm.social_media_strategy?.kpis || [];
       const isDone = isStepDone(client, 'content_strategy');
 
       return `
         <div class="space-y-6">
-          
-          <!-- Step Status Banner -->
-          <div class="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl">
-            <div class="flex items-center gap-3.5">
-              <div class="w-10 h-10 rounded-2xl ${isDone ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400' : 'bg-amber-500/15 border border-amber-500/30 text-amber-400'} flex items-center justify-center shrink-0">
-                <i data-lucide="${isDone ? 'check-circle-2' : 'clock'}" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">Korak 6: Vsebinska strategija</h4>
-                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
-                    ${isDone ? '✓ Opravljeno' : 'V pripravi'}
-                  </span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">
-                  ${isDone ? `${pillars.length} definiranih vsebinskih stebrov.` : 'Določite vsebinske stebre in teme ali označite korak kot opravljen.'}
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="toggleStepCompleted('content_strategy')" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition ${isDone ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs'} active:scale-95">
-                <i data-lucide="${isDone ? 'rotate-ccw' : 'check'}" class="w-3.5 h-3.5"></i>
-                <span>${isDone ? 'Označi kot v pripravi' : 'Označi kot opravljeno'}</span>
-              </button>
-            </div>
-          </div>
 
           <!-- Content Pillars -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
@@ -4089,6 +3948,80 @@
               })}
             </div>
           </div>
+          <!-- Marketing Objectives -->
+          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
+              <i data-lucide="target" class="w-4 h-4 text-emerald-400"></i> Marketinški cilji
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'content_strategy',
+                fieldName: 'objectives_short',
+                label: 'Kratkoročni cilji (Prvi 3 meseci)',
+                placeholder: 'Npr. Vzpostaviti profesionalen videz profila, doseči 50.000 mesečnega dosega...',
+                rows: 4,
+                defaultFn: (a) => {
+                  const prev = crm.social_media_strategy?.objectives_short;
+                  if (prev && prev.trim()) return prev.trim();
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q14_text) parts.push(f.q14_text);
+                  if (c.q14_short_goals?.length) parts.push('Kratkoročni cilji (3 meseci):\n• ' + c.q14_short_goals.join('\n• '));
+                  return parts.join('\n\n');
+                }
+              })}
+
+              ${renderCrmSmartField({
+                client,
+                parentPath: 'content_strategy',
+                fieldName: 'objectives_long',
+                label: 'Dolgoročni cilji (1–2 leti)',
+                placeholder: 'Npr. Postati prva izbira za... Dvig mesečnih naročil za 30%...',
+                rows: 4,
+                defaultFn: (a) => {
+                  const prev = crm.social_media_strategy?.objectives_long;
+                  if (prev && prev.trim()) return prev.trim();
+                  const f = a.fields || {};
+                  const c = a.chips || {};
+                  const parts = [];
+                  if (f.q15_text) parts.push(f.q15_text);
+                  if (c.q15_long_goals?.length) parts.push('Dolgoročni cilji (1–2 leti):\n• ' + c.q15_long_goals.join('\n• '));
+                  return parts.join('\n\n');
+                }
+              })}
+            </div>
+          </div>
+
+          <!-- KPI Tracker -->
+          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  <i data-lucide="bar-chart-2" class="w-4 h-4 text-purple-400"></i> Ključni kazalniki uspeha (KPI)
+                </h3>
+                <p class="text-xs text-slate-400 mt-0.5">Določeni cilji in obdobje merjenja.</p>
+              </div>
+              <button onclick="handleAddKpiItem()" class="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Dodaj KPI
+              </button>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              ${kpis.map((k, idx) => `
+                <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-3">
+                  <input type="text" oninput="handleUpdateKpi(${idx}, 'name', this.value)" value="${escapeHtml(k.name || '')}" placeholder="KPI (npr. Mesečni ogledi)" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+                  <input type="text" oninput="handleUpdateKpi(${idx}, 'target', this.value)" value="${escapeHtml(k.target || '')}" placeholder="Cilj (npr. >100.000)" class="w-36 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+                  <input type="text" oninput="handleUpdateKpi(${idx}, 'period', this.value)" value="${escapeHtml(k.period || '')}" placeholder="Obdobje (npr. Mesečno)" class="w-28 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+                  <button onclick="handleDeleteKpi(${idx})" class="p-1.5 text-slate-500 hover:text-rose-400">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
 
         </div>
       `;
@@ -4107,32 +4040,6 @@
 
       return `
         <div class="space-y-6">
-          
-          <!-- Step Status Banner -->
-          <div class="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl">
-            <div class="flex items-center gap-3.5">
-              <div class="w-10 h-10 rounded-2xl ${isDone ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400' : 'bg-amber-500/15 border border-amber-500/30 text-amber-400'} flex items-center justify-center shrink-0">
-                <i data-lucide="${isDone ? 'check-circle-2' : 'clock'}" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">Korak 7: Smernice produkcije</h4>
-                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
-                    ${isDone ? '✓ Opravljeno' : 'V pripravi'}
-                  </span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">
-                  ${isDone ? 'Smernice za snemanje, video stil in copy so določene.' : 'Vnesite video stil, vire ali označite korak kot opravljen.'}
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="toggleStepCompleted('production_guidelines')" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition ${isDone ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs'} active:scale-95">
-                <i data-lucide="${isDone ? 'rotate-ccw' : 'check'}" class="w-3.5 h-3.5"></i>
-                <span>${isDone ? 'Označi kot v pripravi' : 'Označi kot opravljeno'}</span>
-              </button>
-            </div>
-          </div>
 
           <!-- Production Resources -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
@@ -5866,15 +5773,19 @@
       scheduleAutoSave();
     }
 
-    // KPI Helpers
+    // KPI Helpers (Vsebinska strategija)
     function handleAddKpiItem() {
       const client = clients.find(c => c.id === currentClientId);
       if (!client) return;
       if (!client.crm) client.crm = {};
-      if (!client.crm.social_media_strategy) client.crm.social_media_strategy = {};
-      if (!client.crm.social_media_strategy.kpis) client.crm.social_media_strategy.kpis = [];
+      if (!client.crm.content_strategy) client.crm.content_strategy = {};
+      if (!client.crm.content_strategy.kpis) {
+        client.crm.content_strategy.kpis = (client.crm.social_media_strategy?.kpis && client.crm.social_media_strategy.kpis.length > 0)
+          ? [...client.crm.social_media_strategy.kpis]
+          : [];
+      }
 
-      client.crm.social_media_strategy.kpis.push({
+      client.crm.content_strategy.kpis.push({
         name: 'Mesečni doseg',
         target: '>50.000',
         period: 'Mesečno'
@@ -5886,15 +5797,25 @@
 
     function handleUpdateKpi(idx, field, val) {
       const client = clients.find(c => c.id === currentClientId);
-      if (!client?.crm?.social_media_strategy?.kpis?.[idx]) return;
-      client.crm.social_media_strategy.kpis[idx][field] = val;
+      if (!client?.crm) return;
+      if (!client.crm.content_strategy) client.crm.content_strategy = {};
+      if (!client.crm.content_strategy.kpis) {
+        client.crm.content_strategy.kpis = client.crm.social_media_strategy?.kpis ? [...client.crm.social_media_strategy.kpis] : [];
+      }
+      if (!client.crm.content_strategy.kpis[idx]) return;
+      client.crm.content_strategy.kpis[idx][field] = val;
       scheduleAutoSave();
     }
 
     function handleDeleteKpi(idx) {
       const client = clients.find(c => c.id === currentClientId);
-      if (!client?.crm?.social_media_strategy?.kpis) return;
-      client.crm.social_media_strategy.kpis.splice(idx, 1);
+      if (!client?.crm) return;
+      if (!client.crm.content_strategy) client.crm.content_strategy = {};
+      if (!client.crm.content_strategy.kpis) {
+        client.crm.content_strategy.kpis = client.crm.social_media_strategy?.kpis ? [...client.crm.social_media_strategy.kpis] : [];
+      }
+      if (!client.crm.content_strategy.kpis) return;
+      client.crm.content_strategy.kpis.splice(idx, 1);
       saveCurrentWorkspace(false);
       renderWorkspaceTabContent();
     }
