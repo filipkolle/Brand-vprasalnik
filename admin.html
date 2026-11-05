@@ -6213,7 +6213,6 @@
       const pillarSelect = document.getElementById('quickIdeaPillar');
       if (pillarSelect) {
         const pillarList = getClientPillarOptions(client);
-      const isEditing = Boolean(activeScript && activeScript.id);
         pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}">${escapeHtml(pName)}</option>`).join('');
       }
 
@@ -6411,10 +6410,8 @@
       let activeScript = null;
       if (activeScriptId && activeScriptId !== 'new') {
         activeScript = scripts.find(s => s.id === activeScriptId) || null;
-      } else if (!activeScriptId && !prefillFromIdeaId && scripts.length > 0) {
-        // Open most recent script by default
-        activeScript = scripts[0];
       }
+      const isEditing = Boolean(activeScript && activeScript.id);
 
       let prefillIdea = null;
       if (prefillFromIdeaId) {
