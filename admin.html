@@ -994,13 +994,13 @@
 
   <!-- MODAL: ADD / EDIT CONTENT POST (PLANIRANJE OBJAVE) -->
   <div id="postModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[92vh] overflow-y-auto">
       
-      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+      <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-800">
         <h3 id="postModalTitle" class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
           <i data-lucide="calendar" class="w-5 h-5 text-indigo-400"></i> Načrtuj objavo v koledar
         </h3>
-        <button onclick="closePostModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+        <button onclick="closePostModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -1009,36 +1009,28 @@
         <input type="hidden" id="postModalPostId">
         <input type="hidden" id="postModalClientId">
 
-        <!-- Client Selector (if not locked to one client) -->
-        <div id="postClientSelectWrapper">
-          <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Naročnik *</label>
-          <select id="postModalClientSelect" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-            <!-- Injected by JS -->
-          </select>
-        </div>
-
         <!-- Connect with Script or Idea -->
-        <div id="postModalScriptIdeaLinkWrapper" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div id="postModalScriptIdeaLinkWrapper" class="p-3 rounded-2xl bg-slate-950 border border-slate-800/90 flex flex-wrap items-center justify-between gap-2.5">
           <div class="flex items-center gap-2">
             <i data-lucide="link" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
-            <span class="text-[11px] font-bold text-slate-300">Poveži z napisanim scenarijem ali idejo:</span>
+            <span class="text-[11px] font-bold text-slate-300">Poveži z idejo ali scenarijem:</span>
           </div>
-          <select id="postModalScriptIdeaSelect" onchange="handleSelectScriptOrIdeaForPost(this.value)" class="bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <select id="postModalScriptIdeaSelect" onchange="handleSelectScriptOrIdeaForPost(this.value)" class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-full">
             <option value="">— Brez povezave (ročni vnos) —</option>
           </select>
         </div>
 
         <!-- Title -->
         <div>
-          <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Naslov objave / delovni naziv *</label>
-          <input id="postModalTitleInput" type="text" required placeholder="npr. 3 napake pri pripravi kvasa" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+          <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Naslov objave / delovni naziv *</label>
+          <input id="postModalTitleInput" type="text" required placeholder="npr. 3 napake pri pripravi kvasa" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition">
         </div>
 
-        <!-- Date, Time, Format -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- Format & Pillar (2 equal columns with full breathing room) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Format vsebine *</label>
-            <select id="postModalFormat" onchange="handlePostModalFormatChange(this.value)" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Format vsebine *</label>
+            <select id="postModalFormat" onchange="handlePostModalFormatChange(this.value)" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer">
               <option value="Reels / Video">🎬 Reels / Kratek video (9:16)</option>
               <option value="Vrtiljak (Carousel)">📚 Vrtiljak (Carousel)</option>
               <option value="Fotografija / Grafika">🖼️ Fotografija / Grafika</option>
@@ -1048,12 +1040,29 @@
             </select>
           </div>
           <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Datum objave *</label>
-            <input id="postModalDate" type="date" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Vsebinski steber *</label>
+            <select id="postModalPillar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Date & Time & Objective -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Datum in ura objave *</label>
+            <div class="grid grid-cols-5 gap-2">
+              <div class="col-span-3">
+                <input id="postModalDate" type="date" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+              </div>
+              <div class="col-span-2">
+                <input id="postModalTime" type="time" value="18:00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 text-center">
+              </div>
+            </div>
           </div>
           <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Ura objave</label>
-            <input id="postModalTime" type="time" value="18:00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-1.5">Glavni cilj objave</label>
+            <input id="postModalObjective" type="text" placeholder="npr. Dvig prepoznavnosti, shranjevanja..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
           </div>
         </div>
 
@@ -1072,77 +1081,14 @@
           <input type="hidden" id="postModalPlatform" value="Instagram">
         </div>
 
-        <!-- Pillar & Objective -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Vsebinski steber *</label>
-            <select id="postModalPillar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-              <!-- Dynamically populated -->
-            </select>
-          </div>
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Glavni cilj objave</label>
-            <input id="postModalObjective" type="text" placeholder="npr. Dvig prepoznavnosti, shranjevanja, obisk profila..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-          </div>
-        </div>
-
-        <!-- Statuses -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Status produkcije</label>
-            <select id="postModalProdStatus" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-              <option value="idea">1. Ideja</option>
-              <option value="planned">2. Načrtovano</option>
-              <option value="brief_ready">3. Pripravljen brief</option>
-              <option value="production">4. Snemanje / Produkcija</option>
-              <option value="editing">5. Montaža</option>
-              <option value="review">6. Interni pregled</option>
-              <option value="approval">7. Potrditev naročnika</option>
-              <option value="scheduled">8. Pripravljeno za objavo</option>
-              <option value="published">9. Objavljeno</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Status objave</label>
-            <select id="postModalPubStatus" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-              <option value="draft">Osnutek</option>
-              <option value="scheduled">Načrtovano</option>
-              <option value="published">Objavljeno</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Brief / Concept -->
-        <div>
-          <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Kreativni koncept in video / foto navodila (Brief)</label>
-          <textarea id="postModalBrief" rows="3" placeholder="Opišite kader, scenarij, hook prvih 3 sekund, rekvizite..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"></textarea>
-        </div>
-
-        <!-- Caption & CTA -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Besedilo objave (Caption)</label>
-            <textarea id="postModalCaption" rows="3" placeholder="Pripravljeno besedilo pod objavo..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"></textarea>
-          </div>
-          <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Poziv k dejanju (CTA) & Hashtagi</label>
-            <textarea id="postModalCta" rows="3" placeholder="Npr. Naročite v opisu profila! #pekarna #lokalno #sveze" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"></textarea>
-          </div>
-        </div>
-
-        <!-- Asset Link -->
-        <div>
-          <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Povezava do gradiv (Google Drive / Dropbox / Canva)</label>
-          <input id="postModalAssetLink" type="url" placeholder="https://drive.google.com/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-        </div>
-
-        <div class="pt-3 flex items-center justify-between gap-3 border-t border-slate-800">
-          <button id="postDeleteBtn" type="button" onclick="handleDeleteCurrentPost()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold hidden">
+        <!-- Footer Actions -->
+        <div class="pt-4 flex items-center justify-between gap-3 border-t border-slate-800">
+          <button id="postDeleteBtn" type="button" onclick="handleDeleteCurrentPost()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold px-2 py-1 rounded-lg hover:bg-rose-500/10 transition hidden cursor-pointer">
             Izbriši objavo
           </button>
           <div class="flex items-center gap-2 ml-auto">
-            <button type="button" onclick="closePostModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Prekliči</button>
-            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition active:scale-95">Planiraj objavo</button>
+            <button type="button" onclick="closePostModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition cursor-pointer">Prekliči</button>
+            <button type="submit" class="px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition active:scale-95 cursor-pointer">Planiraj objavo</button>
           </div>
         </div>
 
@@ -6723,8 +6669,7 @@
     }
 
     function handlePostModalFormatChange(formatVal) {
-      const clientSelect = document.getElementById('postModalClientSelect');
-      const clientId = clientSelect ? clientSelect.value : currentClientId;
+      const clientId = document.getElementById('postModalClientId')?.value || currentClientId;
       const client = clients.find(c => c.id === clientId);
       const plan = getClientProductionPlan(client);
       
@@ -6745,8 +6690,7 @@
 
     function handleSelectScriptOrIdeaForPost(val) {
       if (!val) return;
-      const clientSelect = document.getElementById('postModalClientSelect');
-      const clientId = clientSelect ? clientSelect.value : currentClientId;
+      const clientId = document.getElementById('postModalClientId')?.value || currentClientId;
       const client = clients.find(c => c.id === clientId);
       if (!client) return;
 
@@ -6761,20 +6705,6 @@
         }
         if (script.pillar) document.getElementById('postModalPillar').value = script.pillar;
         if (script.target) document.getElementById('postModalObjective').value = script.target;
-
-        const briefParts = [];
-        if (script.hook_verbal || script.hook_visual) {
-          briefParts.push(`🎬 HOOK:\n• Verbalni: ${script.hook_verbal || '/'}\n• Vizualni: ${script.hook_visual || '/'}`);
-        }
-        if (script.body_visual || script.body_audio) {
-          briefParts.push(`📋 JEDRO:\n• Kadri: ${script.body_visual || '/'}\n• Govor: ${script.body_audio || '/'}`);
-        }
-        if (script.production_notes) {
-          briefParts.push(`⚙️ PRODUKCIJSKA NAVODILA:\n${script.production_notes}`);
-        }
-        document.getElementById('postModalBrief').value = briefParts.join('\n\n');
-        if (script.cta) document.getElementById('postModalCta').value = script.cta;
-        document.getElementById('postModalProdStatus').value = 'brief_ready';
       } else if (val.startsWith('idea_')) {
         const ideaId = val.replace('idea_', '');
         const idea = (client.crm?.ideas || []).find(i => i.id === ideaId);
@@ -6785,8 +6715,6 @@
           handlePostModalFormatChange(idea.format);
         }
         if (idea.pillar) document.getElementById('postModalPillar').value = idea.pillar;
-        if (idea.notes) document.getElementById('postModalBrief').value = idea.notes;
-        document.getElementById('postModalProdStatus').value = 'idea';
       }
     }
 
@@ -6798,11 +6726,7 @@
 
       const clientId = presetClientId || currentClientId;
       const client = clients.find(c => c.id === clientId);
-      const clientSelect = document.getElementById('postModalClientSelect');
-
-      clientSelect.innerHTML = clients.map(c => 
-        `<option value="${c.id}" ${clientId === c.id ? 'selected' : ''}>${escapeHtml(c.company_name)}</option>`
-      ).join('');
+      document.getElementById('postModalClientId').value = clientId;
 
       // Populate pillar select
       const pillarSelect = document.getElementById('postModalPillar');
@@ -6836,8 +6760,6 @@
       if (prefillTitle) document.getElementById('postModalTitleInput').value = prefillTitle;
       if (prefillFormat) document.getElementById('postModalFormat').value = prefillFormat;
       if (prefillPillar && pillarSelect) pillarSelect.value = prefillPillar;
-      if (prefillBrief) document.getElementById('postModalBrief').value = prefillBrief;
-      if (prefillCta) document.getElementById('postModalCta').value = prefillCta;
 
       // Preselect platforms
       const targetFormat = prefillFormat || 'Reels / Video';
@@ -6857,11 +6779,6 @@
       document.getElementById('postModalPostId').value = post.id;
       document.getElementById('postModalClientId').value = client.id;
       document.getElementById('postDeleteBtn').classList.remove('hidden');
-
-      const clientSelect = document.getElementById('postModalClientSelect');
-      clientSelect.innerHTML = clients.map(c => 
-        `<option value="${c.id}" ${c.id === client.id ? 'selected' : ''}>${escapeHtml(c.company_name)}</option>`
-      ).join('');
 
       // Populate pillar select
       const pillarSelect = document.getElementById('postModalPillar');
@@ -6892,12 +6809,6 @@
       document.getElementById('postModalFormat').value = post.format || 'Reels / Video';
       if (pillarSelect && post.pillar) pillarSelect.value = post.pillar;
       document.getElementById('postModalObjective').value = post.objective || '';
-      document.getElementById('postModalProdStatus').value = post.prod_status || 'idea';
-      document.getElementById('postModalPubStatus').value = post.pub_status || 'draft';
-      document.getElementById('postModalBrief').value = post.brief || '';
-      document.getElementById('postModalCaption').value = post.caption || '';
-      document.getElementById('postModalCta').value = post.cta || '';
-      document.getElementById('postModalAssetLink').value = post.asset_link || '';
 
       const postPlatforms = (Array.isArray(post.platforms) && post.platforms.length > 0)
         ? post.platforms
@@ -6915,7 +6826,7 @@
 
     async function handleSavePost(e) {
       e.preventDefault();
-      const clientId = document.getElementById('postModalClientSelect').value;
+      const clientId = document.getElementById('postModalClientId').value || currentClientId;
       const client = clients.find(c => c.id === clientId);
       if (!client || !supabaseClient) return;
 
@@ -6923,6 +6834,7 @@
       if (!client.crm.content_calendar) client.crm.content_calendar = [];
 
       const existingPostId = document.getElementById('postModalPostId').value;
+      const existingPost = existingPostId ? client.crm.content_calendar.find(p => p.id === existingPostId) : null;
       const selectedPlatforms = (window.postModalSelectedPlatforms && window.postModalSelectedPlatforms.length > 0)
         ? window.postModalSelectedPlatforms
         : [document.getElementById('postModalPlatform').value || 'Instagram'];
@@ -6937,12 +6849,12 @@
         format: document.getElementById('postModalFormat').value,
         pillar: document.getElementById('postModalPillar').value.trim(),
         objective: document.getElementById('postModalObjective').value.trim(),
-        prod_status: document.getElementById('postModalProdStatus').value,
-        pub_status: document.getElementById('postModalPubStatus').value,
-        brief: document.getElementById('postModalBrief').value.trim(),
-        caption: document.getElementById('postModalCaption').value.trim(),
-        cta: document.getElementById('postModalCta').value.trim(),
-        asset_link: document.getElementById('postModalAssetLink').value.trim(),
+        prod_status: existingPost?.prod_status || 'planned',
+        pub_status: existingPost?.pub_status || 'scheduled',
+        brief: existingPost?.brief || '',
+        caption: existingPost?.caption || '',
+        cta: existingPost?.cta || '',
+        asset_link: existingPost?.asset_link || '',
         updated_at: new Date().toISOString()
       };
 
@@ -6979,7 +6891,7 @@
 
     async function handleDeleteCurrentPost() {
       if (!confirm("Ali ste prepričani, da želite izbrisati to objavo?")) return;
-      const clientId = document.getElementById('postModalClientSelect').value;
+      const clientId = document.getElementById('postModalClientId').value || currentClientId;
       const postId = document.getElementById('postModalPostId').value;
       const client = clients.find(c => c.id === clientId);
       if (!client || !postId || !supabaseClient) return;
@@ -7001,10 +6913,11 @@
           })
           .eq('id', client.id);
 
-        showToast('Objava je izbrisana!');
+        showToast('Objava je bila izbrisana.');
         updateTopLevelView();
       } catch (err) {
         console.error(err);
+        showToast('Napaka pri brisanju objave');
       }
     }
 
