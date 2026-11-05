@@ -840,12 +840,226 @@
   </div>
 
   <!-- MODAL: ADD / EDIT CONTENT POST -->
+  <!-- MODAL: QUICK IDEA NOTE -->
+  <div id="quickIdeaModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+          <i data-lucide="lightbulb" class="w-5 h-5 text-amber-400"></i> Zapiši idejo za vsebino
+        </h3>
+        <button onclick="closeQuickIdeaModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="quickIdeaForm" onsubmit="handleSaveQuickIdea(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="quickIdeaId">
+        <input type="hidden" id="quickIdeaClientId">
+
+        <div>
+          <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Delovni naslov ideje *</label>
+          <input id="quickIdeaTitle" type="text" required placeholder="npr. 3 največje napake pri pripravi kvasa" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+        </div>
+
+        <div>
+          <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Hitra opomba / Misel / Navdih *</label>
+          <textarea id="quickIdeaNotes" rows="3" required placeholder="Zapišite karkoli vam pade na pamet (npr. 'Prikaži zakaj se testo posede, ko ga daš v pečico. Uporabi primerjavo s temperaturo peči. Zvok hrustljave skorje na koncu')..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Predviden format</label>
+            <select id="quickIdeaFormat" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+              <option value="Reels / Video">🎬 Reels / Kratek video (9:16)</option>
+              <option value="Vrtiljak (Carousel)">📚 Vrtiljak (Carousel)</option>
+              <option value="Fotografija / Grafika">🖼️ Fotografija / Grafika</option>
+              <option value="Zgodba (Story)">📱 Zgodba (Story)</option>
+              <option value="Tekstovna objava / Članek">📝 Tekstovna objava / Članek</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Vsebinski steber</label>
+            <select id="quickIdeaPillar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800">
+          <button type="button" onclick="closeQuickIdeaModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Prekliči</button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="handleSaveIdeaAndOpenScript()" class="px-3.5 py-2 text-xs font-bold text-purple-300 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 rounded-xl transition flex items-center gap-1.5 active:scale-95">
+              <i data-lucide="clapperboard" class="w-3.5 h-3.5"></i> Shrani in razvij scenarij →
+            </button>
+            <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-500 rounded-xl shadow-md transition active:scale-95">
+              Shrani idejo
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Existing Ideas list -->
+      <div id="quickIdeasListSection" class="mt-6 pt-5 border-t border-slate-800 space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center justify-between">
+          <span>Zapisane ideje naročnika</span>
+          <span id="quickIdeasCountBadge" class="text-amber-400 font-mono text-[11px]"></span>
+        </h4>
+        <div id="quickIdeasListContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PROFESSIONAL VIDEO / CONTENT SCRIPTWRITING -->
+  <div id="scriptModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+        <div>
+          <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="clapperboard" class="w-5 h-5 text-purple-400"></i> Profesionalni scenarij za vsebino & snemanje
+          </h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">Strukturiran postopek od pritegnitve pozornosti (Hook) do klica k dejanju (CTA).</p>
+        </div>
+        <button onclick="closeScriptModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="scriptModalForm" onsubmit="handleSaveScript(event)" class="space-y-5 text-xs">
+        <input type="hidden" id="scriptModalScriptId">
+        <input type="hidden" id="scriptModalClientId">
+        <input type="hidden" id="scriptModalLinkedIdeaId">
+
+        <!-- Idea connection selector -->
+        <div id="scriptIdeaPickerWrapper" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400 shrink-0"></i>
+            <span class="text-[11px] font-bold text-slate-300">Nadaljuj iz obstoječe ideje:</span>
+          </div>
+          <select id="scriptIdeaPickerSelect" onchange="handleSelectIdeaForScript(this.value)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500">
+            <!-- Injected options -->
+          </select>
+        </div>
+
+        <!-- Title, Format, Pillar -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-1">
+            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Naslov scenarija *</label>
+            <input id="scriptModalTitle" type="text" required placeholder="npr. 3 napake pri pripravi kvasa" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+          </div>
+          <div>
+            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Format vsebine</label>
+            <select id="scriptModalFormat" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+              <option value="Reels / Video">🎬 Reels / Kratek video (9:16)</option>
+              <option value="Vrtiljak (Carousel)">📚 Vrtiljak (Carousel)</option>
+              <option value="Fotografija / Grafika">🖼️ Fotografija / Grafika</option>
+              <option value="Zgodba (Story)">📱 Zgodba (Story)</option>
+              <option value="Tekstovna objava / Članek">📝 Tekstovna objava / Članek</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Vsebinski steber</label>
+            <select id="scriptModalPillar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Target & Key message -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Ciljna publika / Bolečina stranke</label>
+            <input id="scriptModalTarget" type="text" placeholder="npr. Domači peki, ki jim testo ne vzhaja pravilno..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+          </div>
+          <div>
+            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Glavno sporočilo (Takeaway)</label>
+            <input id="scriptModalCoreMessage" type="text" placeholder="npr. Temperatura vode je ključna – kvas potrebuje med 35 in 38 stopinj." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30">
+          </div>
+        </div>
+
+        <!-- 1. FAZA: HOOK -->
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="zap" class="w-4 h-4"></i> 1. Faza: HOOK (0–3 sekunde — ključ za ustavitev drsenja)
+            </span>
+            <span class="text-[10px] text-slate-500 font-semibold">Stop-scroll moment</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">Verbalni hook (Kaj poveš / napisi na ekranu)</label>
+              <textarea id="scriptModalHookVerbal" rows="2" placeholder="Npr. 'Če ti kruh nikoli ne uspe hrustljav, skoraj zagotovo delaš to napako...'" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"></textarea>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">Vizualni hook (Kaj gledalec vidi v 1. sekundi)</label>
+              <textarea id="scriptModalHookVisual" rows="2" placeholder="Npr. Rez na prelom svežega hlebca s paro, hitro približevanje kamere, rekvizit v roki..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. FAZA: BODY / JEDRO -->
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="play-circle" class="w-4 h-4"></i> 2. Faza: JEDRO & VREDNOST (Postopek / Koraki / Zgodba)
+            </span>
+            <span class="text-[10px] text-slate-500 font-semibold">Vizualno + Govor</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">Vizualni potek (Kadri / B-roll / Prikaz)</label>
+              <textarea id="scriptModalBodyVisual" rows="4" placeholder="Kader 1: Prikaz gnetenja testa z rokami&#10;Kader 2: Merjenje temperature z digitalnim termometrom&#10;Kader 3: Pokritje posode s toplo vlažno krpo..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"></textarea>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">Govorni tekst (Voiceover / Govor v kamero)</label>
+              <textarea id="scriptModalBodyAudio" rows="4" placeholder="Točka 1: Večina ljudi uporabi prevročo vodo, ki kvasovke uniči. Voda mora biti mlačna.&#10;Točka 2: Za hitrejšo aktivacijo vedno dodaj pol žličke sladkorja ali medu...&#10;Točka 3: Pazi na prepih v kuhinji..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. FAZA: CALL TO ACTION -->
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i> 3. Faza: CALL TO ACTION (CTA)
+            </span>
+            <span class="text-[10px] text-slate-500 font-semibold">Kaj naj gledalec stori zdaj</span>
+          </div>
+          <div>
+            <textarea id="scriptModalCta" rows="2" placeholder="Npr. 'Shrani ta recept za naslednji vikend in v komentar napiši 'KVAS', če želiš naš celoten vodnik za peko!'..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30"></textarea>
+          </div>
+        </div>
+
+        <!-- 4. FAZA: PRODUKCIJSKA NAVODILA -->
+        <div>
+          <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Tehnična in produkcijska navodila za snemanje</label>
+          <textarea id="scriptModalProductionNotes" rows="2" placeholder="Npr. Lokacija: svetel pult v kuhinji. Zvok: ASMR hrustljavost kruha. Glasba: nežen akustični ritem v ozadju. Tekstovni overlay: 'Pravilo 35 stopinj'..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/30"></textarea>
+        </div>
+
+        <div class="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800">
+          <button id="scriptDeleteBtn" type="button" onclick="handleDeleteCurrentScript()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold hidden">
+            Izbriši scenarij
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeScriptModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Prekliči</button>
+            <button type="button" onclick="handleSaveScriptAndPlanPost()" class="px-3.5 py-2 text-xs font-bold text-sky-300 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 rounded-xl transition flex items-center gap-1.5 active:scale-95">
+              <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Shrani in načrtuj v koledar →
+            </button>
+            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-md transition active:scale-95">
+              Shrani scenarij
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT CONTENT POST (PLANIRANJE OBJAVE) -->
   <div id="postModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
       
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
         <h3 id="postModalTitle" class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-          <i data-lucide="calendar" class="w-5 h-5 text-indigo-400"></i> Načrtuj vsebino
+          <i data-lucide="calendar" class="w-5 h-5 text-indigo-400"></i> Načrtuj objavo v koledar
         </h3>
         <button onclick="closePostModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -861,6 +1075,17 @@
           <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Naročnik *</label>
           <select id="postModalClientSelect" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
             <!-- Injected by JS -->
+          </select>
+        </div>
+
+        <!-- Connect with Script or Idea -->
+        <div id="postModalScriptIdeaLinkWrapper" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <i data-lucide="link" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
+            <span class="text-[11px] font-bold text-slate-300">Poveži z napisanim scenarijem ali idejo:</span>
+          </div>
+          <select id="postModalScriptIdeaSelect" onchange="handleSelectScriptOrIdeaForPost(this.value)" class="bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <option value="">— Brez povezave (ročni vnos) —</option>
           </select>
         </div>
 
@@ -911,8 +1136,10 @@
         <!-- Pillar & Objective -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Vsebinski steber</label>
-            <input id="postModalPillar" type="text" placeholder="npr. Izobraževalne vsebine, Za kulisami..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+            <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Vsebinski steber *</label>
+            <select id="postModalPillar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+              <!-- Dynamically populated -->
+            </select>
           </div>
           <div>
             <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1">Glavni cilj objave</label>
@@ -976,7 +1203,7 @@
           </button>
           <div class="flex items-center gap-2 ml-auto">
             <button type="button" onclick="closePostModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Prekliči</button>
-            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition">Shrani objavo</button>
+            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition active:scale-95">Planiraj objavo</button>
           </div>
         </div>
 
@@ -2299,6 +2526,12 @@
 
           <!-- Quick Action buttons -->
           <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openQuickIdeaModal('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs">
+              <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i> Zapiši idejo
+            </button>
+            <button onclick="openScriptModal('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-purple-300 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 rounded-xl transition active:scale-95 shadow-xs">
+              <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-purple-400"></i> Napiši scenarij
+            </button>
             <button onclick="copyClientLink('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-xl transition active:scale-95">
               <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopiraj link
             </button>
@@ -4037,11 +4270,45 @@
     }
 
     // -------------------------------------------------------------
-    // WORKSPACE MODULE 8: CLIENT CONTENT CALENDAR
+    // WORKSPACE MODULE 8: CLIENT CONTENT CALENDAR (PLANIRANJE OBJAV)
     // -------------------------------------------------------------
+    let wsCalendarMonthOffset = 0;
+    let wsCalendarWeekOffset = 0;
+    let wsCalendarViewMode = 'month'; // 'month' | 'week' | 'list'
+
+    function setWsCalendarViewMode(mode) {
+      wsCalendarViewMode = mode;
+      renderWorkspaceTabContent();
+    }
+
+    function changeWsCalendarMonth(delta) {
+      wsCalendarMonthOffset += delta;
+      renderWorkspaceTabContent();
+    }
+
+    function changeWsCalendarWeek(delta) {
+      wsCalendarWeekOffset += delta;
+      renderWorkspaceTabContent();
+    }
+
+    function resetWsCalendarToday() {
+      wsCalendarMonthOffset = 0;
+      wsCalendarWeekOffset = 0;
+      renderWorkspaceTabContent();
+    }
+
+    function formatYmd(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
     function renderWsClientCalendar(client) {
       const posts = client.crm?.content_calendar || [];
-      posts.sort((a,b) => new Date(b.date || '2000') - new Date(a.date || '2000'));
+      const ideas = client.crm?.ideas || [];
+      const scripts = client.crm?.scripts || [];
+      posts.sort((a,b) => (a.date || '2000').localeCompare(b.date || '2000') || (a.time || '').localeCompare(b.time || ''));
 
       const plan = getClientProductionPlan(client);
       const dist = calculateDistributionFromPlan(plan);
@@ -4059,24 +4326,63 @@
       const totalQuota = dist.coreMonthly || 0;
       const totalPercent = totalQuota > 0 ? Math.min(100, Math.round((totalPlanned / totalQuota) * 100)) : 100;
 
+      const now = new Date();
+      const todayStr = formatYmd(now);
+      const monthNamesSl = ["Januar", "Februar", "Marec", "April", "Maj", "Junij", "Julij", "Avgust", "September", "Oktober", "November", "December"];
+      const daysOfWeekSl = ["Pon", "Tor", "Sre", "Čet", "Pet", "Sob", "Ned"];
+
+      // Month View Calculations
+      const monthDate = new Date(now.getFullYear(), now.getMonth() + wsCalendarMonthOffset, 1);
+      const mYear = monthDate.getFullYear();
+      const mMonth = monthDate.getMonth();
+      const monthTitle = `${monthNamesSl[mMonth]} ${mYear}`;
+      const firstDayOfMonth = new Date(mYear, mMonth, 1);
+      const lastDayOfMonth = new Date(mYear, mMonth + 1, 0);
+      let startDayIndex = firstDayOfMonth.getDay() - 1;
+      if (startDayIndex === -1) startDayIndex = 6;
+      const totalDaysInMonth = lastDayOfMonth.getDate();
+
+      // Week View Calculations
+      const weekRef = new Date();
+      weekRef.setDate(weekRef.getDate() + (wsCalendarWeekOffset * 7));
+      const refDayOfWeek = weekRef.getDay();
+      const diffToMonday = (refDayOfWeek === 0 ? -6 : 1) - refDayOfWeek;
+      const mondayDate = new Date(weekRef);
+      mondayDate.setDate(weekRef.getDate() + diffToMonday);
+      const sundayDate = new Date(mondayDate);
+      sundayDate.setDate(mondayDate.getDate() + 6);
+      const weekDays = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(mondayDate);
+        d.setDate(mondayDate.getDate() + i);
+        weekDays.push(d);
+      }
+      const weekTitle = `${mondayDate.getDate()}. ${monthNamesSl[mondayDate.getMonth()].substring(0,3)} – ${sundayDate.getDate()}. ${monthNamesSl[sundayDate.getMonth()]} ${sundayDate.getFullYear()}`;
+
       return `
         <div class="space-y-6">
           
-          <!-- Header Actions -->
+          <!-- Top Controls Bar -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
             <div>
               <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                <i data-lucide="calendar" class="w-4 h-4 text-sky-400"></i> Koledar objav za ${escapeHtml(client.company_name)}
+                <i data-lucide="calendar" class="w-4 h-4 text-sky-400"></i> Planiranje objav za ${escapeHtml(client.company_name)}
               </h3>
-              <p class="text-xs text-slate-400 mt-0.5">Načrtovanje, vsebinski statusi in usklajenost z mesečnimi kvotami.</p>
+              <p class="text-xs text-slate-400 mt-0.5">Mesečni in tedenski pregled terminov z neposrednim planiranjem na poljih dni.</p>
             </div>
 
-            <div class="flex items-center gap-2">
-              <button onclick="switchWorkspaceTab('social_strategy')" class="px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700">
-                ⚙️ Uredi kvoto produkcije
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="openQuickIdeaModal('${client.id}')" type="button" class="px-3 py-2 text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition flex items-center gap-1.5 active:scale-95 shadow-xs">
+                <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i> Ideje (${ideas.length})
               </button>
-              <button onclick="openAddPostModal('${client.id}')" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5 shadow-md">
-                <i data-lucide="plus" class="w-4 h-4"></i> + Nova objava
+              <button onclick="openScriptModal('${client.id}')" type="button" class="px-3 py-2 text-xs font-bold text-purple-300 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 rounded-xl transition flex items-center gap-1.5 active:scale-95 shadow-xs">
+                <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-purple-400"></i> Scenariji (${scripts.length})
+              </button>
+              <button onclick="switchWorkspaceTab('social_strategy')" class="px-3 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700">
+                ⚙️ Kvota
+              </button>
+              <button onclick="openAddPostModal('${client.id}')" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5 shadow-md active:scale-95">
+                <i data-lucide="plus" class="w-4 h-4"></i> + Planiraj objavo
               </button>
             </div>
           </div>
@@ -4133,58 +4439,250 @@
             </div>
           </div>
 
-          <!-- Posts Table / List -->
-          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 shadow-xl">
-            ${posts.length > 0 ? `
-              <div class="divide-y divide-slate-800">
-                ${posts.map(p => {
-                  const postPlatforms = (Array.isArray(p.platforms) && p.platforms.length > 0) ? p.platforms : [p.platform || 'Instagram'];
-                  return `
-                    <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="py-3.5 px-2.5 hover:bg-slate-950/60 rounded-2xl transition flex flex-wrap items-center justify-between gap-3 cursor-pointer">
-                      <div class="flex items-center gap-3.5 min-w-0">
-                        <!-- Multi-platform badges -->
-                        <div class="flex items-center -space-x-1.5 shrink-0">
-                          ${postPlatforms.map(plat => `
-                            <div class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-700 text-indigo-300 flex items-center justify-center shadow-xs" title="${escapeHtml(plat)}">
-                              <i data-lucide="${getPlatformIcon(plat)}" class="w-4 h-4"></i>
-                            </div>
-                          `).join('')}
-                        </div>
-                        <div class="min-w-0">
-                          <div class="flex items-center gap-2">
-                            <h4 class="text-xs sm:text-sm font-bold text-white truncate">${escapeHtml(p.title)}</h4>
-                            ${postPlatforms.length > 1 ? `
-                              <span class="px-2 py-0.5 rounded-md bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold shrink-0">
-                                ${postPlatforms.length} omrežja
-                              </span>
-                            ` : ''}
-                          </div>
-                          <p class="text-[11px] text-slate-400 truncate mt-0.5">
-                            ${p.format || 'Format nedoločen'} • Steber: ${p.pillar || 'Brez'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div class="flex items-center gap-4 shrink-0 text-xs">
-                        <span class="text-slate-300 font-mono">${p.date ? formatDate(p.date) : 'Ni datuma'} ${p.time || ''}</span>
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getProdStatusColor(p.prod_status)}">
-                          ${getProdStatusLabel(p.prod_status)}
-                        </span>
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
-                      </div>
-                    </div>
-                  `;
-                }).join('')}
+          <!-- Interactive Calendar Panel -->
+          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+            
+            <!-- Calendar Navigation & View Toggle -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+              
+              <!-- Pager -->
+              <div class="flex items-center gap-2">
+                ${wsCalendarViewMode === 'month' ? `
+                  <button type="button" onclick="changeWsCalendarMonth(-1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                  </button>
+                  <span class="text-sm font-black text-white px-2">${monthTitle}</span>
+                  <button type="button" onclick="changeWsCalendarMonth(1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                  </button>
+                  <button type="button" onclick="resetWsCalendarToday()" class="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition">
+                    Danes
+                  </button>
+                ` : wsCalendarViewMode === 'week' ? `
+                  <button type="button" onclick="changeWsCalendarWeek(-1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                  </button>
+                  <span class="text-sm font-black text-white px-2">${weekTitle}</span>
+                  <button type="button" onclick="changeWsCalendarWeek(1)" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95">
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                  </button>
+                  <button type="button" onclick="resetWsCalendarToday()" class="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-xl transition">
+                    Ta teden
+                  </button>
+                ` : `
+                  <span class="text-sm font-black text-white flex items-center gap-2">
+                    <i data-lucide="list" class="w-4 h-4 text-indigo-400"></i> Kronološki seznam vseh načrtovanih objav (${posts.length})
+                  </span>
+                `}
               </div>
-            ` : `
-              <div class="py-12 text-center text-slate-500">
-                <i data-lucide="calendar" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
-                <p class="text-xs font-semibold">Ta naročnik še nima načrtovanih objav.</p>
-                <button onclick="openAddPostModal('${client.id}')" class="mt-3 px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded-xl">
-                  + Ustvari prvo objavo
+
+              <!-- View mode pills -->
+              <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs">
+                <button type="button" onclick="setWsCalendarViewMode('month')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                  wsCalendarViewMode === 'month' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                }">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Mesec
+                </button>
+                <button type="button" onclick="setWsCalendarViewMode('week')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                  wsCalendarViewMode === 'week' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                }">
+                  <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i> Teden
+                </button>
+                <button type="button" onclick="setWsCalendarViewMode('list')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                  wsCalendarViewMode === 'list' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                }">
+                  <i data-lucide="list" class="w-3.5 h-3.5"></i> Seznam
                 </button>
               </div>
-            `}
+            </div>
+
+            <!-- VIEW 1: MONTH VIEW GRID -->
+            ${wsCalendarViewMode === 'month' ? (() => {
+              let gridHtml = `
+                <div class="grid grid-cols-7 gap-1.5 text-center font-bold text-[11px] uppercase tracking-wider text-slate-400 mb-2 pb-2 border-b border-slate-800">
+                  ${daysOfWeekSl.map(d => `<div>${d}</div>`).join('')}
+                </div>
+                <div class="grid grid-cols-7 gap-1.5 auto-rows-fr">
+              `;
+
+              // Empty padding days
+              for (let i = 0; i < startDayIndex; i++) {
+                gridHtml += `<div class="min-h-[110px] bg-slate-950/30 rounded-2xl border border-slate-900/60 p-2 opacity-30"></div>`;
+              }
+
+              // Days of month
+              for (let day = 1; day <= totalDaysInMonth; day++) {
+                const dayDate = new Date(mYear, mMonth, day);
+                const dayStr = formatYmd(dayDate);
+                const isToday = dayStr === todayStr;
+                const dayPosts = posts.filter(p => p.date === dayStr);
+
+                gridHtml += `
+                  <div onclick="openAddPostModal('${client.id}', '${dayStr}')" class="min-h-[110px] bg-slate-950/80 rounded-2xl border ${
+                    isToday ? 'border-indigo-500 shadow-lg shadow-indigo-950/50 ring-1 ring-indigo-500/50' : 'border-slate-800/80'
+                  } p-2 flex flex-col justify-between group hover:border-indigo-500/50 hover:bg-slate-950 transition cursor-pointer">
+                    
+                    <div class="flex items-center justify-between text-[11px] font-bold mb-1">
+                      <span class="${
+                        isToday ? 'w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-400 pl-0.5'
+                      }">${day}</span>
+                      <button type="button" onclick="event.stopPropagation(); openAddPostModal('${client.id}', '${dayStr}')" title="Planiraj objavo na ta dan" class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-white p-1 rounded-md bg-slate-900 border border-slate-700 transition">
+                        <i data-lucide="plus" class="w-3 h-3"></i>
+                      </button>
+                    </div>
+
+                    <div class="space-y-1.5 overflow-y-auto max-h-[85px] scrollbar-none">
+                      ${dayPosts.map(p => {
+                        const postPlatforms = (Array.isArray(p.platforms) && p.platforms.length > 0) ? p.platforms : [p.platform || 'Instagram'];
+                        return `
+                          <div onclick="event.stopPropagation(); openEditPostModal('${client.id}', '${p.id}')" title="${escapeHtml(p.title)}" class="text-[10px] p-1.5 rounded-xl bg-indigo-950/90 border border-indigo-500/40 text-slate-200 hover:bg-indigo-900 hover:border-indigo-400 transition space-y-0.5 shadow-xs">
+                            <div class="flex items-center justify-between gap-1 text-[9px]">
+                              <span class="font-mono text-indigo-300 font-bold">${p.time || '18:00'}</span>
+                              <div class="flex items-center gap-0.5">
+                                ${postPlatforms.map(plat => `
+                                  <i data-lucide="${getPlatformIcon(plat)}" class="w-2.5 h-2.5 text-indigo-300"></i>
+                                `).join('')}
+                              </div>
+                            </div>
+                            <div class="font-semibold text-white truncate leading-tight">${escapeHtml(p.title)}</div>
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
+
+                    ${dayPosts.length === 0 ? `
+                      <div class="opacity-0 group-hover:opacity-100 text-[10px] text-slate-500 text-center py-1 transition">
+                        + Planiraj
+                      </div>
+                    ` : ''}
+                  </div>
+                `;
+              }
+
+              gridHtml += `</div>`;
+              return gridHtml;
+            })() : ''}
+
+            <!-- VIEW 2: WEEK VIEW GRID -->
+            ${wsCalendarViewMode === 'week' ? (() => {
+              return `
+                <div class="grid grid-cols-1 md:grid-cols-7 gap-3">
+                  ${weekDays.map(d => {
+                    const dayStr = formatYmd(d);
+                    const isToday = dayStr === todayStr;
+                    const dayOfWeekIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+                    const dayName = daysOfWeekSl[dayOfWeekIdx];
+                    const dayPosts = posts.filter(p => p.date === dayStr);
+
+                    return `
+                      <div class="bg-slate-950/90 rounded-2xl border ${
+                        isToday ? 'border-indigo-500 shadow-md ring-1 ring-indigo-500/40' : 'border-slate-800'
+                      } p-3 flex flex-col justify-between space-y-3 min-h-[300px]">
+                        
+                        <!-- Day header -->
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-800 text-xs">
+                          <div>
+                            <div class="font-black ${isToday ? 'text-indigo-400' : 'text-white'} text-sm">${dayName}</div>
+                            <div class="text-[11px] text-slate-400">${d.getDate()}. ${monthNamesSl[d.getMonth()].substring(0,3)}</div>
+                          </div>
+                          <button type="button" onclick="openAddPostModal('${client.id}', '${dayStr}')" class="p-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white transition" title="Planiraj na ta dan">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                          </button>
+                        </div>
+
+                        <!-- Posts for this week day -->
+                        <div class="flex-1 space-y-2 overflow-y-auto">
+                          ${dayPosts.length > 0 ? dayPosts.map(p => {
+                            const postPlatforms = (Array.isArray(p.platforms) && p.platforms.length > 0) ? p.platforms : [p.platform || 'Instagram'];
+                            return `
+                              <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="p-2.5 rounded-xl bg-slate-900 border border-slate-700/80 hover:border-indigo-500/60 hover:bg-slate-850 cursor-pointer transition space-y-2 text-xs shadow-xs">
+                                <div class="flex items-center justify-between text-[10px]">
+                                  <span class="font-mono font-bold text-indigo-300 bg-indigo-500/15 px-1.5 py-0.5 rounded">${p.time || '18:00'}</span>
+                                  <div class="flex items-center gap-1">
+                                    ${postPlatforms.map(plat => `
+                                      <i data-lucide="${getPlatformIcon(plat)}" class="w-3 h-3 text-indigo-400" title="${escapeHtml(plat)}"></i>
+                                    `).join('')}
+                                  </div>
+                                </div>
+                                <h5 class="font-bold text-white leading-tight line-clamp-2">${escapeHtml(p.title)}</h5>
+                                <div class="flex flex-wrap items-center justify-between gap-1 text-[10px]">
+                                  <span class="text-slate-400 truncate max-w-[100px]">${p.pillar || 'Brez stebra'}</span>
+                                  <span class="px-1.5 py-0.2 rounded font-semibold border ${getProdStatusColor(p.prod_status)}">
+                                    ${getProdStatusLabel(p.prod_status).split('.')[1] || getProdStatusLabel(p.prod_status)}
+                                  </span>
+                                </div>
+                              </div>
+                            `;
+                          }).join('') : `
+                            <div onclick="openAddPostModal('${client.id}', '${dayStr}')" class="h-32 border border-dashed border-slate-800 rounded-xl p-3 flex flex-col items-center justify-center text-center text-slate-600 hover:border-slate-700 hover:text-slate-400 cursor-pointer transition">
+                              <i data-lucide="plus-circle" class="w-5 h-5 mb-1 opacity-60"></i>
+                              <span class="text-[11px] font-semibold">Planiraj objavo</span>
+                            </div>
+                          `}
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `;
+            })() : ''}
+
+            <!-- VIEW 3: LIST VIEW -->
+            ${wsCalendarViewMode === 'list' ? `
+              <div class="space-y-2">
+                ${posts.length > 0 ? `
+                  <div class="divide-y divide-slate-800">
+                    ${posts.map(p => {
+                      const postPlatforms = (Array.isArray(p.platforms) && p.platforms.length > 0) ? p.platforms : [p.platform || 'Instagram'];
+                      return `
+                        <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="py-3.5 px-3 hover:bg-slate-950/60 rounded-2xl transition flex flex-wrap items-center justify-between gap-3 cursor-pointer">
+                          <div class="flex items-center gap-3.5 min-w-0">
+                            <!-- Multi-platform badges -->
+                            <div class="flex items-center -space-x-1.5 shrink-0">
+                              ${postPlatforms.map(plat => `
+                                <div class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-700 text-indigo-300 flex items-center justify-center shadow-xs" title="${escapeHtml(plat)}">
+                                  <i data-lucide="${getPlatformIcon(plat)}" class="w-4 h-4"></i>
+                                </div>
+                              `).join('')}
+                            </div>
+                            <div class="min-w-0">
+                              <div class="flex items-center gap-2">
+                                <h4 class="text-xs sm:text-sm font-bold text-white truncate">${escapeHtml(p.title)}</h4>
+                                ${postPlatforms.length > 1 ? `
+                                  <span class="px-2 py-0.5 rounded-md bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold shrink-0">
+                                    ${postPlatforms.length} omrežja
+                                  </span>
+                                ` : ''}
+                              </div>
+                              <p class="text-[11px] text-slate-400 truncate mt-0.5">
+                                ${p.format || 'Format nedoločen'} • Steber: ${p.pillar || 'Brez'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div class="flex items-center gap-4 shrink-0 text-xs">
+                            <span class="text-slate-300 font-mono">${p.date ? formatDate(p.date) : 'Ni datuma'} ${p.time || ''}</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getProdStatusColor(p.prod_status)}">
+                              ${getProdStatusLabel(p.prod_status)}
+                            </span>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                ` : `
+                  <div class="py-12 text-center text-slate-500">
+                    <i data-lucide="calendar" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                    <p class="text-xs font-semibold">Ta naročnik še nima načrtovanih objav.</p>
+                    <button onclick="openAddPostModal('${client.id}')" class="mt-3 px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded-xl">
+                      + Planiraj prvo objavo
+                    </button>
+                  </div>
+                `}
+              </div>
+            ` : ''}
+
           </div>
 
         </div>
@@ -4827,6 +5325,291 @@
     }
 
     // -------------------------------------------------------------
+    // QUICK IDEAS & PROFESSIONAL SCRIPTWRITING WORKFLOW
+    // -------------------------------------------------------------
+    function getClientPillarOptions(client) {
+      const activePillars = client?.crm?.content_strategy?.content_pillars || [];
+      if (activePillars.length > 0) {
+        return activePillars.map(p => p.name || p.key);
+      }
+      return CONTENT_PILLAR_OPTIONS.map(o => o.name);
+    }
+
+    // --- QUICK IDEAS (NOTE) ---
+    function openQuickIdeaModal(clientId = null) {
+      const cId = clientId || currentClientId;
+      const client = clients.find(c => c.id === cId);
+      if (!client) return;
+
+      document.getElementById('quickIdeaId').value = '';
+      document.getElementById('quickIdeaClientId').value = client.id;
+      document.getElementById('quickIdeaForm').reset();
+
+      // Populate pillars
+      const pillarSelect = document.getElementById('quickIdeaPillar');
+      if (pillarSelect) {
+        const pillarList = getClientPillarOptions(client);
+        pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}">${escapeHtml(pName)}</option>`).join('');
+      }
+
+      renderQuickIdeasList(client);
+      document.getElementById('quickIdeaModal').classList.remove('hidden');
+      lucide.createIcons({ root: document.getElementById('quickIdeaModal') });
+    }
+
+    function closeQuickIdeaModal() {
+      document.getElementById('quickIdeaModal').classList.add('hidden');
+    }
+
+    function renderQuickIdeasList(client) {
+      const container = document.getElementById('quickIdeasListContainer');
+      const badge = document.getElementById('quickIdeasCountBadge');
+      if (!container) return;
+
+      const ideas = client.crm?.ideas || [];
+      if (badge) badge.textContent = `${ideas.length} idej`;
+
+      if (ideas.length === 0) {
+        container.innerHTML = `<p class="text-slate-500 text-xs py-3 text-center">Še nimate shranjenih idej. Vpišite prvo zgoraj!</p>`;
+        return;
+      }
+
+      container.innerHTML = ideas.map(idea => `
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition flex items-center justify-between gap-3 text-xs">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-white truncate">${escapeHtml(idea.title)}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
+                ${escapeHtml(idea.format || 'Video')}
+              </span>
+              ${idea.pillar ? `<span class="text-[10px] text-slate-400">#${escapeHtml(idea.pillar)}</span>` : ''}
+            </div>
+            ${idea.notes ? `<p class="text-[11px] text-slate-400 truncate mt-0.5">${escapeHtml(idea.notes)}</p>` : ''}
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button" onclick="openScriptModal('${client.id}', null, '${idea.id}')" title="Napiši scenarij iz te ideje" class="px-2.5 py-1 rounded-lg text-xs font-bold text-purple-300 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 transition flex items-center gap-1 active:scale-95">
+              <i data-lucide="clapperboard" class="w-3 h-3"></i> Scenarij
+            </button>
+            <button type="button" onclick="openAddPostModal('${client.id}', null, '${escapeHtml(idea.title).replace(/'/g, "\\'")}', '${idea.format || 'Reels / Video'}', '${idea.pillar || ''}', '${escapeHtml(idea.notes || '').replace(/'/g, "\\'")}', '', 'idea_${idea.id}')" title="Planiraj objavo v koledar" class="px-2.5 py-1 rounded-lg text-xs font-bold text-sky-300 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 transition flex items-center gap-1 active:scale-95">
+              <i data-lucide="calendar" class="w-3 h-3"></i> Planiraj
+            </button>
+            <button type="button" onclick="deleteQuickIdea('${client.id}', '${idea.id}')" title="Izbriši idejo" class="p-1 text-slate-500 hover:text-rose-400 transition">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons({ root: container });
+    }
+
+    async function handleSaveQuickIdea(e) {
+      if (e) e.preventDefault();
+      const clientId = document.getElementById('quickIdeaClientId').value;
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return null;
+
+      if (!client.crm) client.crm = {};
+      if (!client.crm.ideas) client.crm.ideas = [];
+
+      const existingId = document.getElementById('quickIdeaId').value;
+      const ideaObj = {
+        id: existingId || ('idea_' + Date.now()),
+        title: document.getElementById('quickIdeaTitle').value.trim(),
+        notes: document.getElementById('quickIdeaNotes').value.trim(),
+        format: document.getElementById('quickIdeaFormat').value,
+        pillar: document.getElementById('quickIdeaPillar').value,
+        status: 'raw',
+        created_at: new Date().toISOString()
+      };
+
+      if (existingId) {
+        const idx = client.crm.ideas.findIndex(i => i.id === existingId);
+        if (idx >= 0) client.crm.ideas[idx] = ideaObj;
+      } else {
+        client.crm.ideas.unshift(ideaObj);
+      }
+
+      await saveCurrentWorkspace(false);
+      showToast('Ideja je uspešno shranjena!');
+      document.getElementById('quickIdeaForm').reset();
+      document.getElementById('quickIdeaId').value = '';
+      renderQuickIdeasList(client);
+      renderWorkspaceTabContent();
+      return ideaObj;
+    }
+
+    async function handleSaveIdeaAndOpenScript() {
+      const ideaObj = await handleSaveQuickIdea(null);
+      if (!ideaObj) return;
+      const clientId = document.getElementById('quickIdeaClientId').value;
+      closeQuickIdeaModal();
+      openScriptModal(clientId, null, ideaObj.id);
+    }
+
+    async function deleteQuickIdea(clientId, ideaId) {
+      if (!confirm("Ali ste prepričani, da želite izbrisati to idejo?")) return;
+      const client = clients.find(c => c.id === clientId);
+      if (!client?.crm?.ideas) return;
+      client.crm.ideas = client.crm.ideas.filter(i => i.id !== ideaId);
+      await saveCurrentWorkspace(false);
+      renderQuickIdeasList(client);
+      renderWorkspaceTabContent();
+    }
+
+    // --- PROFESSIONAL SCRIPTWRITING ---
+    function openScriptModal(clientId = null, scriptId = null, prefillFromIdeaId = null) {
+      const cId = clientId || currentClientId;
+      const client = clients.find(c => c.id === cId);
+      if (!client) return;
+
+      document.getElementById('scriptModalClientId').value = client.id;
+      document.getElementById('scriptModalScriptId').value = scriptId || '';
+      document.getElementById('scriptModalForm').reset();
+      document.getElementById('scriptDeleteBtn').classList.toggle('hidden', !scriptId);
+
+      // Populate pillars
+      const pillarSelect = document.getElementById('scriptModalPillar');
+      if (pillarSelect) {
+        const pillarList = getClientPillarOptions(client);
+        pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}">${escapeHtml(pName)}</option>`).join('');
+      }
+
+      // Populate idea picker
+      const ideaSelect = document.getElementById('scriptIdeaPickerSelect');
+      const ideas = client.crm?.ideas || [];
+      if (ideaSelect) {
+        ideaSelect.innerHTML = `<option value="">— Začni nov scenarij (brez ideje) —</option>` +
+          ideas.map(i => `<option value="${i.id}" ${prefillFromIdeaId === i.id ? 'selected' : ''}>💡 ${escapeHtml(i.title)}</option>`).join('');
+      }
+
+      if (scriptId) {
+        const s = (client.crm?.scripts || []).find(x => x.id === scriptId);
+        if (s) {
+          document.getElementById('scriptModalTitle').value = s.title || '';
+          document.getElementById('scriptModalFormat').value = s.format || 'Reels / Video';
+          if (s.pillar) document.getElementById('scriptModalPillar').value = s.pillar;
+          document.getElementById('scriptModalTarget').value = s.target || '';
+          document.getElementById('scriptModalCoreMessage').value = s.core_message || '';
+          document.getElementById('scriptModalHookVerbal').value = s.hook_verbal || '';
+          document.getElementById('scriptModalHookVisual').value = s.hook_visual || '';
+          document.getElementById('scriptModalBodyVisual').value = s.body_visual || '';
+          document.getElementById('scriptModalBodyAudio').value = s.body_audio || '';
+          document.getElementById('scriptModalCta').value = s.cta || '';
+          document.getElementById('scriptModalProductionNotes').value = s.production_notes || '';
+          document.getElementById('scriptModalLinkedIdeaId').value = s.linked_idea_id || '';
+        }
+      } else if (prefillFromIdeaId) {
+        handleSelectIdeaForScript(prefillFromIdeaId);
+      }
+
+      document.getElementById('scriptModal').classList.remove('hidden');
+      lucide.createIcons({ root: document.getElementById('scriptModal') });
+    }
+
+    function closeScriptModal() {
+      document.getElementById('scriptModal').classList.add('hidden');
+    }
+
+    function handleSelectIdeaForScript(ideaId) {
+      if (!ideaId) return;
+      const client = clients.find(c => c.id === document.getElementById('scriptModalClientId').value);
+      const idea = (client?.crm?.ideas || []).find(i => i.id === ideaId);
+      if (!idea) return;
+
+      document.getElementById('scriptModalTitle').value = idea.title || '';
+      if (idea.format) document.getElementById('scriptModalFormat').value = idea.format;
+      if (idea.pillar) document.getElementById('scriptModalPillar').value = idea.pillar;
+      document.getElementById('scriptModalLinkedIdeaId').value = idea.id;
+      if (idea.notes && !document.getElementById('scriptModalCoreMessage').value) {
+        document.getElementById('scriptModalCoreMessage').value = idea.notes;
+      }
+    }
+
+    async function handleSaveScript(e, andPlanPost = false) {
+      if (e) e.preventDefault();
+      const clientId = document.getElementById('scriptModalClientId').value;
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return null;
+
+      if (!client.crm) client.crm = {};
+      if (!client.crm.scripts) client.crm.scripts = [];
+
+      const existingId = document.getElementById('scriptModalScriptId').value;
+      const scriptObj = {
+        id: existingId || ('script_' + Date.now()),
+        linked_idea_id: document.getElementById('scriptModalLinkedIdeaId').value || null,
+        title: document.getElementById('scriptModalTitle').value.trim(),
+        format: document.getElementById('scriptModalFormat').value,
+        pillar: document.getElementById('scriptModalPillar').value,
+        target: document.getElementById('scriptModalTarget').value.trim(),
+        core_message: document.getElementById('scriptModalCoreMessage').value.trim(),
+        hook_verbal: document.getElementById('scriptModalHookVerbal').value.trim(),
+        hook_visual: document.getElementById('scriptModalHookVisual').value.trim(),
+        body_visual: document.getElementById('scriptModalBodyVisual').value.trim(),
+        body_audio: document.getElementById('scriptModalBodyAudio').value.trim(),
+        cta: document.getElementById('scriptModalCta').value.trim(),
+        production_notes: document.getElementById('scriptModalProductionNotes').value.trim(),
+        status: 'ready',
+        updated_at: new Date().toISOString()
+      };
+
+      if (existingId) {
+        const idx = client.crm.scripts.findIndex(s => s.id === existingId);
+        if (idx >= 0) client.crm.scripts[idx] = scriptObj;
+      } else {
+        client.crm.scripts.unshift(scriptObj);
+      }
+
+      await saveCurrentWorkspace(false);
+      showToast('Scenarij je uspešno shranjen!');
+      closeScriptModal();
+      renderWorkspaceTabContent();
+      return scriptObj;
+    }
+
+    async function handleSaveScriptAndPlanPost() {
+      const script = await handleSaveScript(null, true);
+      if (!script) return;
+      const clientId = document.getElementById('scriptModalClientId').value;
+      
+      const briefParts = [];
+      if (script.hook_verbal || script.hook_visual) {
+        briefParts.push(`🎬 HOOK:\n• Verbalni: ${script.hook_verbal || '/'}\n• Vizualni: ${script.hook_visual || '/'}`);
+      }
+      if (script.body_visual || script.body_audio) {
+        briefParts.push(`📋 JEDRO:\n• Kadri: ${script.body_visual || '/'}\n• Govor: ${script.body_audio || '/'}`);
+      }
+      if (script.production_notes) {
+        briefParts.push(`⚙️ PRODUKCIJSKA NAVODILA:\n${script.production_notes}`);
+      }
+
+      openAddPostModal(
+        clientId,
+        null,
+        script.title,
+        script.format,
+        script.pillar,
+        briefParts.join('\n\n'),
+        script.cta,
+        `script_${script.id}`
+      );
+    }
+
+    async function handleDeleteCurrentScript() {
+      if (!confirm("Ali želite izbrisati ta scenarij?")) return;
+      const clientId = document.getElementById('scriptModalClientId').value;
+      const scriptId = document.getElementById('scriptModalScriptId').value;
+      const client = clients.find(c => c.id === clientId);
+      if (!client || !scriptId) return;
+
+      client.crm.scripts = (client.crm.scripts || []).filter(s => s.id !== scriptId);
+      await saveCurrentWorkspace(false);
+      closeScriptModal();
+      showToast('Scenarij je izbrisan');
+      renderWorkspaceTabContent();
+    }
+
+    // -------------------------------------------------------------
     // POST MODAL & MULTI-PLATFORM CROSS-POSTING WORKFLOW
     // -------------------------------------------------------------
     window.postModalSelectedPlatforms = ['Instagram'];
@@ -4895,31 +5678,105 @@
       renderPostModalPlatformPills();
     }
 
-    function openAddPostModal(presetClientId = null, presetDate = null) {
-      document.getElementById('postModalTitle').innerText = 'Načrtuj novo vsebino';
+    function handleSelectScriptOrIdeaForPost(val) {
+      if (!val) return;
+      const clientSelect = document.getElementById('postModalClientSelect');
+      const clientId = clientSelect ? clientSelect.value : currentClientId;
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+
+      if (val.startsWith('script_')) {
+        const scriptId = val.replace('script_', '');
+        const script = (client.crm?.scripts || []).find(s => s.id === scriptId);
+        if (!script) return;
+        document.getElementById('postModalTitleInput').value = script.title || '';
+        if (script.format) {
+          document.getElementById('postModalFormat').value = script.format;
+          handlePostModalFormatChange(script.format);
+        }
+        if (script.pillar) document.getElementById('postModalPillar').value = script.pillar;
+        if (script.target) document.getElementById('postModalObjective').value = script.target;
+
+        const briefParts = [];
+        if (script.hook_verbal || script.hook_visual) {
+          briefParts.push(`🎬 HOOK:\n• Verbalni: ${script.hook_verbal || '/'}\n• Vizualni: ${script.hook_visual || '/'}`);
+        }
+        if (script.body_visual || script.body_audio) {
+          briefParts.push(`📋 JEDRO:\n• Kadri: ${script.body_visual || '/'}\n• Govor: ${script.body_audio || '/'}`);
+        }
+        if (script.production_notes) {
+          briefParts.push(`⚙️ PRODUKCIJSKA NAVODILA:\n${script.production_notes}`);
+        }
+        document.getElementById('postModalBrief').value = briefParts.join('\n\n');
+        if (script.cta) document.getElementById('postModalCta').value = script.cta;
+        document.getElementById('postModalProdStatus').value = 'brief_ready';
+      } else if (val.startsWith('idea_')) {
+        const ideaId = val.replace('idea_', '');
+        const idea = (client.crm?.ideas || []).find(i => i.id === ideaId);
+        if (!idea) return;
+        document.getElementById('postModalTitleInput').value = idea.title || '';
+        if (idea.format) {
+          document.getElementById('postModalFormat').value = idea.format;
+          handlePostModalFormatChange(idea.format);
+        }
+        if (idea.pillar) document.getElementById('postModalPillar').value = idea.pillar;
+        if (idea.notes) document.getElementById('postModalBrief').value = idea.notes;
+        document.getElementById('postModalProdStatus').value = 'idea';
+      }
+    }
+
+    function openAddPostModal(presetClientId = null, presetDate = null, prefillTitle = null, prefillFormat = null, prefillPillar = null, prefillBrief = null, prefillCta = null, linkedScriptOrIdeaId = null) {
+      document.getElementById('postModalTitle').innerText = 'Načrtuj objavo v koledar';
       document.getElementById('postModalPostId').value = '';
       document.getElementById('postDeleteBtn').classList.add('hidden');
       document.getElementById('postModalForm').reset();
 
       const clientId = presetClientId || currentClientId;
+      const client = clients.find(c => c.id === clientId);
       const clientSelect = document.getElementById('postModalClientSelect');
 
       clientSelect.innerHTML = clients.map(c => 
         `<option value="${c.id}" ${clientId === c.id ? 'selected' : ''}>${escapeHtml(c.company_name)}</option>`
       ).join('');
 
+      // Populate pillar select
+      const pillarSelect = document.getElementById('postModalPillar');
+      if (pillarSelect && client) {
+        const pillarList = getClientPillarOptions(client);
+        pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}">${escapeHtml(pName)}</option>`).join('');
+      }
+
+      // Populate script / idea link dropdown
+      const linkSelect = document.getElementById('postModalScriptIdeaSelect');
+      if (linkSelect && client) {
+        const scripts = client.crm?.scripts || [];
+        const ideas = client.crm?.ideas || [];
+        let html = `<option value="">— Brez povezave (ročni vnos) —</option>`;
+        if (scripts.length > 0) {
+          html += `<optgroup label="🎬 Napisani scenariji">${scripts.map(s => `<option value="script_${s.id}" ${linkedScriptOrIdeaId === 'script_' + s.id ? 'selected' : ''}>${escapeHtml(s.title)} (${escapeHtml(s.format || 'Video')})</option>`).join('')}</optgroup>`;
+        }
+        if (ideas.length > 0) {
+          html += `<optgroup label="💡 Zapisane ideje">${ideas.map(i => `<option value="idea_${i.id}" ${linkedScriptOrIdeaId === 'idea_' + i.id ? 'selected' : ''}>${escapeHtml(i.title)}</option>`).join('')}</optgroup>`;
+        }
+        linkSelect.innerHTML = html;
+      }
+
       if (presetDate) {
         document.getElementById('postModalDate').value = presetDate;
       } else {
-        document.getElementById('postModalDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('postModalDate').value = formatYmd(new Date());
       }
 
-      // Preselect platforms based on client's video production plan
-      const client = clients.find(c => c.id === clientId);
-      const plan = getClientProductionPlan(client);
-      const defaultPlatforms = plan.video?.platforms || ['Instagram', 'TikTok', 'Facebook'];
-      window.postModalSelectedPlatforms = [...defaultPlatforms];
-      renderPostModalPlatformPills();
+      // Prefill fields if provided
+      if (prefillTitle) document.getElementById('postModalTitleInput').value = prefillTitle;
+      if (prefillFormat) document.getElementById('postModalFormat').value = prefillFormat;
+      if (prefillPillar && pillarSelect) pillarSelect.value = prefillPillar;
+      if (prefillBrief) document.getElementById('postModalBrief').value = prefillBrief;
+      if (prefillCta) document.getElementById('postModalCta').value = prefillCta;
+
+      // Preselect platforms
+      const targetFormat = prefillFormat || 'Reels / Video';
+      handlePostModalFormatChange(targetFormat);
 
       document.getElementById('postModal').classList.remove('hidden');
       lucide.createIcons({ root: document.getElementById('postModal') });
@@ -4931,7 +5788,7 @@
       const post = (client.crm?.content_calendar || []).find(p => p.id === postId);
       if (!post) return;
 
-      document.getElementById('postModalTitle').innerText = 'Uredi vsebino';
+      document.getElementById('postModalTitle').innerText = 'Uredi načrtovano objavo';
       document.getElementById('postModalPostId').value = post.id;
       document.getElementById('postModalClientId').value = client.id;
       document.getElementById('postDeleteBtn').classList.remove('hidden');
@@ -4941,12 +5798,34 @@
         `<option value="${c.id}" ${c.id === client.id ? 'selected' : ''}>${escapeHtml(c.company_name)}</option>`
       ).join('');
 
+      // Populate pillar select
+      const pillarSelect = document.getElementById('postModalPillar');
+      if (pillarSelect) {
+        const pillarList = getClientPillarOptions(client);
+        pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}" ${post.pillar === pName ? 'selected' : ''}>${escapeHtml(pName)}</option>`).join('');
+      }
+
+      // Populate script / idea link dropdown
+      const linkSelect = document.getElementById('postModalScriptIdeaSelect');
+      if (linkSelect) {
+        const scripts = client.crm?.scripts || [];
+        const ideas = client.crm?.ideas || [];
+        let html = `<option value="">— Brez povezave (ročni vnos) —</option>`;
+        if (scripts.length > 0) {
+          html += `<optgroup label="🎬 Napisani scenariji">${scripts.map(s => `<option value="script_${s.id}">${escapeHtml(s.title)}</option>`).join('')}</optgroup>`;
+        }
+        if (ideas.length > 0) {
+          html += `<optgroup label="💡 Zapisane ideje">${ideas.map(i => `<option value="idea_${i.id}">${escapeHtml(i.title)}</option>`).join('')}</optgroup>`;
+        }
+        linkSelect.innerHTML = html;
+      }
+
       document.getElementById('postModalTitleInput').value = post.title || '';
       document.getElementById('postModalPlatform').value = post.platform || 'Instagram';
       document.getElementById('postModalDate').value = post.date || '';
       document.getElementById('postModalTime').value = post.time || '18:00';
       document.getElementById('postModalFormat').value = post.format || 'Reels / Video';
-      document.getElementById('postModalPillar').value = post.pillar || '';
+      if (pillarSelect && post.pillar) pillarSelect.value = post.pillar;
       document.getElementById('postModalObjective').value = post.objective || '';
       document.getElementById('postModalProdStatus').value = post.prod_status || 'idea';
       document.getElementById('postModalPubStatus').value = post.pub_status || 'draft';
@@ -5025,7 +5904,7 @@
           })
           .eq('id', client.id);
 
-        showToast('Objava je shranjena!');
+        showToast('Objava je uspešno načrtovana!');
         updateTopLevelView();
       } catch (err) {
         console.error(err);
