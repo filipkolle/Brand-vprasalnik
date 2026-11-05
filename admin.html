@@ -2740,31 +2740,29 @@
         active_offer: ''
       };
 
-      // Monthly Quota Calculation for current viewed month
+      // Monthly Quota Calculation for current active month (strictly identical to calendar logic)
       const now = new Date();
       const currentMonthIdx = now.getMonth();
       const currentYear = now.getFullYear();
+      const monthNamesSl = ["Januar", "Februar", "Marec", "April", "Maj", "Junij", "Julij", "Avgust", "September", "Oktober", "November", "December"];
+      const currentMonthName = monthNamesSl[currentMonthIdx];
+
+      // Filter posts strictly for current active month
       const currentMonthPosts = posts.filter(p => {
         if (!p.date) return false;
-        const d = new Date(p.date);
-        return d.getMonth() === currentMonthIdx && d.getFullYear() === currentYear;
+        const d = parseYmd(p.date);
+        return d.getFullYear() === currentYear && d.getMonth() === currentMonthIdx;
       });
 
-      const plan = crm.social_media_strategy?.content_frequency_plan || {};
-      const WEEKS_PER_MONTH = 4;
-      let totalMonthlyQuota = 0;
-      ['video', 'carousel', 'photo', 'story', 'text'].forEach(k => {
-        const weekly = parseInt(plan[k]?.weekly, 10) || 0;
-        totalMonthlyQuota += (weekly * WEEKS_PER_MONTH);
-      });
-      if (totalMonthlyQuota === 0) totalMonthlyQuota = 16;
+      const plan = getClientProductionPlan(client);
+      const dist = calculateDistributionFromPlan(plan);
 
-      const monthPlannedCount = currentMonthPosts.length;
-      const monthChannelPosts = currentMonthPosts.reduce((acc, p) => {
-        const plats = Array.isArray(p.platforms) && p.platforms.length > 0 ? p.platforms : [p.platform || 'Instagram'];
-        return acc + plats.length;
-      }, 0);
-      const targetChannelQuota = totalMonthlyQuota * 2;
+      const monthPlanned = currentMonthPosts.length;
+      const totalQuota = dist.coreMonthly || 0;
+
+      // Channel posts strictly for this month
+      const monthChannelPosts = currentMonthPosts.reduce((sum, p) => sum + ((p.platforms && p.platforms.length) ? p.platforms.length : 1), 0);
+      const targetChannelQuota = dist.totalPostsMonthly || 0;
 
       // Upcoming posts (next 5 posts sorted by date ascending, from today onwards or latest scheduled)
       const sortedPosts = [...posts].sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -2778,16 +2776,21 @@
           <!-- Operational Ribbon (Top KPI & Quick Nav) -->
           <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-4 sm:p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap items-center gap-3">
-              <div class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
-                <span class="text-slate-400 font-medium">Kreirane vsebine (ta mesec):</span>
-                <span class="font-bold ${monthPlannedCount >= totalMonthlyQuota ? 'text-emerald-400' : 'text-indigo-300'}">
-                  ${monthPlannedCount} / ${totalMonthlyQuota}
-                </span>
-                <span class="text-slate-700 font-bold mx-1">|</span>
-                <span class="text-slate-400 font-medium">Objave po kanalih:</span>
-                <span class="font-bold text-emerald-400">
-                  ${monthChannelPosts} / ${targetChannelQuota}
-                </span>
+              <!-- Združeno polje Kreirane vsebine in Skupaj objav po kanalih (identično kot v koledarju) -->
+              <div class="flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs shadow-xs" title="Kreirane vsebine in norma objav za ${currentMonthName}">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-slate-400">Kreirane vsebine:</span>
+                  <span class="font-bold ${monthPlanned >= totalQuota && totalQuota > 0 ? 'text-emerald-400' : 'text-indigo-300'}">
+                    ${monthPlanned} / ${totalQuota}
+                  </span>
+                </div>
+                <span class="text-slate-700 font-bold">|</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-slate-400">Skupaj objav po kanalih:</span>
+                  <span class="font-bold text-emerald-400">
+                    ${monthChannelPosts} / ${targetChannelQuota}
+                  </span>
+                </div>
               </div>
             </div>
 
