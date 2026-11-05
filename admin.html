@@ -533,6 +533,20 @@
       <div id="scriptwriterStudioContainer" class="space-y-6"></div>
     </section>
 
+    <!-- ============================================================ -->
+    <!-- VIEW G: FULL-PAGE IDEAS VIEW (ZAPISANE IDEJE) -->
+    <!-- ============================================================ -->
+    <section id="view-ideas" class="hidden space-y-6">
+      <div id="ideasPageContainer" class="space-y-6"></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- VIEW H: FULL-PAGE WRITTEN SCRIPTS VIEW (NAPISANI SCENARIJI) -->
+    <!-- ============================================================ -->
+    <section id="view-scripts" class="hidden space-y-6">
+      <div id="scriptsPageContainer" class="space-y-6"></div>
+    </section>
+
   </main>
 
 
@@ -1443,6 +1457,10 @@
         const urlScript = urlParams.get('script');
         if (urlView === 'script') {
           openScriptPage(urlClientId, urlScript);
+        } else if (urlView === 'ideas') {
+          openIdeasPage(urlClientId);
+        } else if (urlView === 'scripts' || urlView === 'written_scripts') {
+          openScriptsListPage(urlClientId);
         } else {
           openClientWorkspace(urlClientId);
         }
@@ -1770,13 +1788,13 @@
       activeTopTab = tabName;
 
       // Close workspace if switching to a global view
-      if (tabName !== 'workspace' && tabName !== 'scriptwriter') {
+      if (tabName !== 'workspace' && tabName !== 'scriptwriter' && tabName !== 'ideas' && tabName !== 'scripts') {
         currentClientId = null;
         document.getElementById('workspaceTopBar').classList.add('hidden');
       }
 
       // Hide all views
-      ['dashboard', 'clients', 'calendar', 'production', 'workspace', 'scriptwriter'].forEach(t => {
+      ['dashboard', 'clients', 'calendar', 'production', 'workspace', 'scriptwriter', 'ideas', 'scripts'].forEach(t => {
         const el = document.getElementById(`view-${t}`);
         if (el) el.classList.add('hidden');
       });
@@ -2405,7 +2423,7 @@
       document.getElementById('workspaceTopBar').classList.remove('hidden');
 
       // Hide other views and show workspace
-      ['dashboard', 'clients', 'calendar', 'production', 'scriptwriter'].forEach(t => {
+      ['dashboard', 'clients', 'calendar', 'production', 'scriptwriter', 'ideas', 'scripts'].forEach(t => {
         const el = document.getElementById(`view-${t}`);
         if (el) el.classList.add('hidden');
       });
@@ -4959,8 +4977,8 @@
             <!-- RIGHT COLUMN: QUICK OPERATIONAL SIDEBAR (Ideje, Scenariji, Lokacije, Arhiv) -->
             <div class="xl:col-span-3 2xl:col-span-3 space-y-4 xl:sticky xl:top-20">
               
-              <!-- 1. Gumb Ideje (posamičen) -->
-              <button onclick="openQuickIdeaModal('${client.id}')" type="button" class="w-full text-left p-4 rounded-3xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800/90 hover:border-amber-500/40 transition-all duration-200 shadow-xl group active:scale-[0.99] flex items-center justify-between gap-3">
+              <!-- 1. Gumb Ideje (posamičen - cela stran) -->
+              <button onclick="openIdeasPage('${client.id}')" type="button" class="w-full text-left p-4 rounded-3xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800/90 hover:border-amber-500/40 transition-all duration-200 shadow-xl group active:scale-[0.99] flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3.5 min-w-0">
                   <div class="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <i data-lucide="lightbulb" class="w-5 h-5"></i>
@@ -4978,15 +4996,15 @@
                 </div>
               </button>
 
-              <!-- 2. Gumb Scenariji (posamičen pod gumbom ideje) -->
-              <button onclick="openScriptModal('${client.id}')" type="button" class="w-full text-left p-4 rounded-3xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800/90 hover:border-purple-500/40 transition-all duration-200 shadow-xl group active:scale-[0.99] flex items-center justify-between gap-3">
+              <!-- 2. Gumb Scenariji (posamičen pod gumbom ideje - cela stran) -->
+              <button onclick="openScriptsListPage('${client.id}')" type="button" class="w-full text-left p-4 rounded-3xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800/90 hover:border-purple-500/40 transition-all duration-200 shadow-xl group active:scale-[0.99] flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3.5 min-w-0">
                   <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <i data-lucide="clapperboard" class="w-5 h-5"></i>
                   </div>
                   <div class="min-w-0">
-                    <h4 class="text-sm font-bold text-white group-hover:text-purple-300 transition truncate">Scenariji vsebin</h4>
-                    <p class="text-[11px] text-slate-400 mt-0.5 truncate">Pripravljeni video scenariji</p>
+                    <h4 class="text-sm font-bold text-white group-hover:text-purple-300 transition truncate">Napisani scenariji</h4>
+                    <p class="text-[11px] text-slate-400 mt-0.5 truncate">Pregled in odobritev scenarijev</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
@@ -6199,30 +6217,14 @@
       return CONTENT_PILLAR_OPTIONS.map(o => o.name);
     }
 
-    // --- QUICK IDEAS (NOTE) ---
+    // --- QUICK IDEAS (ROUTED TO FULL PAGE) ---
     function openQuickIdeaModal(clientId = null) {
-      const cId = clientId || currentClientId;
-      const client = clients.find(c => c.id === cId);
-      if (!client) return;
-
-      document.getElementById('quickIdeaId').value = '';
-      document.getElementById('quickIdeaClientId').value = client.id;
-      document.getElementById('quickIdeaForm').reset();
-
-      // Populate pillars
-      const pillarSelect = document.getElementById('quickIdeaPillar');
-      if (pillarSelect) {
-        const pillarList = getClientPillarOptions(client);
-        pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}">${escapeHtml(pName)}</option>`).join('');
-      }
-
-      renderQuickIdeasList(client);
-      document.getElementById('quickIdeaModal').classList.remove('hidden');
-      lucide.createIcons({ root: document.getElementById('quickIdeaModal') });
+      openIdeasPage(clientId);
     }
 
     function closeQuickIdeaModal() {
-      document.getElementById('quickIdeaModal').classList.add('hidden');
+      const el = document.getElementById('quickIdeaModal');
+      if (el) el.classList.add('hidden');
     }
 
     function renderQuickIdeasList(client) {
@@ -6353,7 +6355,7 @@
       }
 
       // Hide other views and show scriptwriter view
-      ['dashboard', 'clients', 'calendar', 'production', 'workspace'].forEach(t => {
+      ['dashboard', 'clients', 'calendar', 'production', 'workspace', 'ideas', 'scripts'].forEach(t => {
         const el = document.getElementById(`view-${t}`);
         if (el) el.classList.add('hidden');
       });
@@ -6491,12 +6493,12 @@
                 <span>Smernice po fazah</span>
               </button>
 
-              <button type="button" onclick="openStudioIdeasModal('${client.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs">
+              <button type="button" onclick="openIdeasPage('${client.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs">
                 <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i>
                 <span>Zapisane ideje (${ideas.length})</span>
               </button>
 
-              <button type="button" onclick="openStudioScriptsListModal('${client.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl transition active:scale-95 shadow-xs">
+              <button type="button" onclick="openScriptsListPage('${client.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl transition active:scale-95 shadow-xs">
                 <i data-lucide="film" class="w-3.5 h-3.5 text-purple-400"></i>
                 <span>Napisani scenariji (${scripts.length})</span>
               </button>
@@ -6658,7 +6660,8 @@
           document.getElementById('spTitle')?.focus();
         }, 50);
       }
-// Apply shared textarea styling classes for minimalist feel
+
+      // Apply shared textarea styling classes for minimalist feel
       container.querySelectorAll('textarea').forEach(ta => {
         ta.className = 'w-full bg-slate-950 border border-slate-800/90 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 leading-relaxed';
       });
@@ -6666,175 +6669,609 @@
       lucide.createIcons({ root: container });
     }
 
-    // --- MODAL: NAPISANI SCENARIJI (Z VNOSOM V KOLEDAR IN TISKANJEM) ---
-    function openStudioScriptsListModal(clientId) {
-      const client = clients.find(c => c.id === clientId);
+    // =============================================================
+    // DEDICATED FULL-PAGE: ZAPISANE IDEJE (BANKA IDEJ)
+    // =============================================================
+    function openIdeasPage(clientId = null) {
+      const cId = clientId || currentClientId;
+      const client = clients.find(c => c.id === cId);
       if (!client) return;
 
-      const listContainer = document.getElementById('studioScriptsModalList');
-      if (!listContainer) return;
+      currentClientId = cId;
+      activeTopTab = 'ideas';
 
-      const scripts = client.crm?.scripts || [];
+      // Update URL query parameter
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('client', cId);
+      newUrl.searchParams.set('view', 'ideas');
+      newUrl.searchParams.delete('script');
+      window.history.replaceState({}, '', newUrl.toString());
 
-      if (scripts.length === 0) {
-        listContainer.innerHTML = `
-          <div class="py-12 text-center text-slate-500 space-y-2">
-            <i data-lucide="film" class="w-8 h-8 mx-auto opacity-40"></i>
-            <p class="text-xs font-semibold">Še nimate shranjenih scenarijev za tega naročnika.</p>
+      // Update workspace top bar
+      document.getElementById('workspaceTopBar').classList.remove('hidden');
+      const breadcrumbName = document.getElementById('breadcrumbClientName');
+      if (breadcrumbName) {
+        breadcrumbName.innerHTML = `${escapeHtml(client.company_name)} <span class="text-amber-400 font-normal">/ 💡 Zapisane ideje</span>`;
+      }
+
+      ['dashboard', 'clients', 'calendar', 'production', 'workspace', 'scriptwriter', 'scripts'].forEach(t => {
+        const el = document.getElementById(`view-${t}`);
+        if (el) el.classList.add('hidden');
+      });
+      document.getElementById('view-ideas').classList.remove('hidden');
+
+      document.querySelectorAll('.top-nav-btn').forEach(btn => {
+        btn.className = 'top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-400 hover:text-white transition';
+      });
+
+      renderIdeasPage(client);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderIdeasPage(client) {
+      const container = document.getElementById('ideasPageContainer');
+      if (!container || !client) return;
+
+      if (!client.crm) client.crm = {};
+      const ideas = client.crm.ideas || [];
+      const scripts = client.crm.scripts || [];
+      const pillarOptions = getClientPillarOptions(client);
+
+      container.innerHTML = `
+        <div class="space-y-6">
+          
+          <!-- TOP HERO BAR -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <button onclick="openClientWorkspace('${client.id}', 'calendar')" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition active:scale-95 shadow-xs">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Nazaj na koledar</span>
+              </button>
+
+              <div class="h-6 w-[1px] bg-slate-800 hidden sm:block"></div>
+
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                  <i data-lucide="lightbulb" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h2 class="text-sm sm:text-base font-black text-white leading-tight">Banka idej za vsebine</h2>
+                  <p class="text-[11px] text-slate-400">Kreativni koncepti za scenarije in objave</p>
+                </div>
+                <span class="ml-2 px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  ${ideas.length}
+                </span>
+              </div>
+            </div>
+
+            <!-- Quick Navigation Buttons -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <button type="button" onclick="openScriptsListPage('${client.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl transition active:scale-95 shadow-xs">
+                <i data-lucide="film" class="w-3.5 h-3.5 text-purple-400"></i>
+                <span>Napisani scenariji (${scripts.length})</span>
+              </button>
+              <button type="button" onclick="openScriptPage('${client.id}', 'new')" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition active:scale-95 shadow-md shadow-indigo-950/40">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Nov scenarij</span>
+              </button>
+            </div>
           </div>
-        `;
-      } else {
-        const approvedCount = scripts.filter(s => s.client_decision === 'approved').length;
-        const rejectedCount = scripts.filter(s => s.client_decision === 'rejected').length;
 
-        listContainer.innerHTML = `
-          <!-- Summary stats bar -->
-          <div class="flex items-center gap-2 pb-2 text-xs">
-            <span class="px-2.5 py-1 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 font-medium">Skupaj: <strong>${scripts.length}</strong></span>
-            <span class="px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold">Potrjeni: <strong>${approvedCount}</strong></span>
-            <span class="px-2.5 py-1 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 font-bold">Zavrnjeni: <strong>${rejectedCount}</strong></span>
-          </div>
+          <!-- INLINE IDEA CREATION / EDITING CARD -->
+          <div id="pageIdeaCard" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <h3 id="pageIdeaCardTitle" class="text-sm sm:text-base font-black text-white">Zapišite novo idejo</h3>
+              </div>
+              <span class="text-[11px] text-slate-500">Hitri vnos za kasnejši razvoj v scenarij</span>
+            </div>
 
-          <div class="space-y-3">
-            ${scripts.map((s, idx) => `
-              <div class="p-4 rounded-2xl bg-slate-950 border ${s.client_decision === 'approved' ? 'border-emerald-500/40' : (s.client_decision === 'rejected' ? 'border-rose-500/40' : 'border-slate-800')} hover:border-slate-700 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div class="space-y-1.5 flex-1 min-w-0">
-                  <div class="flex items-center gap-2 text-[10px] flex-wrap">
-                    <span class="font-bold px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                      ${escapeHtml(s.format || 'Reels')}
-                    </span>
-                    ${s.pillar ? `<span class="text-slate-400 font-medium">• ${escapeHtml(s.pillar)}</span>` : ''}
-                    
-                    <!-- Client approval badge -->
-                    ${s.client_decision === 'approved' ? `
-                      <span class="px-2 py-0.5 rounded-md font-bold bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-                        <i data-lucide="check" class="w-3 h-3"></i> Naročnik potrdil
-                      </span>
-                    ` : (s.client_decision === 'rejected' ? `
-                      <span class="px-2 py-0.5 rounded-md font-bold bg-rose-500/25 text-rose-300 border border-rose-500/40 flex items-center gap-1">
-                        <i data-lucide="x" class="w-3 h-3"></i> Naročnik zavrnil
-                      </span>
-                    ` : `
-                      <span class="px-2 py-0.5 rounded-md font-bold bg-slate-800 text-slate-400 border border-slate-700">
-                        V pregledu
-                      </span>
-                    `)}
+            <form id="pageIdeaForm" onsubmit="handleSaveIdeaPage(event)" class="space-y-4">
+              <input type="hidden" id="pageIdeaId" value="">
+              <input type="hidden" id="pageIdeaClientId" value="${client.id}">
 
-                    <span class="px-2 py-0.5 rounded-md font-bold ${s.final_script ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800 text-slate-400'}">
-                      ${s.final_script ? 'Končan scenarij' : 'Okvirni koncept'}
-                    </span>
-                  </div>
-
-                  <h4 class="text-sm font-bold text-white truncate">${escapeHtml(s.title || 'Brez naslova')}</h4>
-                  ${s.core_message ? `<p class="text-xs text-slate-400 line-clamp-1 italic"><strong class="text-slate-300">Cilj:</strong> ${escapeHtml(s.core_message)}</p>` : ''}
-                  ${s.final_script ? `
-                    <div class="mt-1 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] text-slate-300 line-clamp-2 font-mono whitespace-pre-wrap">${escapeHtml(s.final_script)}</div>
-                  ` : (s.concept ? `
-                    <div class="mt-1 p-2.5 rounded-xl bg-slate-900/50 border border-slate-800/80 text-[11px] text-slate-400 line-clamp-2 italic">${escapeHtml(s.concept)}</div>
-                  ` : '')}
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4">
+                <div class="md:col-span-6 space-y-1.5">
+                  <label class="text-xs font-bold text-slate-300">Naslov / jedro ideje *</label>
+                  <input id="pageIdeaTitle" type="text" required placeholder="Npr. 3 največje napake pri nakupu nepremičnine..." class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-2xl p-3.5 text-sm text-white placeholder-slate-600 focus:outline-none transition">
                 </div>
 
-                <!-- Action controls -->
-                <div class="flex flex-wrap items-center gap-2 shrink-0">
-                  
-                  <!-- CLIENT APPROVAL TOGGLE BUTTONS -->
-                  <div class="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl">
-                    <button type="button" onclick="setScriptClientDecision('${client.id}', '${s.id}', 'approved')" 
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${s.client_decision === 'approved' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-emerald-400 hover:bg-slate-800'}" title="Označi, da je naročnik potrdil scenarij">
-                      <i data-lucide="check" class="w-3.5 h-3.5"></i>
-                      <span>Potrdi</span>
-                    </button>
-                    <button type="button" onclick="setScriptClientDecision('${client.id}', '${s.id}', 'rejected')" 
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${s.client_decision === 'rejected' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-400 hover:text-rose-400 hover:bg-slate-800'}" title="Označi, da je naročnik zavrnil scenarij">
-                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                      <span>Zavrni</span>
-                    </button>
-                  </div>
+                <div class="md:col-span-3 space-y-1.5">
+                  <label class="text-xs font-bold text-slate-300">Format objave</label>
+                  <select id="pageIdeaFormat" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-2xl p-3.5 text-sm text-white focus:outline-none transition">
+                    <option value="Reels / Video">Reels / Video (9:16)</option>
+                    <option value="Vrtiljak (Carousel)">Vrtiljak (Carousel)</option>
+                    <option value="Fotografija / Grafika">Fotografija / Grafika</option>
+                    <option value="Zgodba (Story)">Zgodba (Story)</option>
+                    <option value="Članek / Tekst">Članek / Tekst</option>
+                  </select>
+                </div>
 
-                  <button onclick="closeStudioScriptsModal(); openScriptPage('${client.id}', '${s.id}');" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition flex items-center gap-1" title="Uredi scenarij">
-                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Uredi
+                <div class="md:col-span-3 space-y-1.5">
+                  <label class="text-xs font-bold text-slate-300">Vsebinski steber</label>
+                  <select id="pageIdeaPillar" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-2xl p-3.5 text-sm text-white focus:outline-none transition">
+                    ${pillarOptions.map(pName => `<option value="${escapeHtml(pName)}">${escapeHtml(pName)}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-300">Opombe, okvirni koncept ali vizualna zamisel</label>
+                <textarea id="pageIdeaNotes" rows="3" placeholder="Zapišite kratek oris ideje, kaj je poanta, možni hook ali kader..." class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none transition"></textarea>
+              </div>
+
+              <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80">
+                <button type="button" id="cancelEditIdeaBtn" onclick="cancelEditIdeaOnPage('${client.id}')" class="hidden px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition">
+                  Prekliči urejanje
+                </button>
+                <div class="flex items-center gap-2 ml-auto">
+                  <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-amber-950/40">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span id="saveIdeaBtnText">Shrani idejo</span>
                   </button>
-
-                  <button onclick="planScriptToCalendar('${client.id}', '${s.id}')" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold text-sky-300 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 transition flex items-center gap-1 active:scale-95" title="Planiraj ta scenarij v koledar objav">
-                    <i data-lucide="calendar-plus" class="w-3.5 h-3.5 text-sky-400"></i> V koledar
-                  </button>
-
-                  <button onclick="printScript('${client.id}', '${s.id}')" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 transition flex items-center gap-1" title="Natisni snemalno knjigo">
-                    <i data-lucide="printer" class="w-3.5 h-3.5"></i> Natisni
-                  </button>
-
-                  <button onclick="handleDeleteScriptPage('${client.id}', '${s.id}'); openStudioScriptsListModal('${client.id}');" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition" title="Izbriši scenarij">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  <button type="button" onclick="handleSaveIdeaAndWriteScriptPage()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-indigo-950/40">
+                    <span>Nadaljuj v scenarij</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
                   </button>
                 </div>
               </div>
-            `).join('')}
+            </form>
           </div>
-        `;
-      }
 
-      document.getElementById('studioScriptsListModal').classList.remove('hidden');
-      lucide.createIcons({ root: document.getElementById('studioScriptsListModal') });
+          <!-- LIST OF SAVED IDEAS -->
+          <div class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 px-1">
+              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400">
+                Vse zapisane ideje (${ideas.length})
+              </h3>
+            </div>
+
+            ${ideas.length === 0 ? `
+              <div class="p-12 text-center rounded-3xl bg-slate-900/50 border border-slate-800/80 space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+                  <i data-lucide="lightbulb" class="w-6 h-6"></i>
+                </div>
+                <h4 class="text-sm font-bold text-white">Še nimate zapisanih idej</h4>
+                <p class="text-xs text-slate-400 max-w-md mx-auto">Vnesite svojo prvo idejo v zgornji obrazec in jo kasneje z enim klikom razvijte v polnopravni video scenarij.</p>
+              </div>
+            ` : `
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                ${ideas.map(idea => `
+                  <div class="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition shadow-lg flex flex-col justify-between gap-4 group">
+                    <div class="space-y-2">
+                      <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <div class="flex items-center gap-2">
+                          <span class="px-2.5 py-1 rounded-xl text-[10px] font-black bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            ${escapeHtml(idea.format || 'Reels / Video')}
+                          </span>
+                          ${idea.pillar ? `<span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">#${escapeHtml(idea.pillar)}</span>` : ''}
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-mono">
+                          ${idea.created_at ? new Date(idea.created_at).toLocaleDateString('sl-SI') : ''}
+                        </span>
+                      </div>
+
+                      <h4 class="text-base font-bold text-white leading-snug group-hover:text-amber-300 transition">${escapeHtml(idea.title)}</h4>
+                      ${idea.notes ? `<p class="text-xs text-slate-400 whitespace-pre-wrap leading-relaxed">${escapeHtml(idea.notes)}</p>` : ''}
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <button type="button" onclick="openScriptPage('${client.id}', null, '${idea.id}')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-purple-300 hover:text-white bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 transition flex items-center gap-1.5 active:scale-95 shadow-xs" title="Razvij to idejo v scenarij">
+                          <i data-lucide="clapperboard" class="w-3.5 h-3.5"></i>
+                          <span>Napiši scenarij</span>
+                        </button>
+                        <button type="button" onclick="openAddPostModal('${client.id}', null, '${escapeHtml(idea.title).replace(/'/g, "\\'")}', '${idea.format || 'Reels / Video'}', '${idea.pillar || ''}', '${escapeHtml(idea.notes || '').replace(/'/g, "\\'")}', '', 'idea_${idea.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold text-sky-300 hover:text-white bg-sky-500/15 hover:bg-sky-500/30 border border-sky-500/30 transition flex items-center gap-1.5 active:scale-95 shadow-xs" title="Dodaj neposredno v koledar">
+                          <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                          <span>Planiraj</span>
+                        </button>
+                      </div>
+
+                      <div class="flex items-center gap-1">
+                        <button type="button" onclick="editIdeaOnPage('${client.id}', '${idea.id}')" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center gap-1" title="Uredi idejo">
+                          <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                          <span>Uredi</span>
+                        </button>
+                        <button type="button" onclick="deletePageIdea('${client.id}', '${idea.id}')" class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition" title="Izbriši idejo">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+
+        </div>
+      `;
+
+      lucide.createIcons({ root: container });
     }
 
+    async function handleSaveIdeaPage(e) {
+      if (e) e.preventDefault();
+      const clientId = document.getElementById('pageIdeaClientId')?.value;
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return null;
+
+      if (!client.crm) client.crm = {};
+      if (!client.crm.ideas) client.crm.ideas = [];
+
+      const existingId = document.getElementById('pageIdeaId')?.value;
+      const ideaObj = {
+        id: existingId || ('idea_' + Date.now()),
+        title: document.getElementById('pageIdeaTitle').value.trim(),
+        notes: document.getElementById('pageIdeaNotes').value.trim(),
+        format: document.getElementById('pageIdeaFormat').value,
+        pillar: document.getElementById('pageIdeaPillar').value,
+        status: 'raw',
+        created_at: new Date().toISOString()
+      };
+
+      if (!ideaObj.title) {
+        alert('Prosimo, vnesite naslov ideje.');
+        document.getElementById('pageIdeaTitle')?.focus();
+        return null;
+      }
+
+      if (existingId) {
+        const idx = client.crm.ideas.findIndex(i => i.id === existingId);
+        if (idx >= 0) client.crm.ideas[idx] = ideaObj;
+      } else {
+        client.crm.ideas.unshift(ideaObj);
+      }
+
+      await saveCurrentWorkspace(false);
+      showToast('Ideja je uspešno shranjena!');
+      renderIdeasPage(client);
+      return ideaObj;
+    }
+
+    async function handleSaveIdeaAndWriteScriptPage() {
+      const ideaObj = await handleSaveIdeaPage(null);
+      if (!ideaObj) return;
+      const clientId = document.getElementById('pageIdeaClientId')?.value;
+      openScriptPage(clientId, null, ideaObj.id);
+    }
+
+    function editIdeaOnPage(clientId, ideaId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client || !client.crm?.ideas) return;
+      const idea = client.crm.ideas.find(i => i.id === ideaId);
+      if (!idea) return;
+
+      document.getElementById('pageIdeaId').value = idea.id;
+      document.getElementById('pageIdeaTitle').value = idea.title || '';
+      document.getElementById('pageIdeaFormat').value = idea.format || 'Reels / Video';
+      document.getElementById('pageIdeaPillar').value = idea.pillar || '';
+      document.getElementById('pageIdeaNotes').value = idea.notes || '';
+
+      document.getElementById('pageIdeaCardTitle').textContent = 'Urejanje ideje';
+      document.getElementById('saveIdeaBtnText').textContent = 'Shrani spremembe';
+      document.getElementById('cancelEditIdeaBtn')?.classList.remove('hidden');
+
+      document.getElementById('pageIdeaCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('pageIdeaTitle')?.focus();
+    }
+
+    function cancelEditIdeaOnPage(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (client) renderIdeasPage(client);
+    }
+
+    async function deletePageIdea(clientId, ideaId) {
+      if (!confirm('Ali ste prepričani, da želite izbrisati to idejo?')) return;
+      const client = clients.find(c => c.id === clientId);
+      if (!client || !client.crm?.ideas) return;
+
+      client.crm.ideas = client.crm.ideas.filter(i => i.id !== ideaId);
+      await saveCurrentWorkspace(false);
+      showToast('Ideja je izbrisana.');
+      renderIdeasPage(client);
+    }
+
+    // =============================================================
+    // DEDICATED FULL-PAGE: NAPISANI SCENARIJI
+    // =============================================================
+    let currentScriptsFilter = 'all';
+
+    function openScriptsListPage(clientId = null, filter = 'all') {
+      const cId = clientId || currentClientId;
+      const client = clients.find(c => c.id === cId);
+      if (!client) return;
+
+      currentClientId = cId;
+      activeTopTab = 'scripts';
+      currentScriptsFilter = filter;
+
+      // Update URL query parameter
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('client', cId);
+      newUrl.searchParams.set('view', 'scripts');
+      newUrl.searchParams.delete('script');
+      window.history.replaceState({}, '', newUrl.toString());
+
+      // Update workspace top bar
+      document.getElementById('workspaceTopBar').classList.remove('hidden');
+      const breadcrumbName = document.getElementById('breadcrumbClientName');
+      if (breadcrumbName) {
+        breadcrumbName.innerHTML = `${escapeHtml(client.company_name)} <span class="text-purple-400 font-normal">/ 🎬 Napisani scenariji</span>`;
+      }
+
+      ['dashboard', 'clients', 'calendar', 'production', 'workspace', 'scriptwriter', 'ideas'].forEach(t => {
+        const el = document.getElementById(`view-${t}`);
+        if (el) el.classList.add('hidden');
+      });
+      document.getElementById('view-scripts').classList.remove('hidden');
+
+      document.querySelectorAll('.top-nav-btn').forEach(btn => {
+        btn.className = 'top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-400 hover:text-white transition';
+      });
+
+      renderScriptsListPage(client, filter);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderScriptsListPage(client, filter = 'all') {
+      const container = document.getElementById('scriptsPageContainer');
+      if (!container || !client) return;
+
+      currentScriptsFilter = filter;
+      if (!client.crm) client.crm = {};
+      const scripts = client.crm.scripts || [];
+      const ideas = client.crm.ideas || [];
+
+      const approvedCount = scripts.filter(s => s.client_decision === 'approved').length;
+      const rejectedCount = scripts.filter(s => s.client_decision === 'rejected').length;
+      const pendingCount = scripts.filter(s => !s.client_decision || (s.client_decision !== 'approved' && s.client_decision !== 'rejected')).length;
+
+      let filteredScripts = scripts;
+      if (filter === 'approved') filteredScripts = scripts.filter(s => s.client_decision === 'approved');
+      else if (filter === 'rejected') filteredScripts = scripts.filter(s => s.client_decision === 'rejected');
+      else if (filter === 'pending') filteredScripts = scripts.filter(s => !s.client_decision || (s.client_decision !== 'approved' && s.client_decision !== 'rejected'));
+
+      container.innerHTML = `
+        <div class="space-y-6">
+
+          <!-- TOP HERO BAR -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <button onclick="openClientWorkspace('${client.id}', 'calendar')" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition active:scale-95 shadow-xs">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Nazaj na koledar</span>
+              </button>
+
+              <div class="h-6 w-[1px] bg-slate-800 hidden sm:block"></div>
+
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-2xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center">
+                  <i data-lucide="film" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h2 class="text-sm sm:text-base font-black text-white leading-tight">Napisani scenariji naročnika</h2>
+                  <p class="text-[11px] text-slate-400">Pregled, status odobritve naročnika in urejanje</p>
+                </div>
+                <span class="ml-2 px-2.5 py-0.5 rounded-full text-xs font-black bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  ${scripts.length}
+                </span>
+              </div>
+            </div>
+
+            <!-- Quick Navigation Buttons -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <button type="button" onclick="openIdeasPage('${client.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs">
+                <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Zapisane ideje (${ideas.length})</span>
+              </button>
+              <button type="button" onclick="openScriptPage('${client.id}', 'new')" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition active:scale-95 shadow-md shadow-indigo-950/40">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Nov scenarij</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUMMARY STATUS BAR & FILTER PILLS -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <button type="button" onclick="renderScriptsListPage(clients.find(c => c.id === '${client.id}'), 'all')" class="p-4 rounded-2xl border transition text-left ${filter === 'all' ? 'bg-slate-900 border-indigo-500 ring-1 ring-indigo-500/50 shadow-md' : 'bg-slate-950/80 border-slate-800 hover:border-slate-700'}">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Vsi scenariji</div>
+              <div class="text-xl sm:text-2xl font-black text-white mt-1">${scripts.length}</div>
+            </button>
+
+            <button type="button" onclick="renderScriptsListPage(clients.find(c => c.id === '${client.id}'), 'approved')" class="p-4 rounded-2xl border transition text-left ${filter === 'approved' ? 'bg-emerald-950/40 border-emerald-500 ring-1 ring-emerald-500/50 shadow-md' : 'bg-slate-950/80 border-slate-800 hover:border-slate-700'}">
+              <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                <span>Potrjeni</span>
+              </div>
+              <div class="text-xl sm:text-2xl font-black text-emerald-300 mt-1">${approvedCount}</div>
+            </button>
+
+            <button type="button" onclick="renderScriptsListPage(clients.find(c => c.id === '${client.id}'), 'rejected')" class="p-4 rounded-2xl border transition text-left ${filter === 'rejected' ? 'bg-rose-950/40 border-rose-500 ring-1 ring-rose-500/50 shadow-md' : 'bg-slate-950/80 border-slate-800 hover:border-slate-700'}">
+              <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-rose-400">
+                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                <span>Zavrnjeni</span>
+              </div>
+              <div class="text-xl sm:text-2xl font-black text-rose-300 mt-1">${rejectedCount}</div>
+            </button>
+
+            <button type="button" onclick="renderScriptsListPage(clients.find(c => c.id === '${client.id}'), 'pending')" class="p-4 rounded-2xl border transition text-left ${filter === 'pending' ? 'bg-slate-900 border-amber-500 ring-1 ring-amber-500/50 shadow-md' : 'bg-slate-950/80 border-slate-800 hover:border-slate-700'}">
+              <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>V pregledu</span>
+              </div>
+              <div class="text-xl sm:text-2xl font-black text-slate-300 mt-1">${pendingCount}</div>
+            </button>
+          </div>
+
+          <!-- LIST OF SCRIPTS -->
+          <div class="space-y-4">
+            ${filteredScripts.length === 0 ? `
+              <div class="p-12 text-center rounded-3xl bg-slate-900/50 border border-slate-800/80 space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto">
+                  <i data-lucide="film" class="w-6 h-6"></i>
+                </div>
+                <h4 class="text-sm font-bold text-white">Ni scenarijev za izbran filter (${filter})</h4>
+                <p class="text-xs text-slate-400 max-w-md mx-auto">Začnite z ustvarjanjem novega scenarija s klikom na spodnji gumb.</p>
+                <button type="button" onclick="openScriptPage('${client.id}', 'new')" class="mt-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition inline-flex items-center gap-1.5 shadow-md">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  <span>Napiši nov scenarij</span>
+                </button>
+              </div>
+            ` : `
+              <div class="space-y-4">
+                ${filteredScripts.map(s => `
+                  <div class="p-5 sm:p-6 rounded-3xl bg-slate-900/90 border ${s.client_decision === 'approved' ? 'border-emerald-500/40 ring-1 ring-emerald-500/20' : (s.client_decision === 'rejected' ? 'border-rose-500/40 ring-1 ring-rose-500/20' : 'border-slate-800')} hover:border-slate-700 transition shadow-xl space-y-4">
+                    
+                    <!-- Card Top Bar: Badges + Approval Status -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-2.5 py-1 rounded-xl text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                          ${escapeHtml(s.format || 'Reels / Video')}
+                        </span>
+                        ${s.pillar ? `<span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">#${escapeHtml(s.pillar)}</span>` : ''}
+
+                        <!-- Final script vs Concept badge -->
+                        <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold ${s.final_script ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800 text-slate-400'}">
+                          ${s.final_script ? '✓ Končan scenarij' : 'Okvirni koncept'}
+                        </span>
+                      </div>
+
+                      <!-- Client Approval Status Badge -->
+                      <div class="flex items-center gap-2">
+                        ${s.client_decision === 'approved' ? `
+                          <span class="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 shadow-xs">
+                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+                            <span>Naročnik potrdil</span>
+                          </span>
+                        ` : (s.client_decision === 'rejected' ? `
+                          <span class="px-3 py-1 rounded-xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1.5 shadow-xs">
+                            <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-400"></i>
+                            <span>Naročnik zavrnil</span>
+                          </span>
+                        ` : `
+                          <span class="px-3 py-1 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1.5">
+                            <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                            <span>V pregledu pri naročniku</span>
+                          </span>
+                        `)}
+                      </div>
+                    </div>
+
+                    <!-- Title & Core Message -->
+                    <div class="space-y-1.5">
+                      <h3 class="text-base sm:text-lg font-black text-white leading-snug">${escapeHtml(s.title || 'Brez naslova')}</h3>
+                      ${s.core_message ? `
+                        <p class="text-xs text-slate-400 italic">
+                          <strong class="text-slate-300 font-semibold">Cilj / sporočilo:</strong> ${escapeHtml(s.core_message)}
+                        </p>
+                      ` : ''}
+                    </div>
+
+                    <!-- Script Content Display -->
+                    ${s.final_script ? `
+                      <div class="relative bg-slate-950 rounded-2xl border border-slate-800 p-4 font-mono text-xs text-slate-200 leading-relaxed whitespace-pre-wrap max-h-72 overflow-y-auto">
+                        <div class="sticky top-0 right-0 flex justify-end pb-2">
+                          <button type="button" onclick="copyScriptToClipboard('${s.id}')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition flex items-center gap-1 shadow-sm">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            <span>Kopiraj scenarij</span>
+                          </button>
+                        </div>
+                        <div id="scriptContentText-${s.id}">${escapeHtml(s.final_script)}</div>
+                      </div>
+                    ` : (s.concept ? `
+                      <div class="bg-slate-950/60 rounded-2xl border border-slate-800/80 p-3.5 text-xs text-slate-300 italic leading-relaxed whitespace-pre-wrap">
+                        <span class="font-bold text-slate-400 not-italic block mb-1">Okvirni koncept scenarija:</span>
+                        ${escapeHtml(s.concept)}
+                      </div>
+                    ` : '')}
+
+                    <!-- Bottom Action Controls -->
+                    <div class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+                      
+                      <!-- CLIENT DECISION TOGGLES -->
+                      <div class="flex items-center gap-1 bg-slate-950 border border-slate-800 p-1 rounded-2xl">
+                        <span class="text-[11px] font-bold text-slate-500 px-2 uppercase tracking-wider">Naročnik:</span>
+                        <button type="button" onclick="setScriptClientDecision('${client.id}', '${s.id}', 'approved')" 
+                          class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${s.client_decision === 'approved' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-emerald-400 hover:bg-slate-900'}" title="Označi, da je naročnik potrdil ta scenarij">
+                          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                          <span>Potrdi</span>
+                        </button>
+                        <button type="button" onclick="setScriptClientDecision('${client.id}', '${s.id}', 'rejected')" 
+                          class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${s.client_decision === 'rejected' ? 'bg-rose-600 text-white shadow-md' : 'text-slate-400 hover:text-rose-400 hover:bg-slate-900'}" title="Označi, da je naročnik zavrnil ta scenarij">
+                          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                          <span>Zavrni</span>
+                        </button>
+                      </div>
+
+                      <!-- Operational Actions -->
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <button type="button" onclick="openScriptPage('${client.id}', '${s.id}')" class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition flex items-center gap-1.5 active:scale-95 shadow-xs" title="Uredi scenarij v studiu">
+                          <i data-lucide="edit-3" class="w-3.5 h-3.5 text-indigo-400"></i>
+                          <span>Uredi</span>
+                        </button>
+
+                        <button type="button" onclick="planScriptToCalendar('${client.id}', '${s.id}')" class="px-3.5 py-2 rounded-xl text-xs font-bold text-sky-300 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 transition flex items-center gap-1.5 active:scale-95 shadow-xs" title="Planiraj ta scenarij v koledar objav">
+                          <i data-lucide="calendar-plus" class="w-3.5 h-3.5 text-sky-400"></i>
+                          <span>V koledar</span>
+                        </button>
+
+                        <button type="button" onclick="printScript('${client.id}', '${s.id}')" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition flex items-center gap-1.5" title="Natisni snemalno knjigo">
+                          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                          <span>Natisni</span>
+                        </button>
+
+                        <button type="button" onclick="handleDeleteScriptFromPage('${client.id}', '${s.id}')" class="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition" title="Izbriši scenarij">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+
+        </div>
+      `;
+
+      lucide.createIcons({ root: container });
+    }
+
+    async function handleDeleteScriptFromPage(clientId, scriptId) {
+      if (!confirm('Ali ste prepričani, da želite izbrisati ta scenarij?')) return;
+      const client = clients.find(c => c.id === clientId);
+      if (!client || !client.crm?.scripts) return;
+
+      client.crm.scripts = client.crm.scripts.filter(s => s.id !== scriptId);
+      await saveCurrentWorkspace(false);
+      showToast('Scenarij je izbrisan.');
+      renderScriptsListPage(client, currentScriptsFilter);
+    }
+
+    function copyScriptToClipboard(scriptId) {
+      const textEl = document.getElementById(`scriptContentText-${scriptId}`);
+      if (!textEl) return;
+      const text = textEl.textContent.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Scenarij je kopiran v odložišče!');
+      }).catch(() => {
+        showToast('Kopiranje ni uspelo.');
+      });
+    }
+
+    // Backwards-compatibility aliases
+    function openStudioScriptsListModal(clientId) {
+      openScriptsListPage(clientId);
+    }
     function closeStudioScriptsModal() {
       const el = document.getElementById('studioScriptsListModal');
       if (el) el.classList.add('hidden');
     }
-
-    // --- MODAL: ZAPISANE IDEJE (V STUDIU) ---
     function openStudioIdeasModal(clientId) {
-      const client = clients.find(c => c.id === clientId);
-      if (!client) return;
-
-      const listContainer = document.getElementById('studioIdeasModalList');
-      if (!listContainer) return;
-
-      const ideas = client.crm?.ideas || [];
-
-      if (ideas.length === 0) {
-        listContainer.innerHTML = `
-          <div class="py-8 text-center text-slate-500 space-y-2">
-            <i data-lucide="lightbulb" class="w-7 h-7 mx-auto opacity-40"></i>
-            <p class="text-xs font-semibold">Še nimate zapisanih idej za tega naročnika.</p>
-            <button onclick="closeStudioIdeasModal(); openQuickIdeaModal('${client.id}');" class="mt-2 px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/15 rounded-xl">
-              + Zapiši prvo idejo
-            </button>
-          </div>
-        `;
-      } else {
-        listContainer.innerHTML = `
-          <div class="flex items-center justify-between pb-2">
-            <span class="text-xs font-bold text-slate-400">Izberite idejo za pisanje scenarija:</span>
-            <button onclick="closeStudioIdeasModal(); openQuickIdeaModal('${client.id}');" class="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1">
-              + Zapiši novo idejo
-            </button>
-          </div>
-          <div class="space-y-2 max-h-96 overflow-y-auto pr-1">
-            ${ideas.map(idea => `
-              <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                <div class="flex items-center justify-between gap-2">
-                  <h4 class="text-xs font-bold text-white truncate">${escapeHtml(idea.title)}</h4>
-                  <span class="text-[10px] text-amber-400 font-medium px-2 py-0.5 rounded bg-amber-500/10">
-                    ${escapeHtml(idea.pillar || idea.format || 'Ideja')}
-                  </span>
-                </div>
-                ${idea.notes ? `<p class="text-[11px] text-slate-400 italic">${escapeHtml(idea.notes)}</p>` : ''}
-                <div class="pt-1 flex items-center justify-end gap-2">
-                  <button onclick="closeStudioIdeasModal(); openScriptPage('${client.id}', null, '${idea.id}');" class="px-3 py-1 text-xs font-bold text-purple-300 hover:text-white bg-purple-500/20 hover:bg-purple-500/30 rounded-xl transition flex items-center gap-1">
-                    Nadaljuj v scenarij →
-                  </button>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-
-      document.getElementById('studioIdeasModal').classList.remove('hidden');
-      lucide.createIcons({ root: document.getElementById('studioIdeasModal') });
+      openIdeasPage(clientId);
     }
-
     function closeStudioIdeasModal() {
       const el = document.getElementById('studioIdeasModal');
       if (el) el.classList.add('hidden');
@@ -9006,7 +9443,11 @@ Vrni končni scenarij v pregledni markdown obliki z jasno označenimi fazami (HO
       }
 
       scheduleAutoSave();
-      openStudioScriptsListModal(clientId);
+      if (activeTopTab === 'scripts') {
+        renderScriptsListPage(client, currentScriptsFilter);
+      } else {
+        openScriptsListPage(clientId);
+      }
       if (script.client_decision === 'approved') {
         showToast('Scenarij je označen kot potrjen s strani naročnika.');
       } else if (script.client_decision === 'rejected') {
