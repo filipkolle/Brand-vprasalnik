@@ -754,12 +754,18 @@
           <input id="newCompanyName" type="text" required placeholder="npr. Pekarna Dobrote d.o.o." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition">
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
               Kontaktna oseba
             </label>
             <input id="newContactPerson" type="text" placeholder="npr. Marko Novak" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+              Telefonska št.
+            </label>
+            <input id="newPhone" type="tel" placeholder="npr. 041 123 456" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition">
           </div>
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
@@ -792,7 +798,7 @@
 
   <!-- MODAL: EDIT CLIENT INFO -->
   <div id="editClientModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-slate-100">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl text-slate-100">
       
       <div class="flex items-center justify-between mb-5">
         <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
@@ -809,10 +815,14 @@
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Ime podjetja *</label>
           <input id="editCompanyName" type="text" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Kontaktna oseba</label>
             <input id="editContactPerson" type="text" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Telefonska št.</label>
+            <input id="editPhone" type="tel" placeholder="npr. 041 123 456" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
           </div>
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">E-pošta</label>
@@ -1351,8 +1361,16 @@
         else status = 'new';
       }
 
+      // Extract phone number from all possible locations
+      const phone = record.phone || 
+                    (answers.fields && answers.fields.client_phone) || 
+                    (crm && crm.phone) || 
+                    (answers.crm && answers.crm.phone) || 
+                    record.contact_phone || '';
+
       return {
         ...record,
+        phone,
         answers,
         crm,
         stats,
@@ -1919,6 +1937,7 @@
 
               <div class="space-y-1 text-xs text-slate-400 mt-2">
                 ${c.contact_person ? `<p class="flex items-center gap-1.5 truncate"><i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>${escapeHtml(c.contact_person)}</p>` : ''}
+                ${c.phone ? `<p class="flex items-center gap-1.5 truncate"><i data-lucide="phone" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>${escapeHtml(c.phone)}</p>` : ''}
                 ${c.email ? `<p class="flex items-center gap-1.5 truncate"><i data-lucide="mail" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>${escapeHtml(c.email)}</p>` : ''}
                 ${c.website ? `<p class="flex items-center gap-1.5 truncate"><i data-lucide="globe" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>${escapeHtml(c.website)}</p>` : ''}
               </div>
@@ -2510,14 +2529,19 @@
       const clientUrl = `${window.location.origin}/index.html?id=${client.id}`;
       const postsCount = client.crm?.content_calendar?.length || 0;
 
+      const clientPhone = client.phone || client.answers?.fields?.client_phone || client.crm?.phone || client.contact_phone || '';
+      const phoneClean = clientPhone ? clientPhone.replace(/\s+/g, '') : '';
+      const websiteUrl = client.website ? (client.website.startsWith('http://') || client.website.startsWith('https://') ? client.website : `https://${client.website}`) : '';
+
       headerContainer.innerHTML = `
-        <div class="flex flex-wrap items-start justify-between gap-4">
-          <div class="flex items-start gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+          <!-- Left: Identity & Contact Info -->
+          <div class="flex items-start gap-4 min-w-0">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-slate-800 to-indigo-700 border border-indigo-500/40 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-lg">
               ${initial}
             </div>
-            <div>
-              <div class="flex flex-wrap items-center gap-2 mb-1">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2 mb-1.5">
                 <h2 class="text-xl sm:text-2xl font-black text-white leading-tight">
                   ${escapeHtml(client.company_name || 'Neimenovano podjetje')}
                 </h2>
@@ -2533,18 +2557,68 @@
                 </select>
               </div>
 
-              <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300 mt-2">
-                ${client.contact_person ? `<span class="flex items-center gap-1.5"><i data-lucide="user" class="w-3.5 h-3.5 text-indigo-400"></i>${escapeHtml(client.contact_person)}</span>` : ''}
-                ${client.email ? `<span class="flex items-center gap-1.5"><i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i>${escapeHtml(client.email)}</span>` : ''}
-                ${client.website ? `<span class="flex items-center gap-1.5"><i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-400"></i>${escapeHtml(client.website)}</span>` : ''}
+              <!-- Contact metadata row: ime, telefonska, mail, spletna stran -->
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-300 mt-2">
+                <!-- 1. Ime (not clickable) -->
+                ${client.contact_person ? `
+                  <span class="flex items-center gap-1.5 text-slate-300">
+                    <i data-lucide="user" class="w-3.5 h-3.5 text-indigo-400"></i>
+                    <span>${escapeHtml(client.contact_person)}</span>
+                  </span>
+                ` : `
+                  <span class="flex items-center gap-1.5 text-slate-500">
+                    <i data-lucide="user" class="w-3.5 h-3.5 text-slate-600"></i>
+                    <span>Brez kontakta</span>
+                  </span>
+                `}
+
+                <!-- 2. Telefonska (clickable -> tel: ali klik za dodajanje) -->
+                ${clientPhone ? `
+                  <a href="tel:${escapeHtml(phoneClean)}" class="flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition underline-offset-2 hover:underline" title="Pokliči naročnika: ${escapeHtml(clientPhone)}">
+                    <i data-lucide="phone" class="w-3.5 h-3.5 text-indigo-400"></i>
+                    <span>${escapeHtml(clientPhone)}</span>
+                  </a>
+                ` : `
+                  <button type="button" onclick="openEditClientModal('${client.id}')" class="flex items-center gap-1.5 text-slate-400 hover:text-amber-400 transition" title="Klikni za vnos telefonske številke">
+                    <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-500"></i>
+                    <span>+ Dodaj telefon</span>
+                  </button>
+                `}
+
+                <!-- 3. Mail (clickable -> mailto: ali klik za dodajanje) -->
+                ${client.email ? `
+                  <a href="mailto:${escapeHtml(client.email)}" class="flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition underline-offset-2 hover:underline" title="Pošlji e-pošto: ${escapeHtml(client.email)}">
+                    <i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i>
+                    <span>${escapeHtml(client.email)}</span>
+                  </a>
+                ` : `
+                  <button type="button" onclick="openEditClientModal('${client.id}')" class="flex items-center gap-1.5 text-slate-400 hover:text-amber-400 transition" title="Klikni za vnos e-pošte">
+                    <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-500"></i>
+                    <span>+ Dodaj e-pošto</span>
+                  </button>
+                `}
+
+                <!-- 4. Spletna stran (clickable -> open website) -->
+                ${client.website ? `
+                  <a href="${escapeHtml(websiteUrl)}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition underline-offset-2 hover:underline" title="Odpri spletno stran: ${escapeHtml(client.website)}">
+                    <i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-400"></i>
+                    <span>${escapeHtml(client.website)}</span>
+                  </a>
+                ` : `
+                  <button type="button" onclick="openEditClientModal('${client.id}')" class="flex items-center gap-1.5 text-slate-400 hover:text-amber-400 transition" title="Klikni za vnos spletne strani">
+                    <i data-lucide="globe" class="w-3.5 h-3.5 text-slate-500"></i>
+                    <span>+ Dodaj spletno stran</span>
+                  </button>
+                `}
+
                 <span class="text-slate-500">•</span>
                 <span class="text-slate-400">Posodobljeno: ${formatDateTime(client.updated_at || client.created_at)}</span>
               </div>
             </div>
           </div>
 
-          <!-- Quick Action buttons -->
-          <div class="flex flex-wrap items-center gap-2">
+          <!-- Upper Right Corner Action Buttons -->
+          <div class="flex flex-wrap items-center lg:justify-end gap-2 shrink-0">
             <button id="wsTodoDrawerTriggerBtn" onclick="toggleWorkspaceTodoDrawer(true)" type="button" class="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-indigo-300 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 rounded-xl transition active:scale-95 shadow-xs">
               <i data-lucide="check-square" class="w-3.5 h-3.5 text-indigo-400"></i>
               <span>Potek dela</span>
@@ -2552,22 +2626,16 @@
                 0/8 opravljeno
               </span>
             </button>
-            <button onclick="openQuickIdeaModal('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs">
-              <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i> Zapiši idejo
-            </button>
-            <button onclick="openScriptModal('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-purple-300 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 rounded-xl transition active:scale-95 shadow-xs">
-              <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-purple-400"></i> Napiši scenarij
-            </button>
-            <button onclick="copyClientLink('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-xl transition active:scale-95">
+            <button onclick="copyClientLink('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-xl transition active:scale-95 shadow-xs">
               <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopiraj link
             </button>
-            <a href="${clientUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700">
+            <a href="${clientUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700 shadow-xs">
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Odpri vprašalnik
             </a>
-            <button onclick="printClientReport('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700">
+            <button onclick="printClientReport('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700 shadow-xs">
               <i data-lucide="printer" class="w-3.5 h-3.5"></i> PDF
             </button>
-            <button onclick="openEditClientModal('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700">
+            <button onclick="openEditClientModal('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700 shadow-xs">
               <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Uredi
             </button>
           </div>
@@ -2724,13 +2792,13 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2 text-xs">
-              <button type="button" onclick="openAddPostModal('${client.id}')" class="px-3.5 py-2 font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5 shadow-md active:scale-95">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i> + Planiraj objavo
+              <button type="button" onclick="openQuickIdeaModal('${client.id}')" class="px-3.5 py-2 font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition flex items-center gap-1.5 shadow-xs active:scale-95">
+                <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i> Zapiši idejo
               </button>
-              <button type="button" onclick="openAddSwipeModal('${client.id}')" class="px-3.5 py-2 font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition flex items-center gap-1.5 shadow-xs active:scale-95">
-                <i data-lucide="bookmark" class="w-3.5 h-3.5 text-amber-400"></i> + Dodaj primer
+              <button type="button" onclick="openScriptModal('${client.id}')" class="px-3.5 py-2 font-bold text-purple-300 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 rounded-xl transition flex items-center gap-1.5 shadow-xs active:scale-95">
+                <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-purple-400"></i> Napiši scenarij
               </button>
-              <button type="button" onclick="switchWorkspaceTab('client_calendar')" class="px-3.5 py-2 font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700 flex items-center gap-1.5">
+              <button type="button" onclick="switchWorkspaceTab('client_calendar')" class="px-3.5 py-2 font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700 flex items-center gap-1.5 active:scale-95">
                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-sky-400"></i> Celoten koledar →
               </button>
             </div>
@@ -8118,11 +8186,13 @@
 
       const companyName = document.getElementById('newCompanyName').value.trim();
       const contactPerson = document.getElementById('newContactPerson').value.trim();
+      const phone = document.getElementById('newPhone') ? document.getElementById('newPhone').value.trim() : '';
       const email = document.getElementById('newEmail').value.trim();
       const website = document.getElementById('newWebsite').value.trim();
 
       const initialCrmData = {
         status: 'new',
+        phone: phone,
         market_research: { competitors: [], opportunities: {}, customer_insights: {} },
         brand_strategy: { positioning: '', purpose: '', usp: '', target_audience: {}, personality: '', messaging: '', tone_of_voice: {}, restrictions: '' },
         social_media_strategy: { platforms: [], objectives_short: '', objectives_long: '', kpis: [] },
@@ -8142,6 +8212,7 @@
           fields: {
             client_company: companyName,
             client_contact: contactPerson,
+            client_phone: phone,
             client_email: email,
             client_website: website
           },
@@ -8155,12 +8226,20 @@
       try {
         if (!supabaseClient) throw new Error('Supabase klient ni na voljo.');
 
-        const { data, error } = await supabaseClient
+        let insertRes = await supabaseClient
           .from('marketing_questionnaires')
-          .insert([payload])
+          .insert([{ ...payload, phone: phone }])
           .select();
 
-        if (error) throw error;
+        if (insertRes.error) {
+          insertRes = await supabaseClient
+            .from('marketing_questionnaires')
+            .insert([payload])
+            .select();
+          if (insertRes.error) throw insertRes.error;
+        }
+
+        const data = insertRes.data;
         if (!data || !data[0]) throw new Error('Ni bilo mogoče prejeti ID-ja ustvarjenega naročnika.');
 
         const newRecord = data[0];
@@ -8235,6 +8314,7 @@ Odgovori se samodejno sproti shranjujejo. Hvala za vaš čas!`;
       document.getElementById('editClientId').value = client.id;
       document.getElementById('editCompanyName').value = client.company_name || '';
       document.getElementById('editContactPerson').value = client.contact_person || '';
+      document.getElementById('editPhone').value = client.phone || client.answers?.fields?.client_phone || client.crm?.phone || client.contact_phone || '';
       document.getElementById('editEmail').value = client.email || '';
       document.getElementById('editWebsite').value = client.website || '';
       document.getElementById('editStatus').value = client.status || 'new';
@@ -8255,37 +8335,58 @@ Odgovori se samodejno sproti shranjujejo. Hvala za vaš čas!`;
 
       const newCompany = document.getElementById('editCompanyName').value.trim();
       const newContact = document.getElementById('editContactPerson').value.trim();
+      const newPhone = document.getElementById('editPhone') ? document.getElementById('editPhone').value.trim() : '';
       const newEmail = document.getElementById('editEmail').value.trim();
       const newWebsite = document.getElementById('editWebsite').value.trim();
       const newStatus = document.getElementById('editStatus').value;
 
       client.company_name = newCompany;
       client.contact_person = newContact;
+      client.phone = newPhone;
       client.email = newEmail;
       client.website = newWebsite;
       client.status = newStatus;
       if (!client.crm) client.crm = {};
       client.crm.status = newStatus;
+      client.crm.phone = newPhone;
+      if (!client.answers) client.answers = {};
+      if (!client.answers.fields) client.answers.fields = {};
+      client.answers.fields.client_phone = newPhone;
 
       closeEditClientModal();
 
       try {
         const answersPayload = {
           ...client.answers,
+          fields: {
+            ...(client.answers?.fields || {}),
+            client_phone: newPhone
+          },
           crm: client.crm
         };
 
-        await supabaseClient
+        const updateData = {
+          company_name: newCompany,
+          contact_person: newContact,
+          email: newEmail,
+          website: newWebsite,
+          answers: answersPayload,
+          updated_at: new Date().toISOString()
+        };
+
+        // Try update with phone column first, fallback if not in Postgres schema
+        let res = await supabaseClient
           .from('marketing_questionnaires')
-          .update({
-            company_name: newCompany,
-            contact_person: newContact,
-            email: newEmail,
-            website: newWebsite,
-            answers: answersPayload,
-            updated_at: new Date().toISOString()
-          })
+          .update({ ...updateData, phone: newPhone })
           .eq('id', clientId);
+
+        if (res.error) {
+          res = await supabaseClient
+            .from('marketing_questionnaires')
+            .update(updateData)
+            .eq('id', clientId);
+          if (res.error) throw res.error;
+        }
 
         showToast('Podatki naročnika so posodobljeni!');
         updateTopLevelView();
