@@ -118,7 +118,7 @@
 
   <!-- TOP HEADER / CRM NAVIGATION -->
   <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
-    <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-4">
+    <div class="max-w-[1780px] 2xl:max-w-[1880px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-4">
       
       <!-- Brand & Title -->
       <div class="flex items-center gap-3 cursor-pointer" onclick="navigateHome()">
@@ -177,7 +177,7 @@
 
   <!-- WORKSPACE BREADCRUMB / TOP NOTIFICATION BAR (Visible when in Workspace) -->
   <div id="workspaceTopBar" class="hidden bg-indigo-950/70 border-b border-indigo-500/20 py-2.5 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+    <div class="max-w-[1780px] 2xl:max-w-[1880px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
       <div class="flex items-center gap-2 text-slate-300">
         <button onclick="closeWorkspace()" class="text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1">
           <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Vsi naročniki
@@ -190,7 +190,7 @@
   </div>
 
   <!-- MAIN APPLICATION CONTENT AREA -->
-  <main class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col">
+  <main class="max-w-[1780px] 2xl:max-w-[1880px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col">
     
     <!-- ============================================================ -->
     <!-- VIEW A: DASHBOARD -->
@@ -4401,6 +4401,8 @@
       const posts = client.crm?.content_calendar || [];
       const ideas = client.crm?.ideas || [];
       const scripts = client.crm?.scripts || [];
+      const locations = client.crm?.production_guidelines?.resources?.locations || '';
+      const assetsLink = (client.crm?.production_guidelines?.resources?.assets_link || client.crm?.resource_links?.drive || '').trim();
       posts.sort((a,b) => (a.date || '2000').localeCompare(b.date || '2000') || (a.time || '').localeCompare(b.time || ''));
 
       const plan = getClientProductionPlan(client);
@@ -4558,33 +4560,12 @@
       return `
         <div class="space-y-6">
           
-          <!-- Top Controls Bar -->
-          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
-            <div>
-              <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                <i data-lucide="calendar" class="w-4 h-4 text-sky-400"></i> Planiranje objav za ${escapeHtml(client.company_name)}
-              </h3>
-              <p class="text-xs text-slate-400 mt-0.5">Mesečni in tedenski pregled terminov z neposrednim planiranjem na poljih dni.</p>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <button onclick="openQuickIdeaModal('${client.id}')" type="button" class="px-3 py-2 text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition flex items-center gap-1.5 active:scale-95 shadow-xs">
-                <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i> Ideje (${ideas.length})
-              </button>
-              <button onclick="openScriptModal('${client.id}')" type="button" class="px-3 py-2 text-xs font-bold text-purple-300 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 rounded-xl transition flex items-center gap-1.5 active:scale-95 shadow-xs">
-                <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-purple-400"></i> Scenariji (${scripts.length})
-              </button>
-              <button onclick="switchWorkspaceTab('social_strategy')" class="px-3 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700">
-                ⚙️ Kvota
-              </button>
-              <button onclick="openAddPostModal('${client.id}')" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5 shadow-md active:scale-95">
-                <i data-lucide="plus" class="w-4 h-4"></i> + Planiraj objavo
-              </button>
-            </div>
-          </div>
-
-          <!-- Interactive Calendar Panel -->
-          <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+          <!-- Operational Layout: Calendar on Left, Quick Ops on Right -->
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            
+            <!-- LEFT COLUMN: INTERACTIVE CALENDAR (elongated & spacious) -->
+            <div class="xl:col-span-9 2xl:col-span-9 space-y-4">
+              <div class="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
             
             <!-- Calendar Navigation & View Toggle -->
             <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
@@ -4637,22 +4618,29 @@
                 </div>
               </div>
 
-              <!-- 3. Skrajno desno: Preklopnik med prikazom (Mesec / Teden / Seznam) -->
-              <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs">
-                <button type="button" onclick="setWsCalendarViewMode('month')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                  wsCalendarViewMode === 'month' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-                }">
-                  <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Mesec
-                </button>
-                <button type="button" onclick="setWsCalendarViewMode('week')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                  wsCalendarViewMode === 'week' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-                }">
-                  <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i> Teden
-                </button>
-                <button type="button" onclick="setWsCalendarViewMode('list')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                  wsCalendarViewMode === 'list' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-                }">
-                  <i data-lucide="list" class="w-3.5 h-3.5"></i> Seznam
+              <!-- 3. Skrajno desno: Preklopnik med prikazom (Mesec / Teden / Seznam) + Gumb Planiraj objavo (brez dvojnega +) -->
+              <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs">
+                  <button type="button" onclick="setWsCalendarViewMode('month')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                    wsCalendarViewMode === 'month' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  }">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Mesec
+                  </button>
+                  <button type="button" onclick="setWsCalendarViewMode('week')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                    wsCalendarViewMode === 'week' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  }">
+                    <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i> Teden
+                  </button>
+                  <button type="button" onclick="setWsCalendarViewMode('list')" class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                    wsCalendarViewMode === 'list' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  }">
+                    <i data-lucide="list" class="w-3.5 h-3.5"></i> Seznam
+                  </button>
+                </div>
+
+                <button type="button" onclick="openAddPostModal('${client.id}')" class="px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition flex items-center gap-1.5 shadow-md shadow-indigo-600/30 active:scale-95 shrink-0">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  <span>Planiraj objavo</span>
                 </button>
               </div>
             </div>
@@ -4676,7 +4664,7 @@
 
               // Empty padding days
               for (let i = 0; i < startDayIndex; i++) {
-                gridHtml += `<div class="min-h-[110px] bg-slate-950/30 rounded-2xl border border-slate-900/60 p-2 opacity-30"></div>`;
+                gridHtml += `<div class="min-h-[135px] bg-slate-950/30 rounded-2xl border border-slate-900/60 p-2 opacity-30"></div>`;
               }
 
               // Days of month
@@ -4687,7 +4675,7 @@
                 const dayPosts = posts.filter(p => p.date === dayStr);
 
                 gridHtml += `
-                  <div onclick="openAddPostModal('${client.id}', '${dayStr}')" class="min-h-[110px] bg-slate-950/80 rounded-2xl border ${
+                  <div onclick="openAddPostModal('${client.id}', '${dayStr}')" class="min-h-[135px] bg-slate-950/80 rounded-2xl border ${
                     isToday ? 'border-indigo-500 shadow-lg shadow-indigo-950/50 ring-1 ring-indigo-500/50' : 'border-slate-800/80'
                   } p-2 flex flex-col justify-between group hover:border-indigo-500/50 hover:bg-slate-950 transition cursor-pointer">
                     
@@ -4700,7 +4688,7 @@
                       </button>
                     </div>
 
-                    <div class="space-y-1.5 overflow-y-auto max-h-[85px] scrollbar-none">
+                    <div class="space-y-1.5 overflow-y-auto max-h-[105px] scrollbar-none">
                       ${dayPosts.map(p => {
                         const theme = getPostFormatTheme(p.format);
                         return `
@@ -4865,6 +4853,113 @@
                 `}
               </div>
             ` : ''}
+
+              </div>
+            </div>
+
+            <!-- RIGHT COLUMN: QUICK OPERATIONAL SIDEBAR (Ideje, Scenariji, Lokacije, Arhiv) -->
+            <div class="xl:col-span-3 2xl:col-span-3 space-y-4 xl:sticky xl:top-20">
+              
+              <!-- 1. Gumb Ideje (posamičen) -->
+              <button onclick="openQuickIdeaModal('${client.id}')" type="button" class="w-full text-left p-4 rounded-3xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800/90 hover:border-amber-500/40 transition-all duration-200 shadow-xl group active:scale-[0.99] flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3.5 min-w-0">
+                  <div class="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <i data-lucide="lightbulb" class="w-5 h-5"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-sm font-bold text-white group-hover:text-amber-300 transition truncate">Ideje za objave</h4>
+                    <p class="text-[11px] text-slate-400 mt-0.5 truncate">Banka kreativnih idej</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    ${ideas.length}
+                  </span>
+                  <i data-lucide="arrow-right" class="w-4 h-4 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all"></i>
+                </div>
+              </button>
+
+              <!-- 2. Gumb Scenariji (posamičen pod gumbom ideje) -->
+              <button onclick="openScriptModal('${client.id}')" type="button" class="w-full text-left p-4 rounded-3xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800/90 hover:border-purple-500/40 transition-all duration-200 shadow-xl group active:scale-[0.99] flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3.5 min-w-0">
+                  <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <i data-lucide="clapperboard" class="w-5 h-5"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-sm font-bold text-white group-hover:text-purple-300 transition truncate">Scenariji vsebin</h4>
+                    <p class="text-[11px] text-slate-400 mt-0.5 truncate">Pripravljeni video scenariji</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    ${scripts.length}
+                  </span>
+                  <i data-lucide="arrow-right" class="w-4 h-4 text-slate-500 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all"></i>
+                </div>
+              </button>
+
+              <!-- 3. Lokacije za snemanje -->
+              <div class="p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+                  <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+                    <div class="w-7 h-7 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center">
+                      <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <span>Lokacije za snemanje</span>
+                  </div>
+                  <span class="text-[10px] text-slate-500 font-medium">Auto-save</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">
+                  Lokacije in ambienti, primerni za snemanje video vsebin:
+                </p>
+                <textarea 
+                  oninput="handleAutoSaveCrmSubfield('production_guidelines.resources', 'locations', this.value); handleSmartFieldInput(this);"
+                  rows="3"
+                  placeholder="Npr. Delavnica ob 6:00, salon, prodajalna v centru, skladišče..." 
+                  class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 leading-relaxed placeholder:text-slate-600 resize-none">${escapeHtml(locations)}</textarea>
+              </div>
+
+              <!-- 4. Gumb Arhiv vsebine (Baza fotografij in videov) -->
+              <div class="p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+                  <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                      <i data-lucide="archive" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <span>Arhiv vsebine</span>
+                  </div>
+                  ${assetsLink ? `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Povezava je nastavljena"></span>` : ''}
+                </div>
+
+                <p class="text-[11px] text-slate-400 leading-relaxed">
+                  Povezava do baze fotografij, posnetkov in gradiv za objave:
+                </p>
+
+                <!-- Glavni gumb Arhiv vsebine -->
+                <button type="button" onclick="openContentArchiveLink('${client.id}')" class="w-full py-3 px-4 rounded-2xl ${assetsLink ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-950/50' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700'} font-bold text-xs transition flex items-center justify-center gap-2 active:scale-[0.99]">
+                  <i data-lucide="${assetsLink ? 'external-link' : 'link'}" class="w-4 h-4"></i>
+                  <span>${assetsLink ? 'Odpri arhiv vsebine (Drive)' : '+ Nastavi povezavo do baze'}</span>
+                </button>
+
+                <!-- Vnosno polje Povezava do baze fotografij in videov -->
+                <div class="pt-2 border-t border-slate-800/80">
+                  <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Povezava do baze fotografij in videov:</label>
+                  <div class="flex items-center gap-1.5">
+                    <input type="url" 
+                      oninput="handleAutoSaveCrmSubfield('production_guidelines.resources', 'assets_link', this.value)" 
+                      value="${escapeHtml(assetsLink)}" 
+                      placeholder="https://drive.google.com/..." 
+                      class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+                    ${assetsLink ? `
+                      <button type="button" onclick="openContentArchiveLink('${client.id}')" title="Odpri povezavo" class="p-2 rounded-xl bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white transition shrink-0">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              </div>
+
+            </div>
 
           </div>
 
@@ -8569,6 +8664,27 @@ Odgovori se samodejno sproti shranjujejo. Hvala za vaš čas!`;
         showToast('Kopiranje ni uspelo, uporabite prenos datoteke.');
       }
       document.body.removeChild(ta);
+    }
+
+  
+    // Helper to open content archive (Google Drive / Dropbox)
+    function openContentArchiveLink(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      const link = (client.crm?.production_guidelines?.resources?.assets_link || client.crm?.resource_links?.drive || '').trim();
+      if (link) {
+        const fullUrl = (link.startsWith('http://') || link.startsWith('https://')) ? link : ('https://' + link);
+        window.open(fullUrl, '_blank');
+      } else {
+        const input = prompt('Vnesite povezavo do baze fotografij in videov (Google Drive / Dropbox):', '');
+        if (input && input.trim()) {
+          handleAutoSaveCrmSubfield('production_guidelines.resources', 'assets_link', input.trim());
+          const fullUrl = (input.trim().startsWith('http://') || input.trim().startsWith('https://')) ? input.trim() : ('https://' + input.trim());
+          window.open(fullUrl, '_blank');
+          renderWorkspaceTabContent();
+          showToast('Povezava do baze fotografij in videov je bila shranjena!');
+        }
+      }
     }
 
   </script>
