@@ -6213,6 +6213,7 @@
       const pillarSelect = document.getElementById('quickIdeaPillar');
       if (pillarSelect) {
         const pillarList = getClientPillarOptions(client);
+      const isEditing = Boolean(activeScript && activeScript.id);
         pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}">${escapeHtml(pName)}</option>`).join('');
       }
 
@@ -6515,194 +6516,151 @@
             </div>
           </div>
 
-          <!-- INTERACTIVE STEP-BY-STEP SCRIPTWRITER (ONE THING AT A TIME) -->
-          <div class="max-w-4xl mx-auto w-full space-y-4">
+          <!-- VERTICAL PROGRESSIVE REVEAL SCRIPTWRITER (OD ZGORAJ PROTI DOL) -->
+          <div class="max-w-4xl mx-auto w-full space-y-5">
             
-            <form id="scriptPageForm" onsubmit="event.preventDefault();" class="space-y-4">
+            <form id="scriptPageForm" onsubmit="event.preventDefault(); handleSaveScriptPage('${client.id}');" class="space-y-5">
               <input type="hidden" id="spScriptId" value="${activeScript ? activeScript.id : ''}">
               <input type="hidden" id="spLinkedIdeaId" value="${linkedIdeaId}">
               <input type="hidden" id="spTargetMonth" value="${targetMonthStr}">
               <input type="hidden" id="spFormat" value="${escapeHtml(sFormat)}">
               <input type="hidden" id="spPillar" value="${escapeHtml(sPillar || (pillarList[0] || ''))}">
 
-              <!-- MAIN INTERACTIVE CARD -->
-              <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8">
-
-                <!-- STEP NAVIGATION TABS -->
-                <div class="flex items-center justify-between pb-4 border-b border-slate-800/80">
-                  <div class="flex items-center gap-1.5 sm:gap-2">
-                    <button type="button" onclick="goToScriptStep(1)" id="stepTab1" class="script-step-tab font-bold text-xs flex items-center gap-2 px-3 py-1.5 rounded-xl transition bg-indigo-600 text-white shadow-xs">
-                      <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono bg-white/20 text-white">1</span>
-                      <span>Naslov</span>
-                    </button>
-
-                    <span class="text-slate-700">/</span>
-
-                    <button type="button" onclick="goToScriptStep(2)" id="stepTab2" class="script-step-tab font-bold text-xs flex items-center gap-2 px-3 py-1.5 rounded-xl transition text-slate-400 hover:text-white bg-slate-950 border border-slate-800">
-                      <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono bg-slate-800 text-slate-400">2</span>
-                      <span>Format & Steber</span>
-                    </button>
-
-                    <span class="text-slate-700">/</span>
-
-                    <button type="button" onclick="goToScriptStep(3)" id="stepTab3" class="script-step-tab font-bold text-xs flex items-center gap-2 px-3 py-1.5 rounded-xl transition text-slate-400 hover:text-white bg-slate-950 border border-slate-800">
-                      <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono bg-slate-800 text-slate-400">3</span>
-                      <span>Koncept & AI</span>
-                    </button>
-                  </div>
-
-                  <span id="stepCounterBadge" class="text-xs font-mono font-bold text-slate-500">
-                    Korak 1 od 3
-                  </span>
+              <!-- 1. KORAK: NASLOV SCENARIJA (vedno viden na vrhu) -->
+              <div id="scriptStep1" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400">1. korak</span>
+                  <span class="text-[11px] text-slate-500 font-medium">Naslov vsebine</span>
                 </div>
-
-                <!-- ============================================== -->
-                <!-- STEP 1: POIMENOVANJE SCENARIJA -->
-                <!-- ============================================== -->
-                <div id="scriptStep1" class="script-step-panel space-y-6">
-                  <div class="space-y-1">
-                    <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-400">Korak 1</span>
-                    <h2 class="text-xl sm:text-2xl font-black text-white">Kako boste poimenovali ta scenarij?</h2>
-                    <p class="text-xs text-slate-400">Vnesite delovni naslov ali temo vsebine.</p>
-                  </div>
-
-                  <div class="pt-2">
-                    <input id="spTitle" type="text" value="${escapeHtml(sTitle)}" placeholder="Vnesite naslov scenarija..." class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-2xl p-4 sm:p-5 text-lg sm:text-xl font-bold text-white placeholder-slate-600 focus:outline-none transition shadow-inner" onkeydown="if(event.key==='Enter'){event.preventDefault(); goToScriptStep(2);}">
-                  </div>
-
-                  <div class="pt-4 flex items-center justify-end border-t border-slate-800/80">
-                    <button type="button" onclick="goToScriptStep(2)" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-2 active:scale-95 shadow-md shadow-indigo-950/40">
-                      <span>Naprej: Format & Steber</span>
-                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
-                  </div>
+                <h3 class="text-lg sm:text-xl font-black text-white">Naslov scenarija</h3>
+                <input id="spTitle" type="text" value="${escapeHtml(sTitle)}" placeholder="Vnesite naslov scenarija..." class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-2xl p-4 text-base sm:text-lg font-bold text-white placeholder-slate-600 focus:outline-none transition shadow-inner" onkeydown="if(event.key==='Enter'){event.preventDefault(); revealScriptStep(2);}">
+                
+                <div id="step1NextBtn" class="pt-2 flex justify-end ${isEditing ? 'hidden' : ''}">
+                  <button type="button" onclick="revealScriptStep(2)" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-indigo-950/40">
+                    <span>Naprej: Format & Steber</span>
+                    <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                  </button>
                 </div>
-
-                <!-- ============================================== -->
-                <!-- STEP 2: FORMAT IN VSEBINSKI STEBER -->
-                <!-- ============================================== -->
-                <div id="scriptStep2" class="script-step-panel hidden space-y-7">
-                  <div class="space-y-1">
-                    <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-400">Korak 2</span>
-                    <h2 class="text-xl sm:text-2xl font-black text-white">Določite format in vsebinski steber</h2>
-                    <p class="text-xs text-slate-400">Izberite ustrezen format objave in vsebinski steber za to vsebino.</p>
-                  </div>
-
-                  <!-- Format selection pills -->
-                  <div class="space-y-2">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">Format vsebine</label>
-                    <div id="formatPillsContainer" class="flex flex-wrap gap-2">
-                      ${['Reels / Video (9:16)', 'Vrtiljak (Carousel)', 'Fotografija / Grafika', 'Zgodba (Story)', 'Članek / Tekst'].map(fmt => {
-                        const isSel = sFormat === fmt || (fmt.startsWith('Reels') && sFormat.includes('Reels'));
-                        return `
-                          <button type="button" onclick="selectScriptFormat('${escapeHtml(fmt)}')" class="format-pill px-4 py-2.5 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${isSel ? 'bg-indigo-600 text-white border-indigo-500 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'}">
-                            <span>${escapeHtml(fmt)}</span>
-                          </button>
-                        `;
-                      }).join('')}
-                    </div>
-                  </div>
-
-                  <!-- Pillar selection pills -->
-                  <div class="space-y-2">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">Vsebinski steber</label>
-                    <div id="pillarPillsContainer" class="flex flex-wrap gap-2">
-                      ${pillarList.map(pName => {
-                        const isSel = (sPillar === pName) || (!sPillar && pName === pillarList[0]);
-                        return `
-                          <button type="button" onclick="selectScriptPillar('${escapeHtml(pName)}')" class="pillar-pill px-4 py-2.5 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${isSel ? 'bg-indigo-600 text-white border-indigo-500 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'}">
-                            <span>${escapeHtml(pName)}</span>
-                          </button>
-                        `;
-                      }).join('')}
-                    </div>
-                  </div>
-
-                  <div class="pt-4 flex items-center justify-between border-t border-slate-800/80">
-                    <button type="button" onclick="goToScriptStep(1)" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition flex items-center gap-1.5 active:scale-95">
-                      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                      <span>Nazaj</span>
-                    </button>
-                    <button type="button" onclick="goToScriptStep(3)" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-2 active:scale-95 shadow-md shadow-indigo-950/40">
-                      <span>Naprej: Okvirni koncept</span>
-                      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- ============================================== -->
-                <!-- STEP 3: OKVIRNI KONCEPT, AI GENERATOR & KONČNI SCENARIJ -->
-                <!-- ============================================== -->
-                <div id="scriptStep3" class="script-step-panel hidden space-y-6">
-                  <div class="space-y-1">
-                    <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-400">Korak 3</span>
-                    <h2 class="text-xl sm:text-2xl font-black text-white">Okvirni koncept & AI generiranje</h2>
-                    <p class="text-xs text-slate-400">Vnesite ključno sporočilo in okvirni koncept, nato z enim klikom generirajte prompt za AI agenta.</p>
-                  </div>
-
-                  <!-- Ključno sporočilo -->
-                  <div class="space-y-1.5">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">
-                      Ključno sporočilo (kaj želim doseči s to vsebino)
-                    </label>
-                    <input id="spCoreMessage" type="text" value="${escapeHtml(sCoreMessage)}" placeholder="Npr. Predstaviti razliko med obema vrstama sira in gledalca spodbuditi k obisku delikatese..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500">
-                  </div>
-
-                  <!-- Okvirni koncept scenarija -->
-                  <div class="space-y-1.5">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">
-                      Okvirni koncept scenarija (kako si zamislite to idejo)
-                    </label>
-                    <textarea id="spConcept" rows="5" placeholder="Zapišite svojo zamisel in okvirni potek vsebine...">${escapeHtml(sConcept)}</textarea>
-                  </div>
-
-                  <!-- Akcijski gumb: Generiraj AI prompt -->
-                  <div class="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <div class="text-xs font-bold text-white">Generiranje prompta za AI agenta</div>
-                      <div class="text-[11px] text-slate-400">Združi kontekst naročnika, parametre, koncept ter smernice po fazah.</div>
-                    </div>
-                    <button type="button" onclick="handleGenerateAiScriptPrompt('${client.id}')" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition flex items-center gap-2 active:scale-95 shadow-md shadow-indigo-950/40">
-                      <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
-                      <span>Generiraj AI prompt</span>
-                    </button>
-                  </div>
-
-                  <!-- Končni scenarij (Hook, Jedro, CTA) -->
-                  <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
-                    <div class="flex items-center justify-between">
-                      <label class="block text-xs font-bold uppercase tracking-wider text-emerald-400">
-                        Končni scenarij (Hook, Jedro, CTA)
-                      </label>
-                      <span class="text-[10px] text-slate-500">Prilepite scenarij, ki vam ga pripravi AI agent</span>
-                    </div>
-                    <textarea id="spFinalScript" rows="8" placeholder="Sem prilepite končni scenarij z hookom, kadri, govorom in CTA-jem, ki ga pripravi AI agent...">${escapeHtml(sFinalScript)}</textarea>
-                  </div>
-
-                  <div class="pt-4 flex items-center justify-between border-t border-slate-800/80">
-                    <button type="button" onclick="goToScriptStep(2)" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition flex items-center gap-1.5 active:scale-95">
-                      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                      <span>Nazaj</span>
-                    </button>
-                    <button type="button" onclick="handleSaveScriptPage('${client.id}')" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-2 active:scale-95 shadow-md shadow-emerald-950/40">
-                      <i data-lucide="check" class="w-4 h-4"></i>
-                      <span>Shrani scenarij</span>
-                    </button>
-                  </div>
-                </div>
-
               </div>
+
+              <!-- 2. KORAK: FORMAT IN VSEBINSKI STEBER (prikaže se pod naslovom) -->
+              <div id="scriptStep2" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5 ${isEditing ? '' : 'hidden'}">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400">2. korak</span>
+                  <span class="text-[11px] text-slate-500 font-medium">Format in vsebinski steber</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white">Izbor formata in stebra</h3>
+
+                <!-- Format selection pills -->
+                <div class="space-y-2">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">Format vsebine</label>
+                  <div id="formatPillsContainer" class="flex flex-wrap gap-2">
+                    ${['Reels / Video (9:16)', 'Vrtiljak (Carousel)', 'Fotografija / Grafika', 'Zgodba (Story)', 'Članek / Tekst'].map(fmt => {
+                      const isSel = sFormat === fmt || (fmt.startsWith('Reels') && sFormat.includes('Reels'));
+                      return `
+                        <button type="button" onclick="selectScriptFormat('${escapeHtml(fmt)}')" class="format-pill px-4 py-2.5 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${isSel ? 'bg-indigo-600 text-white border-indigo-500 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'}">
+                          <span>${escapeHtml(fmt)}</span>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+
+                <!-- Pillar selection pills -->
+                <div class="space-y-2">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">Vsebinski steber</label>
+                  <div id="pillarPillsContainer" class="flex flex-wrap gap-2">
+                    ${pillarList.map(pName => {
+                      const isSel = (sPillar === pName) || (!sPillar && pName === pillarList[0]);
+                      return `
+                        <button type="button" onclick="selectScriptPillar('${escapeHtml(pName)}')" class="pillar-pill px-4 py-2.5 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${isSel ? 'bg-indigo-600 text-white border-indigo-500 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'}">
+                          <span>${escapeHtml(pName)}</span>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+
+                <div id="step2NextBtn" class="pt-2 flex justify-end ${isEditing ? 'hidden' : ''}">
+                  <button type="button" onclick="revealScriptStep(3)" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-indigo-950/40">
+                    <span>Naprej: Okvirni scenarij</span>
+                    <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 3. KORAK: OKVIRNI SCENARIJ & GENERIRANJE AI PROMPTA (prikaže se pod formatom) -->
+              <div id="scriptStep3" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5 ${isEditing ? '' : 'hidden'}">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400">3. korak</span>
+                  <span class="text-[11px] text-slate-500 font-medium">Okvirni koncept & AI</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white">Okvirni scenarij & AI prompt</h3>
+
+                <div class="space-y-1.5">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Ključno sporočilo (kaj želim doseči s to vsebino)
+                  </label>
+                  <input id="spCoreMessage" type="text" value="${escapeHtml(sCoreMessage)}" placeholder="Npr. Predstaviti razliko med obema vrstama sira in gledalca spodbuditi k obisku delikatese..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Okvirni koncept scenarija (kako si zamislite to idejo)
+                  </label>
+                  <textarea id="spConcept" rows="5" placeholder="Zapišite svojo zamisel in okvirni potek vsebine v grobem...">${escapeHtml(sConcept)}</textarea>
+                </div>
+
+                <!-- Akcijski gumb: Generiraj AI prompt -->
+                <div class="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div class="text-xs font-bold text-white">Generiranje prompta za AI agenta</div>
+                    <div class="text-[11px] text-slate-400">Združi kontekst naročnika, parametre, koncept ter smernice po fazah.</div>
+                  </div>
+                  <button type="button" onclick="handleGenerateAiScriptPrompt('${client.id}')" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition flex items-center gap-2 active:scale-95 shadow-md shadow-indigo-950/40">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+                    <span>Generiraj AI prompt</span>
+                  </button>
+                </div>
+
+                <div id="step3NextBtn" class="pt-2 flex justify-end ${isEditing ? 'hidden' : ''}">
+                  <button type="button" onclick="revealScriptStep(4)" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-indigo-950/40">
+                    <span>Naprej: Lepljenje končnega scenarija</span>
+                    <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 4. KORAK: LEPLJENJE KONČNEGA SCENARIJA (ločen zadnji korak) -->
+              <div id="scriptStep4" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4 ${isEditing ? '' : 'hidden'}">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">4. korak (zadnji korak)</span>
+                  <span class="text-[11px] text-slate-500 font-medium">Končni scenarij</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white">Lepljenje končnega scenarija</h3>
+                <p class="text-xs text-slate-400">Sem prilepite končni scenarij s hookom, jedrom in CTA-jem, ki ga pripravi AI agent.</p>
+                
+                <textarea id="spFinalScript" rows="8" placeholder="Sem prilepite končni scenarij z hookom, kadri, govorom in CTA-jem, ki ga pripravi AI agent...">${escapeHtml(sFinalScript)}</textarea>
+
+                <div class="pt-4 flex items-center justify-end border-t border-slate-800/80">
+                  <button type="submit" class="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-2 active:scale-95 shadow-lg shadow-emerald-950/40">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Shrani scenarij</span>
+                  </button>
+                </div>
+              </div>
+
             </form>
           </div>
         </div>
       `;
 
-      // Auto-step logic: If script already has a title, default to Step 3 so user can view/edit concept directly,
-      // otherwise start at Step 1 for new scripts.
-      setTimeout(() => {
-        const hasTitle = Boolean(sTitle && sTitle.trim());
-        goToScriptStep(hasTitle ? 3 : 1);
-      }, 10);
+      // Auto-focus title on new script
+      if (!isEditing) {
+        setTimeout(() => {
+          document.getElementById('spTitle')?.focus();
+        }, 50);
+      }
 // Apply shared textarea styling classes for minimalist feel
       container.querySelectorAll('textarea').forEach(ta => {
         ta.className = 'w-full bg-slate-950 border border-slate-800/90 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 leading-relaxed';
@@ -6933,8 +6891,9 @@
       }
 
       await saveCurrentWorkspace(false);
-      showToast('Scenarij je uspešno shranjen!');
-      renderScriptwriterStudio(client, scriptObj.id);
+      showToast('Scenarij je shranjen pod napisane scenarije!');
+      // Reset flow to a fresh new script from the beginning as requested
+      openScriptPage(clientId, 'new');
       return scriptObj;
     }
 
@@ -8962,43 +8921,38 @@ Vrni končni scenarij v pregledni markdown obliki z jasno označenimi fazami (HO
     }
 
   
-    // --- SCRIPTWRITER INTERACTIVE WIZARD STEP NAVIGATION ---
-    let currentScriptStep = 1;
-
-    function goToScriptStep(stepNum) {
-      currentScriptStep = stepNum;
-      
-      // Update panels visibility
-      for (let i = 1; i <= 3; i++) {
-        const panel = document.getElementById(`scriptStep${i}`);
-        const tab = document.getElementById(`stepTab${i}`);
-        if (panel) {
-          if (i === stepNum) panel.classList.remove('hidden');
-          else panel.classList.add('hidden');
+    // --- SCRIPTWRITER VERTICAL PROGRESSIVE REVEAL NAVIGATION (OD ZGORAJ PROTI DOL) ---
+    function revealScriptStep(stepNum) {
+      if (stepNum === 2) {
+        const title = document.getElementById('spTitle')?.value?.trim();
+        if (!title) {
+          alert('Prosimo, najprej vnesite naslov scenarija.');
+          document.getElementById('spTitle')?.focus();
+          return;
         }
-        if (tab) {
-          if (i === stepNum) {
-            tab.className = 'script-step-tab font-bold text-xs flex items-center gap-2 px-3 py-1.5 rounded-xl transition bg-indigo-600 text-white shadow-xs';
-            const numSpan = tab.querySelector('span:first-child');
-            if (numSpan) numSpan.className = 'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono bg-white/20 text-white';
-          } else {
-            tab.className = 'script-step-tab font-bold text-xs flex items-center gap-2 px-3 py-1.5 rounded-xl transition text-slate-400 hover:text-white bg-slate-950 border border-slate-800';
-            const numSpan = tab.querySelector('span:first-child');
-            if (numSpan) numSpan.className = 'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono bg-slate-800 text-slate-400';
-          }
+        const step2 = document.getElementById('scriptStep2');
+        if (step2) {
+          step2.classList.remove('hidden');
+          step2.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
+        document.getElementById('step1NextBtn')?.classList.add('hidden');
+      } else if (stepNum === 3) {
+        const step3 = document.getElementById('scriptStep3');
+        if (step3) {
+          step3.classList.remove('hidden');
+          step3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        document.getElementById('step2NextBtn')?.classList.add('hidden');
+      } else if (stepNum === 4) {
+        const step4 = document.getElementById('scriptStep4');
+        if (step4) {
+          step4.classList.remove('hidden');
+          step4.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          document.getElementById('spFinalScript')?.focus();
+        }
+        document.getElementById('step3NextBtn')?.classList.add('hidden');
       }
-
-      const counterBadge = document.getElementById('stepCounterBadge');
-      if (counterBadge) {
-        counterBadge.textContent = `Korak ${stepNum} od 3`;
-      }
-
-      // Auto-focus input for step 1
-      if (stepNum === 1) {
-        const titleInput = document.getElementById('spTitle');
-        if (titleInput) setTimeout(() => titleInput.focus(), 50);
-      }
+      lucide.createIcons();
     }
 
     function selectScriptFormat(formatName) {
