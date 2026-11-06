@@ -2,7 +2,7 @@
 <html lang="sl" class="h-full bg-slate-950 text-slate-100">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Brand CRM • Client & Brand Management</title>
   
   <!-- Google Fonts: Montserrat -->
@@ -111,6 +111,181 @@
       line-height: 1.6;
       flex: 1 0 auto !important;
     }
+
+    /* =====================================================================
+       MOBILE ONLY (<= 767px)
+       Vse spodaj velja izključno za mobilne naprave. Namizni prikaz (>= 768px)
+       ostane nespremenjen.
+       ===================================================================== */
+    @media (max-width: 767px) {
+      body {
+        overflow-x: hidden;
+        padding-bottom: calc(76px + env(safe-area-inset-bottom));
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Preprečimo iOS auto-zoom ob fokusu na polja */
+      input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+
+      .scrollbar-none { scrollbar-width: none; }
+      .scrollbar-none::-webkit-scrollbar { display: none; }
+
+      /* ---------- Zgornja vrstica (kompaktna) ---------- */
+      body > header {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+        background-color: rgb(15 23 42) !important;
+        box-shadow: 0 4px 14px rgb(0 0 0 / .35) !important;
+      }
+      .crm-header-inner {
+        flex-wrap: nowrap !important;
+        gap: .5rem !important;
+        padding: .5rem .75rem !important;
+      }
+      .crm-brand { gap: .6rem !important; min-width: 0; flex: 1 1 auto; }
+      .crm-brand > div:first-child { width: 36px !important; height: 36px !important; border-radius: .75rem !important; }
+      .crm-brand p, .crm-brand span { display: none !important; }
+      .crm-brand h1 { font-size: 1rem !important; white-space: nowrap; }
+      .crm-header-actions { gap: .4rem !important; flex-shrink: 0; }
+      .crm-header-actions > * {
+        min-width: 40px; min-height: 40px;
+        padding: .5rem !important;
+        justify-content: center;
+      }
+      .crm-newclient-btn span { display: none !important; }
+
+      /* ---------- Spodnja navigacija (tab bar) ---------- */
+      #mainNavTabs {
+        position: fixed !important;
+        left: 0; right: 0; bottom: 0;
+        z-index: 45;
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .25rem !important;
+        padding: .4rem .5rem calc(.4rem + env(safe-area-inset-bottom)) !important;
+        border-radius: 0 !important;
+        border-width: 1px 0 0 0 !important;
+        background: rgb(9 13 22 / .98) !important;
+        box-shadow: 0 -8px 24px rgb(0 0 0 / .45);
+      }
+      #mainNavTabs .top-nav-btn {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: .2rem !important;
+        padding: .5rem .15rem !important;
+        min-height: 52px;
+        font-size: 10px !important;
+        line-height: 1.15;
+        text-align: center;
+        border-radius: .85rem !important;
+      }
+      #mainNavTabs .top-nav-btn svg { width: 20px !important; height: 20px !important; }
+
+      /* ---------- Okvir vsebine ---------- */
+      body > main { padding: .875rem .75rem 1rem !important; }
+      main .p-5 { padding: 1rem !important; }
+      main .p-6 { padding: 1.1rem !important; }
+      main .grid > * { min-width: 0; }
+      main pre, main code { white-space: pre-wrap; word-break: break-word; }
+      main .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+
+      #workspaceTopBar { padding: .5rem .75rem !important; }
+      #workspaceTopBar span.text-slate-400 { display: none; }
+      #breadcrumbClientName { max-width: 58vw !important; }
+
+      #toast {
+        left: .75rem !important; right: .75rem !important;
+        bottom: calc(84px + env(safe-area-inset-bottom)) !important;
+      }
+
+      /* ---------- Naročniki ---------- */
+      #view-clients > div:first-child { padding: .75rem !important; }
+      #view-clients > div:first-child > div { width: 100%; }
+      #view-clients > div:first-child > div:last-child { display: flex; }
+      #view-clients > div:first-child > div:last-child select { flex: 1 1 auto; min-width: 0; }
+      #view-clients .client-filter-btn { padding: .55rem .85rem !important; }
+
+      /* ---------- Globalni koledar ---------- */
+      #view-calendar > div:first-child { padding: .75rem !important; gap: .6rem !important; }
+      #view-calendar > div:first-child > div { width: 100%; }
+      #view-calendar > div:first-child > div:first-child { justify-content: space-between; }
+      #calendarCurrentMonthTitle { min-width: 0 !important; flex: 1 1 auto; }
+      #view-calendar > div:first-child > div:nth-child(2) { display: flex; flex-wrap: wrap; }
+      #view-calendar > div:first-child > div:nth-child(2) select { flex: 1 1 calc(50% - .25rem); min-width: 0; }
+      #view-calendar > div:first-child > div:nth-child(2) > div { flex: 1 1 auto; }
+      #view-calendar > div:first-child > div:nth-child(2) > div button { flex: 1 1 0; padding: .55rem .5rem !important; }
+      #view-calendar > div:first-child > div:nth-child(2) > button { flex: 1 1 100%; justify-content: center; padding: .7rem !important; }
+      #calendarDisplayContainer { padding: .6rem !important; min-height: 0 !important; }
+
+      /* ---------- Mesečna mreža koledarja (globalni + operativni) ---------- */
+      .cal-grid { gap: 3px !important; }
+      .cal-cell { min-height: 60px !important; padding: 3px !important; border-radius: .6rem !important; }
+      .cal-cell > div:first-child { margin-bottom: 2px !important; }
+      .cal-cell > div:first-child button { display: none !important; }
+      .cal-cell > div.text-center { display: none !important; }
+      .cal-chips {
+        display: flex !important; flex-wrap: wrap; gap: 2px;
+        max-height: none !important; overflow: visible !important;
+      }
+      .cal-chips > * { margin: 0 !important; }
+      .cal-chip {
+        display: flex !important; align-items: center; justify-content: center;
+        min-width: 16px; min-height: 16px;
+        padding: 2px 3px !important; border-radius: .4rem !important;
+        flex: 0 0 auto;
+      }
+      .cal-chip-label, .cal-chip-title, .cal-chip-time { display: none !important; }
+
+      /* ---------- Produkcija (kanban s snap-drsenjem) ---------- */
+      #view-production > div:first-child { padding: .75rem !important; gap: .6rem !important; }
+      #view-production > div:first-child > div { width: 100%; }
+      #view-production > div:first-child > div:last-child { display: flex; }
+      #view-production > div:first-child > div:last-child > * { flex: 1 1 0; min-width: 0; justify-content: center; }
+      #productionKanbanContainer {
+        scroll-snap-type: x mandatory;
+        gap: .75rem !important;
+        margin: 0 -.75rem;
+        padding-left: .75rem; padding-right: .75rem;
+        scroll-padding-left: .75rem;
+        -webkit-overflow-scrolling: touch;
+      }
+      .kanban-col {
+        width: 84vw !important;
+        scroll-snap-align: start;
+        max-height: 68dvh !important;
+      }
+
+      /* ---------- Delovni prostor naročnika ---------- */
+      #workspaceHeaderContainer { padding: 1rem !important; }
+      .ws-head-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: .5rem !important;
+        width: 100%;
+      }
+      .ws-head-actions > * { justify-content: center; padding: .65rem .5rem !important; }
+      #wsTodoDrawerTriggerBtn { grid-column: 1 / -1; }
+
+      /* ---------- Modalna okna kot spodnji listi (bottom sheet) ---------- */
+      body > div.fixed.inset-0:not(#workspaceTodoDrawerOverlay) {
+        align-items: flex-end !important;
+        padding: 0 !important;
+      }
+      body > div.fixed.inset-0:not(#workspaceTodoDrawerOverlay) > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 92dvh !important;
+        overflow-y: auto !important;
+        border-radius: 1.5rem 1.5rem 0 0 !important;
+        padding: 1.1rem 1rem calc(1.25rem + env(safe-area-inset-bottom)) !important;
+      }
+      #workspaceSidebar { padding-bottom: calc(1.25rem + env(safe-area-inset-bottom)) !important; }
+    }
   </style>
 </head>
 
@@ -118,10 +293,10 @@
 
   <!-- TOP HEADER / CRM NAVIGATION -->
   <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
-    <div class="max-w-[1780px] 2xl:max-w-[1880px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-4">
+    <div class="crm-header-inner max-w-[1780px] 2xl:max-w-[1880px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-4">
       
       <!-- Brand & Title -->
-      <div class="flex items-center gap-3 cursor-pointer" onclick="navigateHome()">
+      <div class="crm-brand flex items-center gap-3 cursor-pointer" onclick="navigateHome()">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-primary-600 to-indigo-800 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 shrink-0">
           <i data-lucide="compass" class="w-5 h-5"></i>
         </div>
@@ -155,7 +330,7 @@
       </nav>
 
       <!-- Right Header Actions -->
-      <div class="flex items-center gap-2 sm:gap-2.5">
+      <div class="crm-header-actions flex items-center gap-2 sm:gap-2.5">
         <button onclick="fetchClients(true)" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700/80 active:scale-95" title="Osveži podatke iz baze">
           <i id="refreshIcon" data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
           <span class="hidden sm:inline">Osveži</span>
@@ -166,7 +341,7 @@
           <span class="hidden md:inline">Javni vprašalnik</span>
         </a>
 
-        <button onclick="openCreateModal()" type="button" class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl shadow-lg shadow-emerald-900/30 transition-all active:scale-95 border border-emerald-500/30">
+        <button onclick="openCreateModal()" type="button" aria-label="Nov naročnik" title="Nov naročnik" class="crm-newclient-btn inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl shadow-lg shadow-emerald-900/30 transition-all active:scale-95 border border-emerald-500/30">
           <i data-lucide="plus-circle" class="w-4 h-4"></i>
           <span>+ Nov naročnik</span>
         </button>
@@ -2287,12 +2462,12 @@
         <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] uppercase tracking-wider text-slate-400 mb-2 pb-2 border-b border-slate-800">
           ${daysOfWeekSl.map(d => `<div>${d}</div>`).join('')}
         </div>
-        <div class="grid grid-cols-7 gap-1.5 auto-rows-fr">
+        <div class="cal-grid grid grid-cols-7 gap-1.5 auto-rows-fr">
       `;
 
       // Empty padding cells before 1st of month
       for (let i = 0; i < startDayIndex; i++) {
-        gridHtml += `<div class="min-h-[90px] bg-slate-950/30 rounded-xl border border-slate-900/60 p-1.5 opacity-30"></div>`;
+        gridHtml += `<div class="cal-cell min-h-[90px] bg-slate-950/30 rounded-xl border border-slate-900/60 p-1.5 opacity-30"></div>`;
       }
 
       // Day cells
@@ -2306,7 +2481,7 @@
         const dayPosts = allPosts.filter(p => p.date === dayStr);
 
         gridHtml += `
-          <div class="min-h-[100px] bg-slate-950/80 rounded-xl border ${isToday ? 'border-indigo-500 shadow-md shadow-indigo-950' : 'border-slate-800/80'} p-1.5 flex flex-col justify-between group hover:border-slate-700 transition">
+          <div class="cal-cell min-h-[100px] bg-slate-950/80 rounded-xl border ${isToday ? 'border-indigo-500 shadow-md shadow-indigo-950' : 'border-slate-800/80'} p-1.5 flex flex-col justify-between group hover:border-slate-700 transition">
             <div class="flex items-center justify-between text-[11px] font-bold mb-1">
               <span class="${isToday ? 'w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-400 pl-1'}">${day}</span>
               <button onclick="openAddPostModal(null, '${dayStr}')" title="Dodaj objavo na ta dan" class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-white p-0.5 rounded transition">
@@ -2314,15 +2489,15 @@
               </button>
             </div>
 
-            <div class="space-y-1 overflow-y-auto max-h-[75px] scrollbar-none">
+            <div class="cal-chips space-y-1 overflow-y-auto max-h-[75px] scrollbar-none">
               ${dayPosts.map(p => {
                 const theme = getPostFormatTheme(p.format);
                 return `
-                  <div onclick="openEditPostModal('${p.clientId}', '${p.id}')" title="${escapeHtml(p.clientName)}: ${escapeHtml(p.title)} (${theme.label})" class="cursor-pointer text-[10px] p-1 rounded-md border ${theme.cardClass} truncate transition flex items-center gap-1">
+                  <div onclick="openEditPostModal('${p.clientId}', '${p.id}')" title="${escapeHtml(p.clientName)}: ${escapeHtml(p.title)} (${theme.label})" class="cal-chip cursor-pointer text-[10px] p-1 rounded-md border ${theme.cardClass} truncate transition flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full ${theme.dotClass} shrink-0"></span>
-                    <span class="font-bold ${theme.timeClass} shrink-0">${theme.label.split('/')[0].trim()}</span>
+                    <span class="cal-chip-label font-bold ${theme.timeClass} shrink-0">${theme.label.split('/')[0].trim()}</span>
                     ${p.recurrence_id ? `<i data-lucide="repeat" class="w-2.5 h-2.5 ${theme.iconColor} shrink-0"></i>` : ''}
-                    <span class="truncate font-medium text-white">${escapeHtml(p.title)}</span>
+                    <span class="cal-chip-title truncate font-medium text-white">${escapeHtml(p.title)}</span>
                   </div>
                 `;
               }).join('')}
@@ -2368,7 +2543,7 @@
         });
 
         return `
-          <div class="w-72 shrink-0 bg-slate-900/80 border border-slate-800/80 rounded-3xl p-3 flex flex-col shadow-lg max-h-[calc(100vh-250px)]">
+          <div class="kanban-col w-72 shrink-0 bg-slate-900/80 border border-slate-800/80 rounded-3xl p-3 flex flex-col shadow-lg max-h-[calc(100vh-250px)]">
             <!-- Stage Header -->
             <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-800 px-1">
               <span class="text-xs font-bold text-slate-200">${stage.label}</span>
@@ -2792,7 +2967,7 @@
           </div>
 
           <!-- Upper Right Corner Action Buttons -->
-          <div class="flex flex-wrap items-center lg:justify-end gap-2 shrink-0">
+          <div class="ws-head-actions flex flex-wrap items-center lg:justify-end gap-2 shrink-0">
             <button onclick="openExportMdModal('${client.id}')" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs">
               <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
               <span>MD datoteka</span>
@@ -4776,12 +4951,12 @@
                 <div class="grid grid-cols-7 gap-1.5 text-center font-bold text-[11px] uppercase tracking-wider text-slate-400 mb-2 pb-2 border-b border-slate-800">
                   ${daysOfWeekSl.map(d => `<div>${d}</div>`).join('')}
                 </div>
-                <div class="grid grid-cols-7 gap-1.5 auto-rows-fr">
+                <div class="cal-grid grid grid-cols-7 gap-1.5 auto-rows-fr">
               `;
 
               // Empty padding days
               for (let i = 0; i < startDayIndex; i++) {
-                gridHtml += `<div class="min-h-[135px] bg-slate-950/30 rounded-2xl border border-slate-900/60 p-2 opacity-30"></div>`;
+                gridHtml += `<div class="cal-cell min-h-[135px] bg-slate-950/30 rounded-2xl border border-slate-900/60 p-2 opacity-30"></div>`;
               }
 
               // Days of month
@@ -4792,7 +4967,7 @@
                 const dayPosts = posts.filter(p => p.date === dayStr);
 
                 gridHtml += `
-                  <div onclick="openAddPostModal('${client.id}', '${dayStr}')" class="min-h-[135px] bg-slate-950/80 rounded-2xl border ${
+                  <div onclick="openAddPostModal('${client.id}', '${dayStr}')" class="cal-cell min-h-[135px] bg-slate-950/80 rounded-2xl border ${
                     isToday ? 'border-indigo-500 shadow-lg shadow-indigo-950/50 ring-1 ring-indigo-500/50' : 'border-slate-800/80'
                   } p-2 flex flex-col justify-between group hover:border-indigo-500/50 hover:bg-slate-950 transition cursor-pointer">
                     
@@ -4805,20 +4980,20 @@
                       </button>
                     </div>
 
-                    <div class="space-y-1.5 overflow-y-auto max-h-[105px] scrollbar-none">
+                    <div class="cal-chips space-y-1.5 overflow-y-auto max-h-[105px] scrollbar-none">
                       ${dayPosts.map(p => {
                         const theme = getPostFormatTheme(p.format);
                         return `
-                          <div onclick="event.stopPropagation(); openEditPostModal('${client.id}', '${p.id}')" title="${escapeHtml(p.title)} • ${theme.label}" class="text-[10px] p-1.5 rounded-xl border ${theme.cardClass} transition space-y-0.5 shadow-xs">
+                          <div onclick="event.stopPropagation(); openEditPostModal('${client.id}', '${p.id}')" title="${escapeHtml(p.title)} • ${theme.label}" class="cal-chip text-[10px] p-1.5 rounded-xl border ${theme.cardClass} transition space-y-0.5 shadow-xs">
                             <div class="flex items-center justify-between gap-1 text-[9px]">
-                              <span class="font-mono ${theme.timeClass}">${p.time || '18:00'}</span>
+                              <span class="cal-chip-time font-mono ${theme.timeClass}">${p.time || '18:00'}</span>
                               <div class="flex items-center gap-1 font-bold ${theme.timeClass}">
                                 ${p.recurrence_id ? `<i data-lucide="repeat" class="w-2.5 h-2.5 ${theme.iconColor}" title="Tedensko ponavljanje"></i>` : ''}
                                 <i data-lucide="${theme.icon}" class="w-2.5 h-2.5" title="${escapeHtml(theme.label)}"></i>
-                                <span class="text-[9px] font-semibold">${theme.label.split('/')[0].trim()}</span>
+                                <span class="cal-chip-label text-[9px] font-semibold">${theme.label.split('/')[0].trim()}</span>
                               </div>
                             </div>
-                            <div class="font-semibold text-white truncate leading-tight">${escapeHtml(p.title)}</div>
+                            <div class="cal-chip-title font-semibold text-white truncate leading-tight">${escapeHtml(p.title)}</div>
                           </div>
                         `;
                       }).join('')}
