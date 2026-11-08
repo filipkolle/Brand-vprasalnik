@@ -70,6 +70,22 @@
       display: none;
     }
 
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm 14mm 12mm;
+      @top-left { content: ""; }
+      @top-center { content: ""; }
+      @top-right { content: ""; }
+      @bottom-left { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-right {
+        content: counter(page) "/" counter(pages);
+        font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+
     @media print {
       body > *:not(#printReportContainer) {
         display: none !important;
@@ -89,10 +105,6 @@
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
-      }
-      @page {
-        size: A4 portrait;
-        margin: 10mm 12mm 12mm 12mm;
       }
       .print-script-page {
         page-break-after: always;
@@ -8058,6 +8070,10 @@
     }
 
     // --- POMOŽNA FUNKCIJA: STRNJEN IN PREGLEDEN IZPIS BESEDILA SCENARIJA ---
+    function formatInlineMarkdownPrint(text) {
+      return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong style="color: #0f172a; font-weight: 700;">$1</strong>');
+    }
+
     function formatScriptPrintText(rawText) {
       if (!rawText) return '<p style="color: #64748b; font-style: italic; margin: 0;">Scenarij še ni pripravljen.</p>';
       
@@ -8068,29 +8084,38 @@
       return lines.map(line => {
         const trimmed = line.trim();
 
-        // 1. Glavni naslovi faz (npr. FAZA 1, FAZA 2, 1. FAZA, FAZA: 1 ...)
-        if (/^(FAZA\s+[0-9]+|[0-9]+\.\s*FAZA|FAZA\s*:\s*[0-9]+)/i.test(trimmed)) {
+        // Preskočimo markdown ločilne črte (--- ali ***)
+        if (/^([-*_]){3,}$/.test(trimmed)) {
+          return '';
+        }
+
+        // Očistimo morebitne vodilne markdown znake za naslove (#, ##, ###) in ** za preverjanje
+        const strippedHeading = trimmed.replace(/^#{1,6}\s*/, '').replace(/^\*\*(.+)\*\*$/, '$1').trim();
+
+        // 1. Glavni naslovi faz (npr. FAZA 1, ### FAZA 2, 1. FAZA, FAZA: 1 ...)
+        if (/^(FAZA\s+[0-9]+|[0-9]+\.\s*FAZA|FAZA\s*:\s*[0-9]+)/i.test(strippedHeading) || /^#{1,3}\s+/.test(trimmed)) {
           return `
-            <div style="font-size: 11pt; font-weight: 800; color: #4338ca; text-transform: uppercase; margin-top: 10px; margin-bottom: 3px; padding-bottom: 2px; border-bottom: 1.5px solid #e0e7ff; letter-spacing: 0.02em; page-break-after: avoid; break-after: avoid;">
-              ${escapeHtml(line)}
+            <div style="font-size: 11pt; font-weight: 800; color: #4338ca; text-transform: uppercase; margin-top: 12px; margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1.5px solid #e0e7ff; letter-spacing: 0.02em; page-break-after: avoid; break-after: avoid;">
+              ${formatInlineMarkdownPrint(strippedHeading)}
             </div>
           `;
         }
 
-        // 2. Podnaslovi znotraj faze (npr. Vizualni kader, Govor, Tekst na zaslonu, Lastnosti, Osebnost ...)
-        if (/^(Vizualni kader|Vizualni kadri|Govor|Govorno besedilo|Tekst na zaslonu|Lastnosti|Lastnosti sira|Osebnost|Kadrovanje|Zvok|Opombe)\s*:/i.test(trimmed)) {
+        // 2. Oznake kadrov ali točk (npr. Kader 1:, 1. Parmigiano Reggiano ...)
+        const strippedBullet = strippedHeading.replace(/^[-•*]\s*/, '').trim();
+        if (/^(Kader\s+[0-9]+|Prizor\s+[0-9]+|[0-9]+\.\s+[A-ZČŠŽ])/i.test(strippedBullet) && strippedBullet.length < 90) {
           return `
-            <div style="font-weight: 700; color: #1e293b; margin-top: 5px; margin-bottom: 1px; page-break-after: avoid; break-after: avoid;">
-              ${escapeHtml(line)}
+            <div style="font-weight: 800; color: #0f172a; margin-top: 8px; margin-bottom: 2px; page-break-after: avoid; break-after: avoid;">
+              ${formatInlineMarkdownPrint(strippedBullet)}
             </div>
           `;
         }
 
-        // 3. Oštevilčene točke v jedru (npr. 1. Parmigiano Reggiano ...)
-        if (/^[0-9]+\.\s+[A-ZČŠŽ]/i.test(trimmed) && trimmed.length < 80) {
+        // 3. Podnaslovi znotraj faze (npr. Vizualni kader, Govor, Tekst na zaslonu ...)
+        if (/^(\*\*)?(Vizualni kader|Vizualni kadri|Vizualni potek|Verbalni hook|Vizualni hook|Govor|Govorno besedilo|Tekst na zaslonu|Napis na zaslonu|Lastnosti|Lastnosti sira|Osebnost|Kadrovanje|Zvok|Lokacija|Osvetlitev|Rekviziti|Opombe)/i.test(strippedBullet)) {
           return `
-            <div style="font-weight: 800; color: #0f172a; margin-top: 6px; margin-bottom: 2px; page-break-after: avoid; break-after: avoid;">
-              ${escapeHtml(line)}
+            <div style="color: #1e293b; margin-top: 4px; margin-bottom: 2px; line-height: 1.45; page-break-inside: avoid; break-inside: avoid;">
+              ${formatInlineMarkdownPrint(strippedBullet)}
             </div>
           `;
         }
@@ -8101,7 +8126,7 @@
         }
 
         // 5. Standardno besedilo / alineje
-        return `<div style="color: #334155; margin-bottom: 1.5px; line-height: 1.45;">${escapeHtml(line)}</div>`;
+        return `<div style="color: #334155; margin-bottom: 2px; line-height: 1.45;">${formatInlineMarkdownPrint(line)}</div>`;
       }).join('');
     }
 
@@ -8118,24 +8143,14 @@
       return `
         <div style="color: #0f172a; line-height: 1.45; font-size: 10pt; font-family: Montserrat, -apple-system, sans-serif;">
           
-          <!-- Glava snemalne knjige (Kompaktna in pregledna) -->
-          <div style="border-bottom: 2px solid #6366f1; padding-bottom: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; page-break-inside: avoid; break-inside: avoid;">
-            <div style="flex: 1;">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
-                <span style="font-size: 8.5pt; font-weight: 800; text-transform: uppercase; color: #4f46e5; letter-spacing: 0.05em; background: #eef2ff; padding: 2px 6px; border-radius: 4px;">Snemalna knjiga</span>
-                <span style="font-size: 9.5pt; font-weight: 700; color: #475569;">${escapeHtml(client.company_name)}</span>
-              </div>
-              <h1 style="font-size: 15pt; font-weight: 900; margin: 2px 0 3px 0; color: #0f172a; line-height: 1.25;">
-                ${escapeHtml(script.title || 'Brez naslova')}
-              </h1>
-              <div style="font-size: 9pt; color: #64748b; display: flex; flex-wrap: wrap; gap: 10px;">
-                <span>Format: <strong style="color: #1e293b;">${escapeHtml(script.format || 'Reels / Video')}</strong></span>
-                ${script.pillar ? `<span>Steber: <strong style="color: #1e293b;">${escapeHtml(script.pillar)}</strong></span>` : ''}
-              </div>
-            </div>
-            <div style="text-align: right; font-size: 9pt; color: #64748b; white-space: nowrap; line-height: 1.35;">
-              <div>Mesec norme: <strong style="color: #0f172a;">${escapeHtml(script.target_month || '/')}</strong></div>
-              <div>Izvoz: <strong>${new Date().toLocaleDateString('sl-SI')}</strong></div>
+          <!-- Čist naslov scenarija brez datumov in odvečnih glava/noga tekstov -->
+          <div style="border-bottom: 2px solid #6366f1; padding-bottom: 6px; margin-bottom: 10px; page-break-inside: avoid; break-inside: avoid;">
+            <h1 style="font-size: 15pt; font-weight: 900; margin: 0 0 3px 0; color: #0f172a; line-height: 1.25;">
+              ${escapeHtml(script.title || 'Brez naslova')}
+            </h1>
+            <div style="font-size: 9pt; color: #64748b; display: flex; flex-wrap: wrap; gap: 12px;">
+              <span>Format: <strong style="color: #1e293b;">${escapeHtml(script.format || 'Reels / Video')}</strong></span>
+              ${script.pillar ? `<span>Steber: <strong style="color: #1e293b;">${escapeHtml(script.pillar)}</strong></span>` : ''}
             </div>
           </div>
 
@@ -8152,7 +8167,7 @@
           ` : ''}
 
           <!-- Vsebina scenarija (Brez umetnih okvirjev in odvečnih praznin) -->
-          <div style="font-size: 10pt; line-height: 1.42; color: #1e293b;">
+          <div style="font-size: 10pt; line-height: 1.45; color: #1e293b;">
             ${formatScriptPrintText(scriptText)}
           </div>
 
@@ -8165,6 +8180,18 @@
 
         </div>
       `;
+    }
+
+    function executeCleanPrint() {
+      const originalTitle = document.title;
+      document.title = ' ';
+      const restoreTitle = () => {
+        document.title = originalTitle;
+        window.removeEventListener('afterprint', restoreTitle);
+      };
+      window.addEventListener('afterprint', restoreTitle);
+      window.print();
+      setTimeout(restoreTitle, 1000);
     }
 
     // --- NATIS POSAMEZNEGA SCENARIJA (PDF / PRINT FORM) ---
@@ -8181,7 +8208,7 @@
         </div>
       `;
 
-      window.print();
+      executeCleanPrint();
     }
 
     // --- NATIS VSEH SCENARIJEV (VSAK V SVOJEM PROSTORU / NA SVOJI STRANI) ---
@@ -8210,7 +8237,7 @@
         </div>
       `).join('');
 
-      window.print();
+      executeCleanPrint();
     }
 
     async function handleDeleteScriptPage(clientId, scriptId) {
@@ -9546,7 +9573,8 @@ Odgovori se samodejno sproti shranjujejo. Hvala za vaš čas!`;
       md += `2. **Ton komunikacije:** Strogo uporabljaj odobrene besede in se izogibaj prepovedanim izrazom.\n`;
       md += `3. **Ciljna skupina:** Nagovarjaj točno določeno primarno persono in rešuj njene bolečine (pain points).\n`;
       md += `4. **Vsebinski stebri:** Vsebine umeščaj v opredeljene stebre in uporabljaj pripravljene ključne teme in CTA-je.\n`;
-      md += `5. **Marketinški cilji:** Delaj v smeri definiranih kratkoročnih in dolgoročnih ciljev ter KPI-jev.\n\n`;
+      md += `5. **Marketinški cilji:** Delaj v smeri definiranih kratkoročnih in dolgoročnih ciljev ter KPI-jev.\n`;
+      md += `6. **Struktura scenarijev za snemanje (SAMO TEKST, BREZ SLIK):** Ko pripravljaš scenarije, jih strukturiraj maksimalno pregledno, jedrnato in berljivo za neposredno uporabo na snemanju (ločene faze: HOOK, JEDRO po kadrih z jasnimi oznakami *Vizualni kader / Govor / Tekst na zaslonu*, CTA in TEHNIČNA NAVODILA). **Strogo ti je prepovedano generirati ali pošiljati slike** — za scenarij je potreben izključno čist tekst.\n\n`;
       md += `---\n\n`;
 
       // -------------------------------------------------------------
@@ -9983,14 +10011,25 @@ Odgovori se samodejno sproti shranjujejo. Hvala za vaš čas!`;
       const locations = prod.resources?.locations || '';
 
       const companyName = client.company_name || 'Naročnik';
-      const industry = fields.q1_industry || fields.company_description || 'Storitve / Izdelki';
-      const targetAudience = fields.q2_audience || brand.target_audience || fields.q4_target_customer || 'Splošna ciljna publika';
-      const tone = brand.tone_of_voice || brand.archetype || 'Avtentičen, strokoven, dinamičen';
+      const industry = fields.q1_industry || fields.q1_text || fields.company_description || 'Storitve / Izdelki';
+      const rawTarget = fields.q2_audience || (typeof brand.target_audience === 'object' ? brand.target_audience?.primary : brand.target_audience) || fields.q10_text || fields.q4_target_customer || 'Splošna ciljna publika';
+      const rawTone = (typeof brand.tone_of_voice === 'object' ? (brand.tone_of_voice?.rules || brand.tone_of_voice?.words_to_use) : brand.tone_of_voice) || brand.personality || brand.archetype || fields.q19_text || 'Avtentičen, strokoven, dinamičen';
+      const targetAudience = String(rawTarget).trim();
+      const tone = String(rawTone).trim();
 
-      const promptText = `# NAVODILO ZA AI AGENTA: IZDELAVA KONČNEGA SCENARIJA ZA VSEBINO
+      const promptText = `# NAVODILO ZA AI AGENTA: IZDELAVA KONČNEGA SCENARIJA ZA SNEMANJE
 
-Ti si specialist za ustvarjanje viralnih kratkih video formatov (Reels, TikTok, Shorts) in sodobnih vsebinskih kampanj. 
-Tvoja naloga je, da na podlagi spodnjih parametrov in avtorjevega okvirnega koncepta skonstruiraš celovit, pripravljen končni scenarij z močnim HOOK-om, dinamičnim JEDROM in jasnim POZIVOM K DEJANJU (CTA).
+Ti si specialist za ustvarjanje viralnih kratkih video formatov (Reels, TikTok, Shorts) in sodobnih vsebinskih kampanj.
+Tvoja naloga je, da na podlagi spodnjih parametrov in avtorjevega okvirnega koncepta skonstruiraš pregleden, jedrnat in takoj uporaben končni scenarij (snemalno knjigo), ki se bo uporabljal neposredno na snemanju.
+
+---
+
+## ⚠️ KRITIČNA PRAVILA ZA IZHOD (OBVEZNO UPOŠTEVAJ):
+1. **STROGA PREPOVED SLIK:** NE generiraj, NE išči in NE pošiljaj nobenih slik, fotografij, skic ali vizualnih predogledov. Za scenarij je potreben **IZKLJUČNO TEKST**.
+2. **PRILAGOJENO ZA BRANJE NA SNEMANJU:** Scenarij bom bral neposredno na lokaciji snemanja, zato mora biti izjemno pregleden, čist, zračen in enostaven za hitro branje:
+   - Brez dolgih in gostih odstavkov ("wall of text").
+   - Brez uvodnega ali zaključnega klepeta AI-ja (npr. "Seveda, tukaj je scenarij...") — vrni samo čist scenarij.
+   - Vsak kader oziroma točko razdeli na kratke, jasno označene vrstice: **Vizualni kader**, **Govor** (točno besedilo v narekovajih za izgovorjavo pred kamero / VO) in **Tekst na zaslonu**.
 
 ---
 
@@ -10019,29 +10058,38 @@ ${concept || 'Avtor je določil naslov in format ter želi kreativen, privlačen
 
 ---
 
-## 4. SMERNICE ZA KONSTRUIRANJE KONČNEGA SCENARIJA (PO FAZAH):
-Scenarij obvezno strukturiraj natančno po spodnjih 4 fazah:
+## 4. OBVEZNA STRUKTURA SCENARIJA (NATANČNO PO TEH 4 FAZAH):
 
-### FAZA 1: HOOK / TRNEK (0–3 sekunde) — Ustavitev drsenja
-- Stop-scroll moment: Brez uvodnih pozdravov ali praznega uvoda!
-- **Verbalni hook:** Močno vprašanje, razbitje razširjenega mita, provokativna trditev ali neposredna bolečina gledalca.
-- **Vizualni hook:** Dinamičen gib v 1. sekundi, nepričakovan kot kamere, prerez izdelka, ASMR zvok ali hiter rez.
+FAZA 1: HOOK / TRNEK (0–3 sekunde)
+- Vizualni kader: [Kratek, konkreten opis prvega kadra in gibanja v 1. sekundi za ustavitev drsenja]
+- Govor: "[Točen stavek, vprašanje ali provokativna trditev brez uvodnih pozdravov]"
+- Tekst na zaslonu: [Kratek, udaren napis na zaslonu]
 
-### FAZA 2: JEDRO & VREDNOST
-- Jasna, privlačna zgodba ali postopek rešitve v 3–4 jedrnatih točkah.
-- **Vizualni potek (kadri):** Menjava kota / kadra vsake 2–4 sekunde (B-roll kadri, bližnji posnetki, detajli, demonstracija v praksi).
-- **Govorno besedilo:** Kratek, naraven, tekoč govor (voiceover ali govor v kamero brez praznih mašil).
+FAZA 2: JEDRO & VREDNOST (Po kadrih — menjava na 2–4 sekunde)
+Kader 1:
+- Vizualni kader: [Kaj točno snemamo, kot kamere, dejanje]
+- Govor: "[Kratek, naraven in tekoč govor brez mašil]"
+- Tekst na zaslonu: [Ključna beseda / poudarek, če je potreben]
 
-### FAZA 3: POZIV K DEJANJU (CTA)
-- En sam, jasen in konkreten poziv k akciji (npr. "Shrani ta video za naslednjič", "Deli s prijateljem", "Napiši besedo [KLJUČ] v komentar").
+Kader 2:
+- Vizualni kader: [Naslednji kader / B-roll / bližnji posnetek / demonstracija]
+- Govor: "[Nadaljevanje govora]"
+- Tekst na zaslonu: [Ključna beseda / poudarek]
 
-### FAZA 4: TEHNIČNA & PRODUKCIJSKA NAVODILA
-- Kratek nasvet glede ambienta, osvetlitve, zvoka ali rekvizitov za to sceno.
+Kader 3 (in po potrebi Kader 4):
+- Vizualni kader: [Naslednji kader]
+- Govor: "[Nadaljevanje govora]"
+- Tekst na zaslonu: [Ključna beseda / poudarek]
 
----
+FAZA 3: POZIV K DEJANJU (CTA)
+- Vizualni kader: [Zaključni kader]
+- Govor: "[En sam, jasen in konkreten poziv k akciji]"
+- Tekst na zaslonu: [Kratek tekstovni CTA]
 
-## IZHOD:
-Vrni končni scenarij v pregledni markdown obliki z jasno označenimi fazami (HOOK, JEDRO s kadri in govorom, CTA ter TEHNIČNA NAVODILA), primerno za neposredno potrditev s strani naročnika in snemanje.`;
+FAZA 4: TEHNIČNA & PRODUKCIJSKA NAVODILA
+- Lokacija & osvetlitev: [Kratek napotek]
+- Rekviziti & priprava: [Kaj potrebujemo na snemanju]
+- Energija & tempo: [Napotek za govorca in dinamiko rezov]`;
 
       // Copy to clipboard
       navigator.clipboard.writeText(promptText).then(() => {
