@@ -8192,7 +8192,11 @@
 
     // --- POMOŽNA FUNKCIJA: STRNJEN IN PREGLEDEN IZPIS BESEDILA SCENARIJA ---
     function formatInlineMarkdownPrint(text) {
-      return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong style="color: #0f172a; font-weight: 700;">$1</strong>');
+      let escaped = escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong style="color: #0f172a; font-weight: 700;">$1</strong>');
+      // Pretvori URL-je (http://, https:// ali www.) v klikabilne povezave v PDF-ju
+      escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all;">$1</a>');
+      escaped = escaped.replace(/(^|[^/])(www\.[^\s<]+)/g, '$1<a href="https://$2" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all;">$2</a>');
+      return escaped;
     }
 
     function formatScriptPrintText(rawText) {
