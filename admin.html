@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sl" class="h-full bg-slate-950 text-slate-100">
+<html lang="sl" class="h-full bg-slate-50 text-slate-800 light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -113,9 +113,492 @@
     }
 
     /* =====================================================================
+       LIGHT MODE DESIGN SYSTEM (SVETLI NAČIN ZA CELOTEN SUPER ADMIN)
+       Vsi elementi CRM-ja so natančno prilagojeni za svetel, čist,
+       visoko-kontrasten in eleganten izgled.
+       ===================================================================== */
+
+    :root, html, body {
+      background-color: #f8fafc !important; /* slate-50 */
+      color: #0f172a !important; /* slate-900 */
+      color-scheme: light;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9 !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1 !important;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8 !important;
+    }
+
+    /* ---------- Ozadja kartic in površin ---------- */
+    .bg-slate-900,
+    .bg-slate-900\/40,
+    .bg-slate-900\/50,
+    .bg-slate-900\/60,
+    .bg-slate-900\/70,
+    .bg-slate-900\/80,
+    .bg-slate-900\/90,
+    .bg-slate-900\/95 {
+      background-color: #ffffff !important;
+    }
+
+    .bg-slate-950,
+    .bg-slate-950\/30,
+    .bg-slate-950\/40,
+    .bg-slate-950\/50,
+    .bg-slate-950\/60,
+    .bg-slate-950\/80,
+    .bg-slate-950\/85,
+    .bg-slate-950\/90 {
+      background-color: #f8fafc !important;
+    }
+
+    .bg-slate-850,
+    .bg-slate-800,
+    .bg-slate-800\/60,
+    .bg-slate-800\/80,
+    .bg-slate-800\/90 {
+      background-color: #f1f5f9 !important;
+    }
+
+    .bg-slate-700 {
+      background-color: #e2e8f0 !important;
+    }
+
+    /* Hover stanja ozadij */
+    .hover\:bg-slate-700:hover,
+    .hover\:bg-slate-800:hover,
+    .hover\:bg-slate-850:hover,
+    .hover\:bg-slate-900:hover,
+    .hover\:bg-slate-950\/60:hover {
+      background-color: #f1f5f9 !important;
+    }
+    .group:hover .group-hover\:bg-slate-800,
+    .group:hover .group-hover\:bg-slate-900 {
+      background-color: #f1f5f9 !important;
+    }
+
+    /* ---------- Robovi (Borders) ---------- */
+    .border-slate-900,
+    .border-slate-900\/60,
+    .border-slate-800,
+    .border-slate-800\/40,
+    .border-slate-800\/60,
+    .border-slate-800\/70,
+    .border-slate-800\/80,
+    .border-slate-800\/90,
+    .border-slate-700,
+    .border-slate-700\/50,
+    .border-slate-700\/80,
+    .border-white\/5,
+    .border-white\/10,
+    .border-white\/15,
+    .border-white\/20 {
+      border-color: #e2e8f0 !important; /* slate-200 */
+    }
+
+    .hover\:border-slate-700:hover,
+    .hover\:border-slate-700\/80:hover,
+    .hover\:border-slate-700\/90:hover,
+    .hover\:border-slate-600:hover,
+    .group:hover .group-hover\:border-slate-700 {
+      border-color: #cbd5e1 !important; /* slate-300 */
+    }
+
+    .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+    .divide-slate-900 > :not([hidden]) ~ :not([hidden]) {
+      border-color: #f1f5f9 !important;
+    }
+
+    /* ---------- Barve besedila ---------- */
+    .text-slate-100,
+    .text-slate-200 {
+      color: #0f172a !important; /* slate-900 */
+    }
+    .text-slate-300,
+    .text-slate-300\/80,
+    .text-slate-300\/85 {
+      color: #334155 !important; /* slate-700 */
+    }
+    .text-slate-400 {
+      color: #64748b !important; /* slate-500 */
+    }
+    .text-slate-500 {
+      color: #64748b !important; /* slate-500 */
+    }
+    .text-slate-600 {
+      color: #94a3b8 !important; /* slate-400 */
+    }
+
+    .hover\:text-white:hover {
+      color: #0f172a !important;
+    }
+    .group:hover .group-hover\:text-white {
+      color: #0f172a !important;
+    }
+    .group:hover .group-hover\:text-slate-200,
+    .group:hover .group-hover\:text-slate-300 {
+      color: #1e293b !important;
+    }
+
+    /* Splošni text-white postane temen na svetlih karticah in straneh */
+    .text-white {
+      color: #0f172a !important;
+    }
+
+    /* OHRANIMO BELO BESEDILO na barvnih gumbih, značkah in čipih */
+    button.bg-indigo-600,
+    button.bg-indigo-700,
+    button.bg-primary-600,
+    button.bg-primary-700,
+    button.bg-emerald-600,
+    button.bg-emerald-700,
+    button.bg-brand-600,
+    button.bg-brand-700,
+    button.bg-rose-600,
+    button.bg-rose-700,
+    button.bg-amber-600,
+    button.bg-purple-600,
+    a.bg-indigo-600,
+    a.bg-emerald-600,
+    .bg-indigo-600,
+    .bg-indigo-700,
+    .bg-primary-600,
+    .bg-primary-700,
+    .bg-emerald-600,
+    .bg-emerald-700,
+    .bg-brand-600,
+    .bg-brand-700,
+    .bg-rose-600,
+    .bg-rose-700,
+    .bg-amber-600,
+    .bg-purple-600,
+    .bg-gradient-to-tr.from-indigo-600,
+    .bg-gradient-to-r.from-emerald-600,
+    .bg-gradient-to-r.from-purple-600,
+    [class*="bg-indigo-600"] > *,
+    [class*="bg-primary-600"] > *,
+    [class*="bg-emerald-600"] > *,
+    [class*="bg-brand-600"] > *,
+    [class*="bg-rose-600"] > * {
+      color: #ffffff !important;
+    }
+    .bg-indigo-600 .text-white,
+    .bg-primary-600 .text-white,
+    .bg-emerald-600 .text-white,
+    .bg-brand-600 .text-white,
+    .bg-rose-600 .text-white {
+      color: #ffffff !important;
+    }
+
+    /* ---------- Vnosna polja (Inputs, Selects, Textareas) ---------- */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+    select:focus,
+    textarea:focus {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+    }
+    input::placeholder,
+    textarea::placeholder {
+      color: #94a3b8 !important;
+    }
+    option {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+    }
+
+    /* ---------- Statusne značke in akcenti ---------- */
+    /* Smaragdno / Zeleno */
+    .text-emerald-400,
+    .text-emerald-300 {
+      color: #047857 !important; /* emerald-700 */
+    }
+    .bg-emerald-500\/10,
+    .bg-emerald-500\/15,
+    .bg-emerald-500\/20,
+    .bg-emerald-500\/25,
+    .bg-emerald-950,
+    .bg-emerald-950\/20,
+    .bg-emerald-950\/30,
+    .bg-emerald-950\/80,
+    .bg-emerald-950\/85,
+    .bg-emerald-900\/30,
+    .bg-emerald-900\/90 {
+      background-color: #ecfdf5 !important; /* emerald-50 */
+    }
+    .border-emerald-500\/20,
+    .border-emerald-500\/30,
+    .border-emerald-500\/40,
+    .border-emerald-500\/50 {
+      border-color: #a7f3d0 !important; /* emerald-200 */
+    }
+
+    /* Indigo */
+    .text-indigo-400,
+    .text-indigo-300,
+    .text-indigo-200 {
+      color: #4338ca !important; /* indigo-700 */
+    }
+    .bg-indigo-500\/10,
+    .bg-indigo-500\/15,
+    .bg-indigo-500\/20,
+    .bg-indigo-500\/25,
+    .bg-indigo-950,
+    .bg-indigo-950\/20,
+    .bg-indigo-950\/30,
+    .bg-indigo-950\/70,
+    .bg-indigo-950\/80,
+    .bg-indigo-900\/30,
+    .bg-indigo-900\/60 {
+      background-color: #eef2ff !important; /* indigo-50 */
+    }
+    .border-indigo-500\/20,
+    .border-indigo-500\/30,
+    .border-indigo-500\/40 {
+      border-color: #c7d2fe !important; /* indigo-200 */
+    }
+
+    /* Jantar / Rumeno */
+    .text-amber-400,
+    .text-amber-300,
+    .text-amber-200,
+    .text-yellow-400,
+    .text-yellow-300 {
+      color: #b45309 !important; /* amber-700 */
+    }
+    .bg-amber-500\/10,
+    .bg-amber-500\/15,
+    .bg-amber-500\/20,
+    .bg-amber-500\/25,
+    .bg-amber-950,
+    .bg-amber-950\/20,
+    .bg-amber-950\/30,
+    .bg-amber-950\/70,
+    .bg-amber-950\/85,
+    .bg-amber-900\/90,
+    .bg-yellow-950\/20 {
+      background-color: #fffbeb !important; /* amber-50 */
+    }
+    .border-amber-500\/20,
+    .border-amber-500\/30,
+    .border-amber-500\/35,
+    .border-amber-500\/40,
+    .border-amber-500\/50,
+    .border-yellow-500\/30 {
+      border-color: #fde68a !important; /* amber-200 */
+    }
+
+    /* Vrtnica / Rdeče */
+    .text-rose-400,
+    .text-rose-300,
+    .text-rose-200,
+    .text-red-400 {
+      color: #be123c !important; /* rose-700 */
+    }
+    .bg-rose-500\/10,
+    .bg-rose-500\/15,
+    .bg-rose-500\/20,
+    .bg-rose-500\/25,
+    .bg-rose-950,
+    .bg-rose-950\/20,
+    .bg-rose-950\/30,
+    .bg-rose-950\/70,
+    .bg-rose-950\/85,
+    .bg-rose-900\/90,
+    .bg-pink-950\/20 {
+      background-color: #fff1f2 !important; /* rose-50 */
+    }
+    .border-rose-500\/20,
+    .border-rose-500\/30,
+    .border-rose-500\/35,
+    .border-rose-500\/40,
+    .border-rose-500\/50,
+    .border-pink-500\/30 {
+      border-color: #fecdd3 !important; /* rose-200 */
+    }
+
+    /* Vijolično */
+    .text-purple-400,
+    .text-purple-300,
+    .text-purple-200 {
+      color: #6b21a8 !important; /* purple-800 */
+    }
+    .bg-purple-500\/10,
+    .bg-purple-500\/15,
+    .bg-purple-500\/20,
+    .bg-purple-500\/25,
+    .bg-purple-950,
+    .bg-purple-950\/20,
+    .bg-purple-950\/30,
+    .bg-purple-950\/70,
+    .bg-purple-950\/85,
+    .bg-purple-900\/90 {
+      background-color: #faf5ff !important; /* purple-50 */
+    }
+    .border-purple-500\/20,
+    .border-purple-500\/30,
+    .border-purple-500\/35,
+    .border-purple-500\/40,
+    .border-purple-500\/50 {
+      border-color: #e9d5ff !important; /* purple-200 */
+    }
+
+    /* Sinje modro / Modro */
+    .text-sky-400,
+    .text-sky-300,
+    .text-sky-100,
+    .text-blue-400,
+    .text-blue-300 {
+      color: #0369a1 !important; /* sky-700 */
+    }
+    .bg-sky-500\/10,
+    .bg-sky-500\/15,
+    .bg-sky-500\/20,
+    .bg-sky-950,
+    .bg-sky-950\/30,
+    .bg-sky-950\/85,
+    .bg-sky-900\/90,
+    .bg-blue-950\/20,
+    .bg-teal-950\/20 {
+      background-color: #f0f9ff !important; /* sky-50 */
+    }
+    .border-sky-500\/20,
+    .border-sky-500\/30,
+    .border-sky-500\/40,
+    .border-sky-500\/50,
+    .border-blue-500\/30,
+    .border-teal-500\/30 {
+      border-color: #bae6fd !important; /* sky-200 */
+    }
+
+    /* Roza (Pink) */
+    .text-pink-300,
+    .text-pink-400 {
+      color: #be185d !important; /* pink-700 */
+    }
+    .bg-pink-500\/15,
+    .bg-pink-500\/20 {
+      background-color: #fdf2f8 !important; /* pink-50 */
+    }
+
+    /* Teal */
+    .text-teal-300,
+    .text-teal-400 {
+      color: #0f766e !important; /* teal-700 */
+    }
+    .bg-teal-500\/15,
+    .bg-teal-500\/20 {
+      background-color: #f0fdfa !important; /* teal-50 */
+    }
+
+    /* ---------- Gradienti in kartice stebrov vsebine ---------- */
+    .to-slate-950\/90 {
+      --tw-gradient-to: #ffffff !important;
+    }
+    .from-sky-950\/30 { --tw-gradient-from: #f0f9ff !important; }
+    .from-amber-950\/30 { --tw-gradient-from: #fffbeb !important; }
+    .from-purple-950\/30 { --tw-gradient-from: #faf5ff !important; }
+    .from-emerald-950\/30 { --tw-gradient-from: #ecfdf5 !important; }
+    .from-rose-950\/30 { --tw-gradient-from: #fff1f2 !important; }
+    .from-indigo-950\/30, .from-indigo-950\/40 { --tw-gradient-from: #eef2ff !important; }
+
+    /* Avatar v seznamu naročnikov */
+    .from-slate-800.to-slate-700,
+    .from-slate-800 {
+      --tw-gradient-from: #eef2ff !important;
+      --tw-gradient-to: #e0e7ff !important;
+      --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+      color: #4338ca !important;
+      border-color: #c7d2fe !important;
+    }
+
+    /* ---------- Modalna okna in zakritja ---------- */
+    .fixed.inset-0.bg-slate-950\/80,
+    .fixed.inset-0.bg-slate-900\/80,
+    .fixed.inset-0.bg-black\/70,
+    .fixed.inset-0.bg-black\/80 {
+      background-color: rgba(15, 23, 42, 0.45) !important;
+      backdrop-filter: blur(4px) !important;
+    }
+    body > div.fixed.inset-0 > div,
+    #exportMdModal > div,
+    #createModal > div,
+    #editClientModal > div,
+    #quickIdeaModal > div,
+    #studioScriptsListModal > div,
+    #scriptGuidelinesModal > div,
+    #aiScriptPromptModal > div,
+    #studioIdeasModal > div,
+    #addPillarModal > div,
+    #pillarDetailModal > div,
+    #postModal > div,
+    #linkSuccessModal > div {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+    }
+
+    /* Slide-over To-Do predal */
+    #workspaceTodoDrawerOverlay > div:last-child {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: -10px 0 25px -5px rgb(0 0 0 / 0.1) !important;
+    }
+
+    /* ---------- Koledar (Globalni in Operativni) ---------- */
+    .cal-cell {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+    .cal-cell:hover {
+      border-color: #cbd5e1 !important;
+    }
+    .cal-chip {
+      color: inherit !important;
+    }
+    .cal-chip .cal-chip-title {
+      color: #0f172a !important;
+    }
+
+    /* ---------- Produkcija (Kanban) ---------- */
+    .kanban-col {
+      background-color: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    .kanban-col > div:first-child {
+      border-color: #e2e8f0 !important;
+    }
+
+    /* ---------- Toast obvestilo ---------- */
+    #toast > div {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #6366f1 !important;
+      box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15) !important;
+    }
+    #toastMsg {
+      color: #0f172a !important;
+    }
+
+    /* =====================================================================
        MOBILE ONLY (<= 767px)
        Vse spodaj velja izključno za mobilne naprave. Namizni prikaz (>= 768px)
-       ostane nespremenjen.
+       ostane nespremenjen v postavitvi.
        ===================================================================== */
     @media (max-width: 767px) {
       body {
@@ -138,8 +621,9 @@
       body > header {
         -webkit-backdrop-filter: none !important;
         backdrop-filter: none !important;
-        background-color: rgb(15 23 42) !important;
-        box-shadow: 0 4px 14px rgb(0 0 0 / .35) !important;
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        box-shadow: 0 2px 10px rgb(0 0 0 / .05) !important;
       }
       .crm-header-inner {
         flex-wrap: nowrap !important;
@@ -149,7 +633,7 @@
       .crm-brand { gap: .6rem !important; min-width: 0; flex: 1 1 auto; }
       .crm-brand > div:first-child { width: 36px !important; height: 36px !important; border-radius: .75rem !important; }
       .crm-brand p, .crm-brand span { display: none !important; }
-      .crm-brand h1 { font-size: 1rem !important; white-space: nowrap; }
+      .crm-brand h1 { font-size: 1rem !important; white-space: nowrap; color: #0f172a !important; }
       .crm-header-actions { gap: .4rem !important; flex-shrink: 0; }
       .crm-header-actions > * {
         min-width: 40px; min-height: 40px;
@@ -169,8 +653,9 @@
         padding: .4rem .5rem calc(.4rem + env(safe-area-inset-bottom)) !important;
         border-radius: 0 !important;
         border-width: 1px 0 0 0 !important;
-        background: rgb(9 13 22 / .98) !important;
-        box-shadow: 0 -8px 24px rgb(0 0 0 / .45);
+        border-color: #e2e8f0 !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        box-shadow: 0 -4px 20px rgb(0 0 0 / .07);
       }
       #mainNavTabs .top-nav-btn {
         flex-direction: column !important;
@@ -283,16 +768,20 @@
         overflow-y: auto !important;
         border-radius: 1.5rem 1.5rem 0 0 !important;
         padding: 1.1rem 1rem calc(1.25rem + env(safe-area-inset-bottom)) !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border-top: 1px solid #e2e8f0 !important;
+        box-shadow: 0 -10px 30px rgb(0 0 0 / .1) !important;
       }
       #workspaceSidebar { padding-bottom: calc(1.25rem + env(safe-area-inset-bottom)) !important; }
     }
   </style>
 </head>
 
-<body class="min-h-full bg-slate-950 font-sans text-slate-100 antialiased flex flex-col selection:bg-indigo-600 selection:text-white">
+<body class="min-h-full bg-slate-50 font-sans text-slate-800 antialiased flex flex-col selection:bg-indigo-600 selection:text-white">
 
   <!-- TOP HEADER / CRM NAVIGATION -->
-  <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
     <div class="crm-header-inner max-w-[1780px] 2xl:max-w-[1880px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-4">
       
       <!-- Brand & Title -->
@@ -302,28 +791,28 @@
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="font-extrabold text-base sm:text-lg text-white leading-tight tracking-tight">Brand CRM</h1>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Agencijski Portal</span>
+            <h1 class="font-extrabold text-base sm:text-lg text-slate-900 leading-tight tracking-tight">Brand CRM</h1>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">Agencijski Portal</span>
           </div>
-          <p class="text-[11px] font-medium text-slate-400">Upravljanje naročnikov, strategij in koledarja vsebin</p>
+          <p class="text-[11px] font-medium text-slate-500">Upravljanje naročnikov, strategij in koledarja vsebin</p>
         </div>
       </div>
 
       <!-- Main Navigation Tabs -->
-      <nav id="mainNavTabs" class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800/90 text-xs font-semibold">
+      <nav id="mainNavTabs" class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
         <button onclick="switchTopTab('dashboard')" id="tabBtn-dashboard" class="top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-white bg-indigo-600 transition shadow-xs">
           <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
           <span>Pregledna plošča</span>
         </button>
-        <button onclick="switchTopTab('clients')" id="tabBtn-clients" class="top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-400 hover:text-white transition">
+        <button onclick="switchTopTab('clients')" id="tabBtn-clients" class="top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition">
           <i data-lucide="users" class="w-3.5 h-3.5"></i>
           <span>Naročniki (<span id="topClientCount">0</span>)</span>
         </button>
-        <button onclick="switchTopTab('calendar')" id="tabBtn-calendar" class="top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-400 hover:text-white transition">
+        <button onclick="switchTopTab('calendar')" id="tabBtn-calendar" class="top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition">
           <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
           <span>Koledar vsebin</span>
         </button>
-        <button onclick="switchTopTab('production')" id="tabBtn-production" class="top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-400 hover:text-white transition">
+        <button onclick="switchTopTab('production')" id="tabBtn-production" class="top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition">
           <i data-lucide="kanban" class="w-3.5 h-3.5"></i>
           <span>Produkcija</span>
         </button>
@@ -331,17 +820,17 @@
 
       <!-- Right Header Actions -->
       <div class="crm-header-actions flex items-center gap-2 sm:gap-2.5">
-        <button onclick="fetchClients(true)" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700/80 active:scale-95" title="Osveži podatke iz baze">
+        <button onclick="fetchClients(true)" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 rounded-xl transition border border-slate-300 shadow-2xs active:scale-95" title="Osveži podatke iz baze">
           <i id="refreshIcon" data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
           <span class="hidden sm:inline">Osveži</span>
         </button>
 
-        <a href="index.html" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition border border-slate-700/80 active:scale-95" title="Odpri splošni vprašalnik">
+        <a href="index.html" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 rounded-xl transition border border-slate-300 shadow-2xs active:scale-95" title="Odpri splošni vprašalnik">
           <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
           <span class="hidden md:inline">Javni vprašalnik</span>
         </a>
 
-        <button onclick="openCreateModal()" type="button" aria-label="Nov naročnik" title="Nov naročnik" class="crm-newclient-btn inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl shadow-lg shadow-emerald-900/30 transition-all active:scale-95 border border-emerald-500/30">
+        <button onclick="openCreateModal()" type="button" aria-label="Nov naročnik" title="Nov naročnik" class="crm-newclient-btn inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl shadow-md shadow-emerald-900/10 transition-all active:scale-95 border border-emerald-500/30">
           <i data-lucide="plus-circle" class="w-4 h-4"></i>
           <span>+ Nov naročnik</span>
         </button>
@@ -351,15 +840,15 @@
   </header>
 
   <!-- WORKSPACE BREADCRUMB / TOP NOTIFICATION BAR (Visible when in Workspace) -->
-  <div id="workspaceTopBar" class="hidden bg-indigo-950/70 border-b border-indigo-500/20 py-2.5 px-4 sm:px-6 lg:px-8">
+  <div id="workspaceTopBar" class="hidden bg-indigo-50 border-b border-indigo-200 py-2.5 px-4 sm:px-6 lg:px-8">
     <div class="max-w-[1780px] 2xl:max-w-[1880px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
-      <div class="flex items-center gap-2 text-slate-300">
-        <button onclick="closeWorkspace()" class="text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1">
+      <div class="flex items-center gap-2 text-slate-700">
+        <button onclick="closeWorkspace()" class="text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1">
           <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Vsi naročniki
         </button>
-        <span class="text-slate-600">/</span>
-        <span class="text-slate-400">Delovni prostor:</span>
-        <span id="breadcrumbClientName" class="font-bold text-white bg-indigo-900/60 px-2 py-0.5 rounded-md border border-indigo-500/30 truncate max-w-xs">Ime naročnika</span>
+        <span class="text-slate-400">/</span>
+        <span class="text-slate-500">Delovni prostor:</span>
+        <span id="breadcrumbClientName" class="font-bold text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200 truncate max-w-xs shadow-2xs">Ime naročnika</span>
       </div>
     </div>
   </div>
@@ -485,11 +974,11 @@
           </div>
 
           <!-- Quick Tip Card -->
-          <div class="bg-gradient-to-br from-indigo-950/40 to-slate-900/90 border border-indigo-500/20 rounded-3xl p-5">
-            <h4 class="text-xs font-bold text-indigo-300 flex items-center gap-2 mb-1.5">
-              <i data-lucide="zap" class="w-4 h-4 text-indigo-400"></i> Agencijski potek dela
+          <div class="bg-gradient-to-br from-indigo-50/80 to-white border border-indigo-200/80 rounded-3xl p-5 shadow-2xs">
+            <h4 class="text-xs font-bold text-indigo-700 flex items-center gap-2 mb-1.5">
+              <i data-lucide="zap" class="w-4 h-4 text-indigo-500"></i> Agencijski potek dela
             </h4>
-            <p class="text-xs text-slate-400 leading-relaxed">
+            <p class="text-xs text-slate-600 leading-relaxed">
               Ustvarite naročnika → naročnik izpolni unikatni vprašalnik → vnesite tržno raziskavo in oblikujte strategijo znamke → določite vsebinske stebre → načrtujte mesečni koledar objav.
             </p>
           </div>
@@ -687,7 +1176,7 @@
     <section id="view-workspace" class="hidden space-y-6">
       
       <!-- Top Client Header & Metadata Bar -->
-      <div id="workspaceHeaderContainer" class="bg-gradient-to-br from-slate-900 to-indigo-950/60 border border-indigo-500/30 rounded-3xl p-5 sm:p-7 shadow-xl">
+      <div id="workspaceHeaderContainer" class="bg-white border border-slate-200 rounded-3xl p-5 sm:p-7 shadow-sm">
         <!-- Injected dynamically by JS -->
       </div>
 
@@ -1980,7 +2469,7 @@
 
       // Update button styling
       document.querySelectorAll('.top-nav-btn').forEach(btn => {
-        btn.className = 'top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-400 hover:text-white transition';
+        btn.className = 'top-nav-btn px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition';
       });
       const activeBtn = document.getElementById(`tabBtn-${tabName}`);
       if (activeBtn) {
@@ -2180,7 +2669,7 @@
         if (btn.dataset.clientFilter === filter) {
           btn.className = 'client-filter-btn px-3 py-1.5 rounded-xl font-bold bg-indigo-600 text-white transition shrink-0';
         } else {
-          btn.className = 'client-filter-btn px-3 py-1.5 rounded-xl font-semibold text-slate-400 hover:text-white transition shrink-0';
+          btn.className = 'client-filter-btn px-3 py-1.5 rounded-xl font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition shrink-0';
         }
       });
       renderClientsTab();
@@ -2886,16 +3375,16 @@
         <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
           <!-- Left: Identity & Contact Info -->
           <div class="flex items-start gap-4 min-w-0">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-slate-800 to-indigo-700 border border-indigo-500/40 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-lg">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 border border-indigo-500/40 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-md">
               ${initial}
             </div>
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2 mb-1.5">
-                <h2 class="text-xl sm:text-2xl font-black text-white leading-tight">
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
                   ${escapeHtml(client.company_name || 'Neimenovano podjetje')}
                 </h2>
                 <!-- Status dropdown -->
-                <select onchange="updateClientStatusDirect('${client.id}', this.value)" class="text-xs font-bold uppercase rounded-lg px-2.5 py-1 bg-slate-950 border ${statusInfo.color} focus:outline-none cursor-pointer">
+                <select onchange="updateClientStatusDirect('${client.id}', this.value)" class="text-xs font-bold uppercase rounded-lg px-2.5 py-1 bg-white border ${statusInfo.color} focus:outline-none cursor-pointer">
                   <option value="new" ${client.status === 'new' ? 'selected' : ''}>Novo vabilo</option>
                   <option value="questionnaire_in_progress" ${client.status === 'questionnaire_in_progress' ? 'selected' : ''}>Vprašalnik v teku</option>
                   <option value="questionnaire_completed" ${client.status === 'questionnaire_completed' ? 'selected' : ''}>Vprašalnik zaključen</option>
@@ -2907,61 +3396,61 @@
               </div>
 
               <!-- Contact metadata row: ime, telefonska, mail, spletna stran -->
-              <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-300 mt-2">
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-600 mt-2">
                 <!-- 1. Ime (not clickable) -->
                 ${client.contact_person ? `
-                  <span class="flex items-center gap-1.5 text-slate-300">
-                    <i data-lucide="user" class="w-3.5 h-3.5 text-indigo-400"></i>
+                  <span class="flex items-center gap-1.5 text-slate-700">
+                    <i data-lucide="user" class="w-3.5 h-3.5 text-indigo-500"></i>
                     <span>${escapeHtml(client.contact_person)}</span>
                   </span>
                 ` : `
-                  <span class="flex items-center gap-1.5 text-slate-500">
-                    <i data-lucide="user" class="w-3.5 h-3.5 text-slate-600"></i>
+                  <span class="flex items-center gap-1.5 text-slate-400">
+                    <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
                     <span>Brez kontakta</span>
                   </span>
                 `}
 
                 <!-- 2. Telefonska (clickable -> tel: ali klik za dodajanje) -->
                 ${clientPhone ? `
-                  <a href="tel:${escapeHtml(phoneClean)}" class="flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition underline-offset-2 hover:underline" title="Pokliči naročnika: ${escapeHtml(clientPhone)}">
-                    <i data-lucide="phone" class="w-3.5 h-3.5 text-indigo-400"></i>
+                  <a href="tel:${escapeHtml(phoneClean)}" class="flex items-center gap-1.5 text-slate-700 hover:text-indigo-600 transition underline-offset-2 hover:underline" title="Pokliči naročnika: ${escapeHtml(clientPhone)}">
+                    <i data-lucide="phone" class="w-3.5 h-3.5 text-indigo-500"></i>
                     <span>${escapeHtml(clientPhone)}</span>
                   </a>
                 ` : `
-                  <button type="button" onclick="openEditClientModal('${client.id}')" class="flex items-center gap-1.5 text-slate-400 hover:text-amber-400 transition" title="Klikni za vnos telefonske številke">
-                    <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <button type="button" onclick="openEditClientModal('${client.id}')" class="flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 transition" title="Klikni za vnos telefonske številke">
+                    <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400"></i>
                     <span>+ Dodaj telefon</span>
                   </button>
                 `}
 
                 <!-- 3. Mail (clickable -> mailto: ali klik za dodajanje) -->
                 ${client.email ? `
-                  <a href="mailto:${escapeHtml(client.email)}" class="flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition underline-offset-2 hover:underline" title="Pošlji e-pošto: ${escapeHtml(client.email)}">
-                    <i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i>
+                  <a href="mailto:${escapeHtml(client.email)}" class="flex items-center gap-1.5 text-slate-700 hover:text-indigo-600 transition underline-offset-2 hover:underline" title="Pošlji e-pošto: ${escapeHtml(client.email)}">
+                    <i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-500"></i>
                     <span>${escapeHtml(client.email)}</span>
                   </a>
                 ` : `
-                  <button type="button" onclick="openEditClientModal('${client.id}')" class="flex items-center gap-1.5 text-slate-400 hover:text-amber-400 transition" title="Klikni za vnos e-pošte">
-                    <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <button type="button" onclick="openEditClientModal('${client.id}')" class="flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 transition" title="Klikni za vnos e-pošte">
+                    <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i>
                     <span>+ Dodaj e-pošto</span>
                   </button>
                 `}
 
                 <!-- 4. Spletna stran (clickable -> open website) -->
                 ${client.website ? `
-                  <a href="${escapeHtml(websiteUrl)}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition underline-offset-2 hover:underline" title="Odpri spletno stran: ${escapeHtml(client.website)}">
-                    <i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-400"></i>
+                  <a href="${escapeHtml(websiteUrl)}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-slate-700 hover:text-indigo-600 transition underline-offset-2 hover:underline" title="Odpri spletno stran: ${escapeHtml(client.website)}">
+                    <i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-500"></i>
                     <span>${escapeHtml(client.website)}</span>
                   </a>
                 ` : `
-                  <button type="button" onclick="openEditClientModal('${client.id}')" class="flex items-center gap-1.5 text-slate-400 hover:text-amber-400 transition" title="Klikni za vnos spletne strani">
-                    <i data-lucide="globe" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <button type="button" onclick="openEditClientModal('${client.id}')" class="flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 transition" title="Klikni za vnos spletne strani">
+                    <i data-lucide="globe" class="w-3.5 h-3.5 text-slate-400"></i>
                     <span>+ Dodaj spletno stran</span>
                   </button>
                 `}
 
-                <span class="text-slate-500">•</span>
-                <span class="text-slate-400">Posodobljeno: ${formatDateTime(client.updated_at || client.created_at)}</span>
+                <span class="text-slate-300">•</span>
+                <span class="text-slate-500">Posodobljeno: ${formatDateTime(client.updated_at || client.created_at)}</span>
               </div>
             </div>
           </div>
