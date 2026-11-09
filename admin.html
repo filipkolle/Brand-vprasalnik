@@ -172,10 +172,12 @@
     }
 
     .bg-slate-950,
+    .bg-slate-950\/20,
     .bg-slate-950\/30,
     .bg-slate-950\/40,
     .bg-slate-950\/50,
     .bg-slate-950\/60,
+    .bg-slate-950\/70,
     .bg-slate-950\/80,
     .bg-slate-950\/85,
     .bg-slate-950\/90 {
@@ -358,14 +360,20 @@
     .bg-emerald-950,
     .bg-emerald-950\/20,
     .bg-emerald-950\/30,
+    .bg-emerald-950\/40,
+    .bg-emerald-950\/50,
+    .bg-emerald-950\/60,
+    .bg-emerald-950\/70,
     .bg-emerald-950\/80,
     .bg-emerald-950\/85,
     .bg-emerald-900\/30,
+    .bg-emerald-900\/60,
     .bg-emerald-900\/90 {
       background-color: #ecfdf5 !important; /* emerald-50 */
     }
     .border-emerald-500\/20,
     .border-emerald-500\/30,
+    .border-emerald-500\/35,
     .border-emerald-500\/40,
     .border-emerald-500\/50 {
       border-color: #a7f3d0 !important; /* emerald-200 */
@@ -384,15 +392,22 @@
     .bg-indigo-950,
     .bg-indigo-950\/20,
     .bg-indigo-950\/30,
+    .bg-indigo-950\/40,
+    .bg-indigo-950\/50,
+    .bg-indigo-950\/60,
     .bg-indigo-950\/70,
     .bg-indigo-950\/80,
+    .bg-indigo-950\/85,
     .bg-indigo-900\/30,
-    .bg-indigo-900\/60 {
+    .bg-indigo-900\/60,
+    .bg-indigo-900\/90 {
       background-color: #eef2ff !important; /* indigo-50 */
     }
     .border-indigo-500\/20,
     .border-indigo-500\/30,
-    .border-indigo-500\/40 {
+    .border-indigo-500\/35,
+    .border-indigo-500\/40,
+    .border-indigo-500\/50 {
       border-color: #c7d2fe !important; /* indigo-200 */
     }
 
@@ -411,8 +426,14 @@
     .bg-amber-950,
     .bg-amber-950\/20,
     .bg-amber-950\/30,
+    .bg-amber-950\/40,
+    .bg-amber-950\/50,
+    .bg-amber-950\/60,
     .bg-amber-950\/70,
+    .bg-amber-950\/80,
     .bg-amber-950\/85,
+    .bg-amber-900\/30,
+    .bg-amber-900\/60,
     .bg-amber-900\/90,
     .bg-yellow-950\/20 {
       background-color: #fffbeb !important; /* amber-50 */
@@ -440,8 +461,14 @@
     .bg-rose-950,
     .bg-rose-950\/20,
     .bg-rose-950\/30,
+    .bg-rose-950\/40,
+    .bg-rose-950\/50,
+    .bg-rose-950\/60,
     .bg-rose-950\/70,
+    .bg-rose-950\/80,
     .bg-rose-950\/85,
+    .bg-rose-900\/30,
+    .bg-rose-900\/60,
     .bg-rose-900\/90,
     .bg-pink-950\/20 {
       background-color: #fff1f2 !important; /* rose-50 */
@@ -468,8 +495,14 @@
     .bg-purple-950,
     .bg-purple-950\/20,
     .bg-purple-950\/30,
+    .bg-purple-950\/40,
+    .bg-purple-950\/50,
+    .bg-purple-950\/60,
     .bg-purple-950\/70,
+    .bg-purple-950\/80,
     .bg-purple-950\/85,
+    .bg-purple-900\/30,
+    .bg-purple-900\/60,
     .bg-purple-900\/90 {
       background-color: #faf5ff !important; /* purple-50 */
     }
@@ -493,8 +526,16 @@
     .bg-sky-500\/15,
     .bg-sky-500\/20,
     .bg-sky-950,
+    .bg-sky-950\/20,
     .bg-sky-950\/30,
+    .bg-sky-950\/40,
+    .bg-sky-950\/50,
+    .bg-sky-950\/60,
+    .bg-sky-950\/70,
+    .bg-sky-950\/80,
     .bg-sky-950\/85,
+    .bg-sky-900\/30,
+    .bg-sky-900\/60,
     .bg-sky-900\/90,
     .bg-blue-950\/20,
     .bg-teal-950\/20 {
@@ -502,6 +543,7 @@
     }
     .border-sky-500\/20,
     .border-sky-500\/30,
+    .border-sky-500\/35,
     .border-sky-500\/40,
     .border-sky-500\/50,
     .border-blue-500\/30,
@@ -1289,7 +1331,7 @@
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between gap-1">
                       <span class="text-xs font-bold block truncate ws-step-title">1. Spoznavanje znamke</span>
-                      <span id="wsBadge-discovery" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-950 border border-indigo-500/30 text-indigo-300">0/20</span>
+                      <span id="wsBadge-discovery" class="ws-step-badge shrink-0 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700">0/20</span>
                     </div>
                     <span class="text-[11px] block truncate ws-step-sub text-slate-400">Vprašalnik naročnika</span>
                   </div>
@@ -1396,12 +1438,12 @@
               </nav>
 
               <!-- Quick Tip / Workflow Helper Card -->
-              <div class="bg-gradient-to-br from-indigo-950/40 to-slate-900/80 border border-indigo-500/20 rounded-2xl p-4">
-                <div class="flex items-center gap-2 mb-1.5 text-indigo-300">
-                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                  <span class="text-xs font-bold">Priporočen naslednji korak</span>
+              <div class="bg-indigo-50/80 border border-indigo-200/80 rounded-2xl p-4 shadow-xs">
+                <div class="flex items-center gap-2 mb-1.5 text-indigo-900 font-bold">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
+                  <span class="text-xs">Priporočen naslednji korak</span>
                 </div>
-                <p id="wsTodoNextStepPrompt" class="text-[11px] text-slate-400 leading-relaxed">
+                <p id="wsTodoNextStepPrompt" class="text-[11px] text-slate-700 leading-relaxed">
                   Preglejte odgovore vprašalnika in nadaljujte z vnosom tržne raziskave.
                 </p>
               </div>
@@ -1409,9 +1451,9 @@
             </div>
 
             <!-- Drawer Footer -->
-            <div class="pt-4 border-t border-slate-800 mt-4">
-              <button type="button" onclick="switchWorkspaceTabAndCloseDrawer('overview')" class="w-full py-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm">
-                <i data-lucide="layout-dashboard" class="w-4 h-4 text-indigo-400"></i>
+            <div class="pt-4 border-t border-slate-200 mt-4">
+              <button type="button" onclick="switchWorkspaceTabAndCloseDrawer('overview')" class="w-full py-2.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-900 text-xs font-bold transition flex items-center justify-center gap-2 shadow-xs">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 text-indigo-600"></i>
                 <span>Odpri Operativni pregled</span>
               </button>
             </div>
@@ -3072,7 +3114,7 @@
               ` : stagePosts.map(p => `
                 <div onclick="openEditPostModal('${p.clientId}', '${p.id}')" class="cursor-pointer group p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-900 transition shadow-xs">
                   <div class="flex items-center justify-between text-[10px] font-bold mb-1">
-                    <span class="px-2 py-0.5 rounded-md bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 truncate max-w-[130px]">${escapeHtml(p.clientName)}</span>
+                    <span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 truncate max-w-[130px] shadow-xs">${escapeHtml(p.clientName)}</span>
                     <span class="text-slate-400 font-mono">${p.platform || 'IG'}</span>
                   </div>
                   <h4 class="text-xs font-bold text-white group-hover:text-indigo-300 transition line-clamp-2 mt-1">
@@ -3180,8 +3222,8 @@
           completed: stats.answeredCount === 20,
           badgeText: `${stats.answeredCount}/20`,
           badgeClass: stats.answeredCount === 20 
-            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-            : (stats.answeredCount > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700')
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            : (stats.answeredCount > 0 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200')
         },
         {
           id: 'research',
@@ -3189,8 +3231,8 @@
           completed: isResearchDone,
           badgeText: (crm.market_research?.competitors?.length > 0) ? `${crm.market_research.competitors.length} konk.` : (isResearchDone ? 'Opravljeno' : 'Čaka'),
           badgeClass: isResearchDone 
-            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
-            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+            : 'bg-slate-100 text-slate-600 border border-slate-200'
         },
         {
           id: 'brand_strategy',
@@ -3198,8 +3240,8 @@
           completed: isBrandDone,
           badgeText: isBrandDone ? 'Opravljeno' : 'Čaka',
           badgeClass: isBrandDone
-            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            : 'bg-slate-100 text-slate-600 border border-slate-200'
         },
         {
           id: 'social_strategy',
@@ -3207,8 +3249,8 @@
           completed: isSocialDone,
           badgeText: (crm.social_media_strategy?.platforms?.length > 0) ? `${crm.social_media_strategy.platforms.length} omrežij` : (isSocialDone ? 'Opravljeno' : 'Čaka'),
           badgeClass: isSocialDone
-            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            : 'bg-slate-100 text-slate-600 border border-slate-200'
         },
         {
           id: 'content_strategy',
@@ -3216,8 +3258,8 @@
           completed: isContentDone,
           badgeText: (crm.content_strategy?.content_pillars?.length > 0) ? `${crm.content_strategy.content_pillars.length} stebrov` : (isContentDone ? 'Opravljeno' : 'Čaka'),
           badgeClass: isContentDone
-            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            : 'bg-slate-100 text-slate-600 border border-slate-200'
         },
         {
           id: 'production_guidelines',
@@ -3225,8 +3267,8 @@
           completed: isProductionDone,
           badgeText: isProductionDone ? 'Opravljeno' : 'Čaka',
           badgeClass: isProductionDone
-            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            : 'bg-slate-100 text-slate-600 border border-slate-200'
         },
         {
           id: 'client_calendar',
@@ -3234,8 +3276,8 @@
           completed: isCalendarDone,
           badgeText: `${postsCount} objav`,
           badgeClass: isCalendarDone 
-            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
-            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+            : 'bg-slate-100 text-slate-600 border border-slate-200'
         },
         {
           id: 'performance',
@@ -3243,8 +3285,8 @@
           completed: isPerformanceDone,
           badgeText: isPerformanceDone ? 'Aktivno' : 'KPI',
           badgeClass: isPerformanceDone
-            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-            : 'bg-slate-800/80 text-slate-400 border border-slate-700/80'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            : 'bg-slate-100 text-slate-600 border border-slate-200'
         }
       ];
 
@@ -3267,30 +3309,30 @@
 
         if (btn) {
           if (isActive) {
-            btn.className = 'ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3 bg-gradient-to-r from-indigo-950/90 to-slate-900 border-l-4 border-l-indigo-500 border-y border-r border-indigo-500/40 text-white shadow-lg shadow-indigo-950/50';
+            btn.className = 'ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3 bg-indigo-50/90 border-l-4 border-l-indigo-600 border-y border-r border-indigo-200 text-indigo-950 shadow-xs';
           } else {
-            btn.className = 'ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3 bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/60 hover:border-slate-700 text-slate-300 hover:text-white';
+            btn.className = 'ws-nav-btn group w-full text-left p-2.5 rounded-2xl border transition-all flex items-center gap-3 bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 hover:text-slate-900';
           }
 
           const titleEl = btn.querySelector('.ws-step-title');
           const subEl = btn.querySelector('.ws-step-sub');
           if (titleEl) {
-            titleEl.className = `text-xs font-bold block truncate ws-step-title ${isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'}`;
+            titleEl.className = `text-xs font-bold block truncate ws-step-title ${isActive ? 'text-indigo-950 font-black' : 'text-slate-800 group-hover:text-slate-900'}`;
           }
           if (subEl) {
-            subEl.className = `text-[11px] block truncate ws-step-sub mt-0.5 ${isActive ? 'text-indigo-300' : 'text-slate-400 group-hover:text-slate-300'}`;
+            subEl.className = `text-[11px] block truncate ws-step-sub mt-0.5 ${isActive ? 'text-indigo-700' : 'text-slate-500 group-hover:text-slate-600'}`;
           }
         }
 
         if (checkEl) {
           if (step.completed) {
-            checkEl.className = `ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all ${isActive ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30 ring-2 ring-emerald-400/60' : 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-400'}`;
+            checkEl.className = `ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all ${isActive ? 'bg-emerald-600 text-white shadow-xs' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'}`;
             checkEl.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>`;
           } else if (isActive) {
-            checkEl.className = 'ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all bg-indigo-600 text-white shadow-md shadow-indigo-600/40 ring-2 ring-indigo-400/60';
+            checkEl.className = 'ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all bg-indigo-600 text-white shadow-xs';
             checkEl.innerHTML = `<span>${step.num}</span>`;
           } else {
-            checkEl.className = 'ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all bg-slate-950 border border-slate-800 text-slate-500 group-hover:border-slate-700 group-hover:text-slate-300';
+            checkEl.className = 'ws-step-indicator w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all bg-slate-100 border border-slate-200 text-slate-500 group-hover:border-slate-300 group-hover:text-slate-700';
             checkEl.innerHTML = `<span>${step.num}</span>`;
           }
         }
@@ -3310,21 +3352,21 @@
       const promptEl = document.getElementById('wsTodoNextStepPrompt');
       if (promptEl) {
         if (stats.answeredCount < 20) {
-          promptEl.innerHTML = `Naročnik je odgovoril na <strong class="text-white">${stats.answeredCount}/20</strong> vprašanj. Dopolnite vprašalnik v <strong>1. Spoznavanje znamke</strong>.`;
+          promptEl.innerHTML = `Naročnik je odgovoril na <strong class="text-indigo-900">${stats.answeredCount}/20</strong> vprašanj. Dopolnite vprašalnik v <strong class="text-slate-900">1. Spoznavanje znamke</strong>.`;
         } else if (!crm.market_research?.competitors?.length && !crm.market_research?.target_audience?.demographics?.trim()) {
-          promptEl.innerHTML = `Vprašalnik je izpolnjen! Naslednji korak: analizirajte trg in vnesite konkurente v <strong>2. Tržna raziskava</strong>.`;
+          promptEl.innerHTML = `Vprašalnik je izpolnjen! Naslednji korak: analizirajte trg in vnesite konkurente v <strong class="text-slate-900">2. Tržna raziskava</strong>.`;
         } else if (!crm.brand_strategy?.positioning?.trim() && !crm.brand_strategy?.usp?.trim()) {
-          promptEl.innerHTML = `Nadaljujte z oblikovanjem pozicioniranja in USP v <strong>3. Strategija znamke</strong>.`;
+          promptEl.innerHTML = `Nadaljujte z oblikovanjem pozicioniranja in USP v <strong class="text-slate-900">3. Strategija znamke</strong>.`;
         } else if (!crm.social_media_strategy?.platforms?.length) {
-          promptEl.innerHTML = `Izberite ključna omrežja in cilje v <strong>4. Strategija omrežij</strong>.`;
+          promptEl.innerHTML = `Izberite ključna omrežja in cilje v <strong class="text-slate-900">4. Strategija omrežij</strong>.`;
         } else if (!crm.content_strategy?.content_pillars?.length) {
-          promptEl.innerHTML = `Definirajte ključne vsebinske stebre v <strong>5. Vsebinska strategija</strong>.`;
+          promptEl.innerHTML = `Definirajte ključne vsebinske stebre v <strong class="text-slate-900">5. Vsebinska strategija</strong>.`;
         } else if (!crm.production_guidelines?.rules?.video_style?.trim() && !crm.production_guidelines?.resources?.locations?.trim()) {
-          promptEl.innerHTML = `Določite smernice za snemanje in copy v <strong>6. Smernice produkcije</strong>.`;
+          promptEl.innerHTML = `Določite smernice za snemanje in copy v <strong class="text-slate-900">6. Smernice produkcije</strong>.`;
         } else if (postsCount === 0) {
-          promptEl.innerHTML = `Strategija je pripravljena! Začnite načrtovati objave v <strong>7. Koledar objav</strong>.`;
+          promptEl.innerHTML = `Strategija je pripravljena! Začnite načrtovati objave v <strong class="text-slate-900">7. Koledar objav</strong>.`;
         } else {
-          promptEl.innerHTML = `Vse faze so aktivne! V koledarju imate <strong class="text-emerald-400">${postsCount} načrtovanih objav</strong>.`;
+          promptEl.innerHTML = `Vse faze so aktivne! V koledarju imate <strong class="text-emerald-700">${postsCount} načrtovanih objav</strong>.`;
         }
       }
 
@@ -3785,7 +3827,7 @@
                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">${g.label}:</span>
                 <div class="flex flex-wrap gap-1.5">
                   ${g.items.map(item => `
-                    <span class="px-2.5 py-1 rounded-lg text-xs bg-indigo-950/80 border border-indigo-500/30 text-indigo-200 font-medium">
+                    <span class="px-2.5 py-1 rounded-lg text-xs bg-indigo-50 border border-indigo-200 text-indigo-700 font-medium shadow-xs">
                       ${escapeHtml(item)}
                     </span>
                   `).join('')}
@@ -3945,14 +3987,14 @@
       let badgeContent = '';
       if (isFromQ) {
         badgeContent = `
-          <span class="text-[10px] text-indigo-300 font-semibold px-2 py-0.5 rounded-md bg-indigo-950/80 border border-indigo-500/30 inline-flex items-center gap-1 shadow-xs" title="Ta odgovor je bil samodejno prevzet iz vprašalnika naročnika">
-            <i data-lucide="sparkles" class="w-3 h-3 text-indigo-400"></i> Prevzeto iz vprašalnika
+          <span class="text-[10px] text-indigo-700 font-semibold px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 inline-flex items-center gap-1 shadow-xs" title="Ta odgovor je bil samodejno prevzet iz vprašalnika naročnika">
+            <i data-lucide="sparkles" class="w-3 h-3 text-indigo-600"></i> Prevzeto iz vprašalnika
           </span>
         `;
       } else if (isCustom && qHasAnswer) {
         badgeContent = `
-          <span class="text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/30 inline-flex items-center gap-1" title="Podatek ste prilagodili v CRM-ju">
-            <i data-lucide="check" class="w-3 h-3"></i> Prilagojeno
+          <span class="text-[10px] text-emerald-700 font-semibold px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 inline-flex items-center gap-1 shadow-xs" title="Podatek ste prilagodili v CRM-ju">
+            <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> Prilagojeno
           </span>
         `;
       }
@@ -4021,19 +4063,19 @@
             </div>
 
             ${(hasQ8Competitors || hasQ8Inspiration) ? `
-              <div class="p-3.5 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="p-3.5 bg-indigo-50 border border-indigo-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
                 <div class="space-y-0.5">
-                  <div class="flex items-center gap-1.5 text-indigo-300 font-bold">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i> Odgovor naročnika iz 8. vprašanja:
+                  <div class="flex items-center gap-1.5 text-indigo-900 font-bold">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i> Odgovor naročnika iz 8. vprašanja:
                   </div>
-                  <div class="text-slate-200">
+                  <div class="text-slate-700">
                     ${hasQ8Competitors ? `<span><strong>Navedeni konkurenti:</strong> ${escapeHtml(fields.q8_competitors)}</span>` : ''}
-                    ${(hasQ8Competitors && hasQ8Inspiration) ? '<span class="text-slate-500 mx-1">•</span>' : ''}
+                    ${(hasQ8Competitors && hasQ8Inspiration) ? '<span class="text-slate-400 mx-1">•</span>' : ''}
                     ${hasQ8Inspiration ? `<span><strong>Vzorniki:</strong> ${escapeHtml(fields.q8_inspiration)}</span>` : ''}
                   </div>
                 </div>
                 ${hasQ8Competitors ? `
-                  <button type="button" onclick="addCompetitorFromQuestionnaire('${escapeHtml(fields.q8_competitors).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition">
+                  <button type="button" onclick="addCompetitorFromQuestionnaire('${escapeHtml(fields.q8_competitors).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-xs">
                     <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Dodaj kot kartico konkurenta
                   </button>
                 ` : ''}
@@ -4554,36 +4596,36 @@
             </div>
 
             <!-- Distribution & Volume Summary -->
-            <div class="p-5 rounded-3xl bg-gradient-to-br from-indigo-950/60 via-slate-900 to-emerald-950/40 border border-indigo-500/30 space-y-4">
+            <div class="p-5 rounded-3xl bg-slate-50 border border-slate-200/90 space-y-4 shadow-xs">
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="space-y-1">
-                  <h4 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="calculator" class="w-4 h-4 text-emerald-400"></i> Skupni izračun produkcije in objav
+                  <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="calculator" class="w-4 h-4 text-emerald-600"></i> Skupni izračun produkcije in objav
                   </h4>
-                  <p class="text-xs text-slate-300">
+                  <p class="text-xs text-slate-600">
                     Proizvedemo <strong>${dist.coreWeekly} kosov/teden</strong> (${dist.coreMonthly}/mesec), kar ustvari <strong>${dist.totalPostsWeekly} objav/teden</strong> (${dist.totalPostsMonthly}/mesec) na vseh kanalih.
                   </p>
                 </div>
                 <div class="flex items-center gap-2">
-                  <div class="px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs">
-                    <span class="text-slate-400 text-[10px] block uppercase font-bold">Produkcija</span>
-                    <strong class="text-emerald-400 text-sm">${dist.coreMonthly}</strong> <span class="text-slate-400 text-[11px]">kosov/mes</span>
+                  <div class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs shadow-xs">
+                    <span class="text-slate-500 text-[10px] block uppercase font-bold">Produkcija</span>
+                    <strong class="text-slate-900 text-sm">${dist.coreMonthly}</strong> <span class="text-slate-500 text-[11px]">kosov/mes</span>
                   </div>
-                  <div class="px-3 py-1.5 rounded-xl bg-indigo-600/30 border border-indigo-500/50 text-xs">
-                    <span class="text-indigo-300 text-[10px] block uppercase font-bold">Na kanalih</span>
-                    <strong class="text-indigo-200 text-sm">${dist.totalPostsMonthly}</strong> <span class="text-indigo-300 text-[11px]">objav/mes</span>
+                  <div class="px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-xs shadow-xs">
+                    <span class="text-indigo-600 text-[10px] block uppercase font-bold">Na kanalih</span>
+                    <strong class="text-indigo-900 text-sm">${dist.totalPostsMonthly}</strong> <span class="text-indigo-600 text-[11px]">objav/mes</span>
                   </div>
-                  <div class="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs">
-                    <span class="text-emerald-300 text-[10px] block uppercase font-bold">Multiplikator</span>
-                    <strong class="text-emerald-300 text-sm">${dist.multiplier}×</strong>
+                  <div class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs shadow-xs">
+                    <span class="text-emerald-700 text-[10px] block uppercase font-bold">Multiplikator</span>
+                    <strong class="text-emerald-700 text-sm">${dist.multiplier}×</strong>
                   </div>
                 </div>
               </div>
 
               <!-- Breakdown per platform table with roles & KPIs -->
-              <div class="rounded-2xl border border-slate-800 bg-slate-950/80 overflow-hidden text-xs">
+              <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden text-xs shadow-xs">
                 <table class="w-full">
-                  <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                  <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wider border-b border-slate-200">
                     <tr>
                       <th class="text-left px-3.5 py-2.5 font-bold">Omrežje</th>
                       <th class="text-left px-3.5 py-2.5 font-bold">Vsebina na kanalu</th>
@@ -4592,7 +4634,7 @@
                       <th class="text-left px-3.5 py-2.5 font-bold">Vloga omrežja & Primarni KPI</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-slate-800/70">
+                  <tbody class="divide-y divide-slate-100">
                     ${platforms.length > 0 ? platforms.map((plat, idx) => {
                       const weekly = dist.platformCounts[plat.name] || 0;
                       const monthly = weekly * WEEKS_PER_MONTH;
@@ -4601,25 +4643,25 @@
 
                       return `
                         <tr>
-                          <td class="px-3.5 py-3 font-bold text-white whitespace-nowrap">
+                          <td class="px-3.5 py-3 font-bold text-slate-900 whitespace-nowrap">
                             <span class="inline-flex items-center gap-2">
-                              <i data-lucide="${getPlatformIcon(plat.name)}" class="w-4 h-4 text-indigo-400"></i>
+                              <i data-lucide="${getPlatformIcon(plat.name)}" class="w-4 h-4 text-indigo-600"></i>
                               ${escapeHtml(plat.name)}
                             </span>
                           </td>
-                          <td class="px-3.5 py-3 text-slate-300">
-                            ${formatItems || '<span class="text-slate-500">Brez dodeljenih formatov</span>'}
+                          <td class="px-3.5 py-3 text-slate-600">
+                            ${formatItems || '<span class="text-slate-400">Brez dodeljenih formatov</span>'}
                           </td>
-                          <td class="px-3.5 py-3 text-right font-extrabold text-indigo-300 whitespace-nowrap">
+                          <td class="px-3.5 py-3 text-right font-extrabold text-indigo-700 whitespace-nowrap">
                             ${weekly}×
                           </td>
-                          <td class="px-3.5 py-3 text-right font-extrabold text-emerald-300 whitespace-nowrap">
+                          <td class="px-3.5 py-3 text-right font-extrabold text-emerald-700 whitespace-nowrap">
                             ${monthly}×
                           </td>
                           <td class="px-3.5 py-3 min-w-[280px]">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'role', this.value)" value="${escapeHtml(plat.role || '')}" placeholder="Vloga (npr. Zavedanje & doseg)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500">
-                              <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'kpi', this.value)" value="${escapeHtml(plat.kpi || '')}" placeholder="KPI (npr. Ogledi, shranjevanja)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500">
+                              <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'role', this.value)" value="${escapeHtml(plat.role || '')}" placeholder="Vloga (npr. Zavedanje & doseg)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white">
+                              <input type="text" oninput="handleUpdatePlatformConfig(${idx}, 'kpi', this.value)" value="${escapeHtml(plat.kpi || '')}" placeholder="KPI (npr. Ogledi, shranjevanja)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white">
                             </div>
                           </td>
                         </tr>
@@ -4628,12 +4670,12 @@
                       <tr><td colspan="5" class="px-4 py-4 text-center text-slate-500">Ni izbranih omrežij. Nastavite tedensko kvoto pri formatih zgoraj.</td></tr>
                     `}
                   </tbody>
-                  <tfoot class="bg-slate-900/90 border-t border-slate-800 font-bold">
+                  <tfoot class="bg-slate-50 border-t border-slate-200 font-bold text-slate-800">
                     <tr>
-                      <td colspan="2" class="px-3.5 py-2.5 text-white">SKUPAJ (Objave na vseh omrežjih)</td>
-                      <td class="px-3.5 py-2.5 text-right text-indigo-300 font-extrabold">${dist.totalPostsWeekly}× / teden</td>
-                      <td class="px-3.5 py-2.5 text-right text-emerald-300 font-extrabold">${dist.totalPostsMonthly}× / mesec</td>
-                      <td class="px-3.5 py-2.5 text-slate-400 text-[11px] font-normal">Iz ${dist.coreMonthly} originalno posnetih/oblikovanih kosov</td>
+                      <td colspan="2" class="px-3.5 py-2.5 text-slate-900">SKUPAJ (Objave na vseh omrežjih)</td>
+                      <td class="px-3.5 py-2.5 text-right text-indigo-700 font-extrabold">${dist.totalPostsWeekly}× / teden</td>
+                      <td class="px-3.5 py-2.5 text-right text-emerald-700 font-extrabold">${dist.totalPostsMonthly}× / mesec</td>
+                      <td class="px-3.5 py-2.5 text-slate-500 text-[11px] font-normal">Iz ${dist.coreMonthly} originalno posnetih/oblikovanih kosov</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -4706,48 +4748,48 @@
 
                   const pillarThemeMap = {
                     edukacija: {
-                      cardBorder: 'border-sky-500/40 hover:border-sky-400/80 bg-gradient-to-b from-sky-950/30 to-slate-950/90',
-                      badgeClass: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
-                      linkText: 'text-sky-400 group-hover:text-sky-300',
-                      glow: 'hover:shadow-sky-950/30'
+                      cardBorder: 'border-sky-200 hover:border-sky-300 bg-sky-50/70',
+                      badgeClass: 'bg-sky-100 text-sky-800 border-sky-200',
+                      linkText: 'text-sky-600 group-hover:text-sky-700',
+                      glow: 'hover:shadow-md'
                     },
                     zabava: {
-                      cardBorder: 'border-amber-500/40 hover:border-amber-400/80 bg-gradient-to-b from-amber-950/30 to-slate-950/90',
-                      badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-                      linkText: 'text-amber-400 group-hover:text-amber-300',
-                      glow: 'hover:shadow-amber-950/30'
+                      cardBorder: 'border-amber-200 hover:border-amber-300 bg-amber-50/70',
+                      badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
+                      linkText: 'text-amber-700 group-hover:text-amber-800',
+                      glow: 'hover:shadow-md'
                     },
                     navdih: {
-                      cardBorder: 'border-purple-500/40 hover:border-purple-400/80 bg-gradient-to-b from-purple-950/30 to-slate-950/90',
-                      badgeClass: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
-                      linkText: 'text-purple-400 group-hover:text-purple-300',
-                      glow: 'hover:shadow-purple-950/30'
+                      cardBorder: 'border-purple-200 hover:border-purple-300 bg-purple-50/70',
+                      badgeClass: 'bg-purple-100 text-purple-800 border-purple-200',
+                      linkText: 'text-purple-600 group-hover:text-purple-700',
+                      glow: 'hover:shadow-md'
                     },
                     za_kulisami: {
-                      cardBorder: 'border-emerald-500/40 hover:border-emerald-400/80 bg-gradient-to-b from-emerald-950/30 to-slate-950/90',
-                      badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-                      linkText: 'text-emerald-400 group-hover:text-emerald-300',
-                      glow: 'hover:shadow-emerald-950/30'
+                      cardBorder: 'border-emerald-200 hover:border-emerald-300 bg-emerald-50/70',
+                      badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                      linkText: 'text-emerald-600 group-hover:text-emerald-700',
+                      glow: 'hover:shadow-md'
                     },
                     skupnost: {
-                      cardBorder: 'border-rose-500/40 hover:border-rose-400/80 bg-gradient-to-b from-rose-950/30 to-slate-950/90',
-                      badgeClass: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
-                      linkText: 'text-rose-400 group-hover:text-rose-300',
-                      glow: 'hover:shadow-rose-950/30'
+                      cardBorder: 'border-rose-200 hover:border-rose-300 bg-rose-50/70',
+                      badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
+                      linkText: 'text-rose-600 group-hover:text-rose-700',
+                      glow: 'hover:shadow-md'
                     },
                     promocija: {
-                      cardBorder: 'border-indigo-500/40 hover:border-indigo-400/80 bg-gradient-to-b from-indigo-950/30 to-slate-950/90',
-                      badgeClass: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
-                      linkText: 'text-indigo-400 group-hover:text-indigo-300',
-                      glow: 'hover:shadow-indigo-950/30'
+                      cardBorder: 'border-indigo-200 hover:border-indigo-300 bg-indigo-50/70',
+                      badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                      linkText: 'text-indigo-600 group-hover:text-indigo-700',
+                      glow: 'hover:shadow-md'
                     }
                   };
 
                   const theme = pillarThemeMap[sel.key] || {
-                    cardBorder: 'border-purple-500/40 hover:border-purple-400/80 bg-slate-950/80',
-                    badgeClass: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
-                    linkText: 'text-purple-400 group-hover:text-purple-300',
-                    glow: 'hover:shadow-purple-950/30'
+                    cardBorder: 'border-slate-200 hover:border-slate-300 bg-slate-50/70',
+                    badgeClass: 'bg-slate-100 text-slate-800 border-slate-200',
+                    linkText: 'text-slate-600 group-hover:text-slate-700',
+                    glow: 'hover:shadow-md'
                   };
 
                   return `
@@ -4760,7 +4802,7 @@
                               <i data-lucide="${opt.icon}" class="w-6 h-6"></i>
                             </div>
                             <div class="min-w-0">
-                              <h4 class="text-base font-black text-white group-hover:text-white transition tracking-tight leading-snug truncate">${opt.name}</h4>
+                              <h4 class="text-base font-black text-slate-900 group-hover:text-indigo-600 transition tracking-tight leading-snug truncate">${opt.name}</h4>
                               <div class="flex items-center gap-2 mt-1">
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${theme.badgeClass}">
                                   <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
@@ -4769,17 +4811,17 @@
                               </div>
                             </div>
                           </div>
-                          <button type="button" onclick="event.stopPropagation(); handleRemovePillar('${client.id}', '${sel.key}')" title="Odstrani steber" class="w-8 h-8 rounded-xl bg-slate-900/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-500/40 flex items-center justify-center transition shrink-0 cursor-pointer shadow-xs active:scale-95">
+                          <button type="button" onclick="event.stopPropagation(); handleRemovePillar('${client.id}', '${sel.key}')" title="Odstrani steber" class="w-8 h-8 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-300 flex items-center justify-center transition shrink-0 cursor-pointer shadow-xs active:scale-95">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                           </button>
                         </div>
 
                         <!-- Description -->
-                        <p class="text-xs text-slate-300/85 leading-relaxed font-normal my-2 line-clamp-3">${opt.desc}</p>
+                        <p class="text-xs text-slate-600 leading-relaxed font-normal my-2 line-clamp-3">${opt.desc}</p>
                       </div>
 
                       <!-- Footer -->
-                      <div class="mt-4 pt-3.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                      <div class="mt-4 pt-3.5 border-t border-slate-200/80 flex items-center justify-between text-xs">
                         <span class="font-bold flex items-center gap-1.5 ${theme.linkText} transition">
                           <span>Pregled 8 tem & 5 CTA</span>
                           <i data-lucide="arrow-right" class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"></i>
@@ -5134,11 +5176,11 @@
         return {
           name: 'video',
           label: 'Video / Reels',
-          cardClass: 'bg-emerald-950/85 border-emerald-500/50 text-emerald-100 hover:bg-emerald-900/90 hover:border-emerald-400',
-          badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-          timeClass: 'text-emerald-400 font-bold',
-          dotClass: 'bg-emerald-400',
-          iconColor: 'text-emerald-400',
+          cardClass: 'bg-emerald-50 border-emerald-200 text-emerald-950 hover:bg-emerald-100/80 hover:border-emerald-300 shadow-xs',
+          badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+          timeClass: 'text-emerald-700 font-bold',
+          dotClass: 'bg-emerald-500',
+          iconColor: 'text-emerald-600',
           icon: 'film'
         };
       }
@@ -5146,11 +5188,11 @@
         return {
           name: 'carousel',
           label: 'Vrtiljak',
-          cardClass: 'bg-sky-950/85 border-sky-500/50 text-sky-100 hover:bg-sky-900/90 hover:border-sky-400',
-          badgeClass: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
-          timeClass: 'text-sky-400 font-bold',
-          dotClass: 'bg-sky-400',
-          iconColor: 'text-sky-400',
+          cardClass: 'bg-sky-50 border-sky-200 text-sky-950 hover:bg-sky-100/80 hover:border-sky-300 shadow-xs',
+          badgeClass: 'bg-sky-100 text-sky-800 border-sky-200',
+          timeClass: 'text-sky-700 font-bold',
+          dotClass: 'bg-sky-500',
+          iconColor: 'text-sky-600',
           icon: 'copy'
         };
       }
@@ -5158,11 +5200,11 @@
         return {
           name: 'image',
           label: 'Fotografija / Grafika',
-          cardClass: 'bg-amber-950/85 border-amber-500/50 text-amber-100 hover:bg-amber-900/90 hover:border-amber-400',
-          badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-          timeClass: 'text-amber-400 font-bold',
-          dotClass: 'bg-amber-400',
-          iconColor: 'text-amber-400',
+          cardClass: 'bg-amber-50 border-amber-200 text-amber-950 hover:bg-amber-100/80 hover:border-amber-300 shadow-xs',
+          badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
+          timeClass: 'text-amber-700 font-bold',
+          dotClass: 'bg-amber-500',
+          iconColor: 'text-amber-700',
           icon: 'image'
         };
       }
@@ -5170,11 +5212,11 @@
         return {
           name: 'story',
           label: 'Zgodba (24h)',
-          cardClass: 'bg-rose-950/85 border-rose-500/50 text-rose-100 hover:bg-rose-900/90 hover:border-rose-400',
-          badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-          timeClass: 'text-rose-400 font-bold',
-          dotClass: 'bg-rose-400',
-          iconColor: 'text-rose-400',
+          cardClass: 'bg-rose-50 border-rose-200 text-rose-950 hover:bg-rose-100/80 hover:border-rose-300 shadow-xs',
+          badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
+          timeClass: 'text-rose-700 font-bold',
+          dotClass: 'bg-rose-500',
+          iconColor: 'text-rose-600',
           icon: 'smartphone'
         };
       }
@@ -5182,22 +5224,22 @@
         return {
           name: 'text',
           label: 'Članek / Tekst',
-          cardClass: 'bg-purple-950/85 border-purple-500/50 text-purple-100 hover:bg-purple-900/90 hover:border-purple-400',
-          badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
-          timeClass: 'text-purple-400 font-bold',
-          dotClass: 'bg-purple-400',
-          iconColor: 'text-purple-400',
+          cardClass: 'bg-purple-50 border-purple-200 text-purple-950 hover:bg-purple-100/80 hover:border-purple-300 shadow-xs',
+          badgeClass: 'bg-purple-100 text-purple-800 border-purple-200',
+          timeClass: 'text-purple-700 font-bold',
+          dotClass: 'bg-purple-500',
+          iconColor: 'text-purple-600',
           icon: 'file-text'
         };
       }
       return {
         name: 'default',
         label: 'Objava',
-        cardClass: 'bg-indigo-950/85 border-indigo-500/50 text-indigo-100 hover:bg-indigo-900/90 hover:border-indigo-400',
-        badgeClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
-        timeClass: 'text-indigo-400 font-bold',
-        dotClass: 'bg-indigo-400',
-        iconColor: 'text-indigo-400',
+        cardClass: 'bg-indigo-50 border-indigo-200 text-indigo-950 hover:bg-indigo-100/80 hover:border-indigo-300 shadow-xs',
+        badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+        timeClass: 'text-indigo-700 font-bold',
+        dotClass: 'bg-indigo-500',
+        iconColor: 'text-indigo-600',
         icon: 'calendar'
       };
     }
@@ -5296,51 +5338,51 @@
           key: 'video',
           name: 'Video / Reels',
           icon: 'film',
-          bgClass: 'bg-emerald-950/70 border-emerald-500/35 text-emerald-200',
-          dotClass: 'bg-emerald-400',
-          iconColor: 'text-emerald-400',
-          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
-          badgeUnmet: 'bg-slate-900/80 text-emerald-300/80 border-slate-800'
+          bgClass: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+          dotClass: 'bg-emerald-500',
+          iconColor: 'text-emerald-600',
+          badgeMet: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+          badgeUnmet: 'bg-white text-emerald-700 border-emerald-200 shadow-xs'
         },
         {
           key: 'carousel',
           name: 'Vrtiljak (Carousel)',
           icon: 'copy',
-          bgClass: 'bg-sky-950/70 border-sky-500/35 text-sky-200',
-          dotClass: 'bg-sky-400',
-          iconColor: 'text-sky-400',
-          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
-          badgeUnmet: 'bg-slate-900/80 text-sky-300/80 border-slate-800'
+          bgClass: 'bg-sky-50 border-sky-200 text-sky-800',
+          dotClass: 'bg-sky-500',
+          iconColor: 'text-sky-600',
+          badgeMet: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+          badgeUnmet: 'bg-white text-sky-700 border-sky-200 shadow-xs'
         },
         {
           key: 'image',
           name: 'Fotografija / Grafika',
           icon: 'image',
-          bgClass: 'bg-amber-950/70 border-amber-500/35 text-amber-200',
-          dotClass: 'bg-amber-400',
-          iconColor: 'text-amber-400',
-          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
-          badgeUnmet: 'bg-slate-900/80 text-amber-300/80 border-slate-800'
+          bgClass: 'bg-amber-50 border-amber-200 text-amber-800',
+          dotClass: 'bg-amber-500',
+          iconColor: 'text-amber-700',
+          badgeMet: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+          badgeUnmet: 'bg-white text-amber-700 border-amber-200 shadow-xs'
         },
         {
           key: 'story',
           name: 'Zgodba (Story)',
           icon: 'smartphone',
-          bgClass: 'bg-rose-950/70 border-rose-500/35 text-rose-200',
-          dotClass: 'bg-rose-400',
-          iconColor: 'text-rose-400',
-          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
-          badgeUnmet: 'bg-slate-900/80 text-rose-300/80 border-slate-800'
+          bgClass: 'bg-rose-50 border-rose-200 text-rose-800',
+          dotClass: 'bg-rose-500',
+          iconColor: 'text-rose-600',
+          badgeMet: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+          badgeUnmet: 'bg-white text-rose-700 border-rose-200 shadow-xs'
         },
         {
           key: 'text',
           name: 'Članek / Tekst',
           icon: 'file-text',
-          bgClass: 'bg-purple-950/70 border-purple-500/35 text-purple-200',
-          dotClass: 'bg-purple-400',
-          iconColor: 'text-purple-400',
-          badgeMet: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40',
-          badgeUnmet: 'bg-slate-900/80 text-purple-300/80 border-slate-800'
+          bgClass: 'bg-purple-50 border-purple-200 text-purple-800',
+          dotClass: 'bg-purple-500',
+          iconColor: 'text-purple-600',
+          badgeMet: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+          badgeUnmet: 'bg-white text-purple-700 border-purple-200 shadow-xs'
         }
       ];
 
@@ -7419,12 +7461,12 @@
                 </div>
 
                 <!-- Akcijski gumb: Generiraj AI prompt -->
-                <div class="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3">
+                <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-200/80 flex flex-wrap items-center justify-between gap-3 shadow-xs">
                   <div>
-                    <div class="text-xs font-bold text-white">Generiranje prompta za AI agenta</div>
-                    <div class="text-[11px] text-slate-400">Združi kontekst naročnika, parametre, koncept ter smernice po fazah.</div>
+                    <div class="text-xs font-bold text-indigo-950">Generiranje prompta za AI agenta</div>
+                    <div class="text-[11px] text-slate-600">Združi kontekst naročnika, parametre, koncept ter smernice po fazah.</div>
                   </div>
-                  <button type="button" onclick="handleGenerateAiScriptPrompt('${client.id}')" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition flex items-center gap-2 active:scale-95 shadow-md shadow-indigo-950/40">
+                  <button type="button" onclick="handleGenerateAiScriptPrompt('${client.id}')" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition flex items-center gap-2 active:scale-95 shadow-md shadow-indigo-600/20">
                     <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
                     <span>Generiraj AI prompt</span>
                   </button>
