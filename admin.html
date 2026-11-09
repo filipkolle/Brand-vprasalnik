@@ -9210,6 +9210,24 @@
       return escaped;
     }
 
+    // --- FORMATIRANJE REKVIZITOV V PREGLEDNE ALINEJE ZA PDF IZPIS ---
+    function formatPropsForPrint(raw) {
+      if (!raw) return '';
+      const items = raw.split(/[;\r\n]+/)
+        .map(s => s.replace(/^[-•*]\s*/, '').replace(/[;.]+$/, '').trim())
+        .filter(Boolean);
+
+      if (items.length <= 1) {
+        return `<div style="font-size: 8pt; font-weight: 500; color: #1e293b; line-height: 1.4;">${formatInlineMarkdownPrint(items[0] || raw)}</div>`;
+      }
+
+      return `
+        <ul style="margin: 0; padding-left: 14px; font-size: 7.8pt; color: #1e293b; line-height: 1.35; list-style-type: disc;">
+          ${items.map(it => `<li style="margin-bottom: 2px;">${formatInlineMarkdownPrint(it)}</li>`).join('')}
+        </ul>
+      `;
+    }
+
     // --- STRUKTURIRANI ANALIZATOR VSEBINE SCENARIJA (IZLUŠČI VSEBINSKO TABELO IN TEHNIČNE SPECIFIKACIJE) ---
     function parseScriptForPrint(script, scriptIdx) {
       const rawTitle = (script.title || 'Brez naslova').trim();
@@ -9316,6 +9334,11 @@
             currentTechField = 'izvedba';
             const val = mExec[1].trim();
             if (val) meta.izvedba = (meta.izvedba ? meta.izvedba + '; ' : '') + val;
+            continue;
+          }
+
+          const mRefEmpty = cleanL.match(/^(?:Referenca|Primer videa|Primer končnega izgleda|Povezava):\s*(?:[—\-\/]|brez|ni\b.*)?$/i);
+          if (mRefEmpty) {
             continue;
           }
 
@@ -9553,6 +9576,10 @@
 
       flushRow();
 
+      if (meta.izvedba) {
+        meta.izvedba = meta.izvedba.replace(/\s*(?:Referenca|Primer videa|Primer končnega izgleda|Povezava):\s*[—\-\/]\s*$/i, '').trim();
+      }
+
       return {
         rawTitle,
         cleanTitle,
@@ -9613,29 +9640,119 @@
             </div>
           </div>
 
-          <!-- Koncept in Ključno sporočilo (Zgornji vizualni vsebinski okvir) -->
-          ${(meta.koncept || meta.kljucno_sporocilo) ? `
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #4f46e5; border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 18px; page-break-inside: avoid; break-inside: avoid;">
-              ${meta.koncept ? `
-                <div style="margin-bottom: ${meta.kljucno_sporocilo ? '8px' : '0'};">
-                  <span style="font-size: 6.8pt; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.09em; display: block; margin-bottom: 2px;">
-                    💡 KONCEPT
-                  </span>
-                  <div style="font-size: 8.5pt; color: #1e293b; line-height: 1.45; font-weight: 500;">
-                    ${formatInlineMarkdownPrint(meta.koncept)}
-                  </div>
+          <!-- KREATIVNI IN PRODUKCIJSKI BRIEFING (NAD SCENARIJEM): KONCEPT, KLJUČNO SPOROČILO, LOKACIJA, NASTOPAJOČI, REKVIZITI, IZVEDBA -->
+          ${(meta.koncept || meta.kljucno_sporocilo || hasTechSpecs) ? `
+            <div style="margin-bottom: 16px; page-break-inside: avoid; break-inside: avoid;">
+              
+              <!-- 1. Vsebinski del: Koncept in Ključno sporočilo -->
+              ${(meta.koncept || meta.kljucno_sporocilo) ? `
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #4f46e5; border-radius: 6px; padding: 9px 13px; margin-bottom: 8px;">
+                  ${meta.koncept ? `
+                    <div style="margin-bottom: ${meta.kljucno_sporocilo ? '6px' : '0'};">
+                      <span style="font-size: 6.8pt; font-weight: 800; color: #4338ca; text-transform: uppercase; letter-spacing: 0.08em; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                        <span>💡</span> KONCEPT
+                      </span>
+                      <div style="font-size: 8.5pt; color: #1e293b; line-height: 1.42; font-weight: 500;">
+                        ${formatInlineMarkdownPrint(meta.koncept)}
+                      </div>
+                    </div>
+                  ` : ''}
+                  ${meta.kljucno_sporocilo ? `
+                    <div>
+                      <span style="font-size: 6.8pt; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.08em; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                        <span>🎯</span> KLJUČNO SPOROČILO
+                      </span>
+                      <div style="font-size: 8.5pt; color: #0f172a; line-height: 1.42; font-weight: 600;">
+                        ${formatInlineMarkdownPrint(meta.kljucno_sporocilo)}
+                      </div>
+                    </div>
+                  ` : ''}
                 </div>
               ` : ''}
-              ${meta.kljucno_sporocilo ? `
-                <div>
-                  <span style="font-size: 6.8pt; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.09em; display: block; margin-bottom: 2px;">
-                    🎯 KLJUČNO SPOROČILO
-                  </span>
-                  <div style="font-size: 8.5pt; color: #0f172a; line-height: 1.45; font-weight: 600;">
-                    ${formatInlineMarkdownPrint(meta.kljucno_sporocilo)}
-                  </div>
+
+              <!-- 2. Tehnične produkcijske specifikacije (Pregledna 2-stolpčna razporeditev nad scenarijem) -->
+              ${hasTechSpecs ? `
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  
+                  <!-- Vrstica 1: Kdo & Kje (Lokacija & Nastopajoči) -->
+                  ${(meta.location || meta.cast) ? `
+                    <div style="display: grid; grid-template-columns: ${(meta.location && meta.cast) ? '1fr 1fr' : '1fr'}; gap: 8px;">
+                      ${meta.location ? `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 11px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                          <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
+                            📍 Lokacija snemanja
+                          </div>
+                          <div style="font-size: 8pt; font-weight: 700; color: #0f172a; line-height: 1.35;">
+                            ${escapeHtml(meta.location)}
+                          </div>
+                        </div>
+                      ` : ''}
+
+                      ${meta.cast ? `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 11px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                          <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
+                            👥 Nastopajoče osebe
+                          </div>
+                          <div style="font-size: 8pt; font-weight: 700; color: #0f172a; line-height: 1.35;">
+                            ${escapeHtml(meta.cast)}
+                          </div>
+                        </div>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+
+                  <!-- Vrstica 2: Kaj & Kako (Rekviziti & Izvedba / Referenca) -->
+                  ${(meta.rekviziti || meta.izvedba || meta.referenca) ? `
+                    <div style="display: grid; grid-template-columns: ${(meta.rekviziti && (meta.izvedba || meta.referenca)) ? '1fr 1fr' : '1fr'}; gap: 8px;">
+                      ${meta.rekviziti ? `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 11px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                          <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 3px;">
+                            📦 Rekviziti in priprava
+                          </div>
+                          ${formatPropsForPrint(meta.rekviziti)}
+                        </div>
+                      ` : ''}
+
+                      ${(meta.izvedba || meta.referenca) ? `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 11px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+                          <div>
+                            <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
+                              🎬 Izvedba, stil & dinamika
+                            </div>
+                            ${meta.izvedba ? `
+                              <div style="font-size: 8pt; font-weight: 500; color: #1e293b; line-height: 1.35;">
+                                ${formatInlineMarkdownPrint(meta.izvedba)}
+                              </div>
+                            ` : ''}
+                          </div>
+
+                          ${meta.referenca ? `
+                            <div style="margin-top: 6px; padding-top: 5px; border-top: 1px dashed #e2e8f0;">
+                              <a href="${escapeHtml(meta.referenca)}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 2px 7px; border-radius: 4px; font-size: 7.2pt; font-weight: 700; text-decoration: none;">
+                                <span>🔗 Odpri video referenco</span> ↗
+                              </a>
+                            </div>
+                          ` : ''}
+                        </div>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+
+                  <!-- Dodatne opombe (če obstajajo) -->
+                  ${meta.notes && meta.notes.length > 0 ? `
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 11px;">
+                      <span style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em;">
+                        📝 Opombe:
+                      </span>
+                      <span style="font-size: 7.8pt; font-weight: 500; color: #334155; margin-left: 6px;">
+                        ${meta.notes.map(n => escapeHtml(n)).join(' · ')}
+                      </span>
+                    </div>
+                  ` : ''}
+
                 </div>
               ` : ''}
+
             </div>
           ` : ''}
 
@@ -9736,96 +9853,6 @@
         html += `
           <div style="font-size: 9pt; line-height: 1.55; color: #1e293b; margin-top: 10px; white-space: pre-line;">
             ${formatInlineMarkdownPrint(rawFinal || 'Scenarij še nima vsebine.')}
-          </div>
-        `;
-      }
-
-      // --- TEHNIČNE SPECIFIKACIJE & PRODUKCIJA (PRIKAZANE POD SCENARIJEM PREGLEDNO IN INTERAKTIVNO) ---
-      if (hasTechSpecs) {
-        html += `
-          <div style="margin-top: 20px; page-break-inside: avoid; break-inside: avoid;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
-              <span style="font-size: 7.2pt; font-weight: 800; color: #4338ca; background: #eef2ff; border: 1px solid #c7d2fe; padding: 2px 8px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.08em;">Produkcijske opombe</span>
-              <span style="font-size: 8.5pt; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.06em;">Tehnične specifikacije za snemanje</span>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px;">
-              
-              <!-- Lokacija snemanja -->
-              ${meta.location ? `
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px;">
-                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
-                    📍 Lokacija snemanja
-                  </div>
-                  <div style="font-size: 8pt; font-weight: 700; color: #0f172a; line-height: 1.35;">
-                    ${escapeHtml(meta.location)}
-                  </div>
-                </div>
-              ` : ''}
-
-              <!-- Nastopajoči -->
-              ${meta.cast ? `
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px;">
-                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
-                    👥 Nastopajoče osebe
-                  </div>
-                  <div style="font-size: 8pt; font-weight: 700; color: #0f172a; line-height: 1.35;">
-                    ${escapeHtml(meta.cast)}
-                  </div>
-                </div>
-              ` : ''}
-
-              <!-- Rekviziti -->
-              ${meta.rekviziti ? `
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px;">
-                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
-                    📦 Rekviziti in priprava
-                  </div>
-                  <div style="font-size: 8pt; font-weight: 600; color: #1e293b; line-height: 1.35;">
-                    ${formatInlineMarkdownPrint(meta.rekviziti)}
-                  </div>
-                </div>
-              ` : ''}
-
-              <!-- Izvedba & Ton -->
-              ${meta.izvedba ? `
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px;">
-                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
-                    🎬 Izvedba, stil & dinamika
-                  </div>
-                  <div style="font-size: 8pt; font-weight: 600; color: #1e293b; line-height: 1.35;">
-                    ${formatInlineMarkdownPrint(meta.izvedba)}
-                  </div>
-                </div>
-              ` : ''}
-
-              <!-- Referenca s klikabilnim gumbom -->
-              ${meta.referenca ? `
-                <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 6px; padding: 8px 11px;">
-                  <div style="font-size: 6.8pt; font-weight: 800; color: #4338ca; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px;">
-                    🔗 Video referenca / Primer
-                  </div>
-                  <div style="font-size: 8pt; font-weight: 700; line-height: 1.35;">
-                    <a href="${escapeHtml(meta.referenca)}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all; display: inline-flex; align-items: center; gap: 4px;">
-                      <span>Odpri referenčni video</span> ↗
-                    </a>
-                  </div>
-                </div>
-              ` : ''}
-
-              <!-- Dodatne opombe -->
-              ${meta.notes && meta.notes.length > 0 ? `
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px; grid-column: 1 / -1;">
-                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
-                    📝 Dodatni produkcijski napotki
-                  </div>
-                  <div style="font-size: 8pt; font-weight: 500; color: #334155; line-height: 1.35;">
-                    ${meta.notes.map(n => escapeHtml(n)).join(' · ')}
-                  </div>
-                </div>
-              ` : ''}
-
-            </div>
           </div>
         `;
       }
