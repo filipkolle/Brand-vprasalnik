@@ -2402,12 +2402,16 @@
         target = target[p];
       }
       const val = target ? target[fieldName] : undefined;
-      if (val !== undefined && val !== null && String(val).trim().length > 0) {
+      if (Array.isArray(val)) {
+        if (val.length > 0) return true;
+      } else if (val !== undefined && val !== null && String(val).trim().length > 0) {
         return true;
       }
       if (defaultFn) {
         const qVal = defaultFn(client.answers || {});
-        if (qVal && String(qVal).trim().length > 0) {
+        if (Array.isArray(qVal)) {
+          if (qVal.length > 0) return true;
+        } else if (qVal && String(qVal).trim().length > 0) {
           return true;
         }
       }
@@ -3364,7 +3368,7 @@
           promptEl.innerHTML = `Izberite ključna omrežja in cilje v <strong class="text-slate-900">4. Strategija omrežij</strong>.`;
         } else if (!crm.content_strategy?.content_pillars?.length) {
           promptEl.innerHTML = `Definirajte ključne vsebinske stebre v <strong class="text-slate-900">5. Vsebinska strategija</strong>.`;
-        } else if (!crm.production_guidelines?.rules?.video_style?.trim() && !crm.production_guidelines?.resources?.locations?.trim()) {
+        } else if (!crm.production_guidelines?.rules?.video_style?.trim() && !(Array.isArray(crm.production_guidelines?.resources?.locations) ? crm.production_guidelines.resources.locations.length : crm.production_guidelines?.resources?.locations?.trim())) {
           promptEl.innerHTML = `Določite smernice za snemanje in copy v <strong class="text-slate-900">6. Smernice produkcije</strong>.`;
         } else if (postsCount === 0) {
           promptEl.innerHTML = `Strategija je pripravljena! Začnite načrtovati objave v <strong class="text-slate-900">7. Koledar objav</strong>.`;
@@ -5018,6 +5022,9 @@
       const rest = guide.restrictions || {};
       const isDone = isStepDone(client, 'production_guidelines');
 
+      const peopleList = normalizeProductionList(res.people);
+      const locationsList = normalizeProductionList(res.locations);
+
       return `
         <div class="space-y-6">
 
@@ -5028,25 +5035,105 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              ${renderCrmSmartField({
-                client,
-                parentPath: 'production_guidelines.resources',
-                fieldName: 'people',
-                label: 'Osebe za snemanje (Kdo nastopa?)',
-                placeholder: 'Npr. Lastnik Marko, slaščičarka Ana...',
-                rows: 2,
-                defaultFn: () => ''
-              })}
+              <!-- 1. Osebe za snemanje (Kdo nastopa?) -->
+              <div class="flex flex-col justify-between p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="block font-bold uppercase tracking-wider text-slate-300 text-xs">
+                      Osebe za snemanje (Kdo nastopa?)
+                    </label>
+                    <span class="text-[10px] text-slate-400 font-semibold px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">
+                      ${peopleList.length} ${peopleList.length === 1 ? 'oseba' : (peopleList.length === 2 ? 'osebi' : (peopleList.length <= 4 ? 'osebe' : 'oseb'))}
+                    </span>
+                  </div>
 
-              ${renderCrmSmartField({
-                client,
-                parentPath: 'production_guidelines.resources',
-                fieldName: 'locations',
-                label: 'Lokacije za snemanje',
-                placeholder: 'Npr. Delavnica ob 6:00 zjutraj, prodajalna v centru...',
-                rows: 2,
-                defaultFn: () => ''
-              })}
+                  <!-- Vnosno polje + gumb + -->
+                  <div class="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      id="newProdPersonInput-${client.id}" 
+                      placeholder="Npr. Lastnik Marko, slaščičarka Ana..." 
+                      onkeydown="if(event.key==='Enter'){event.preventDefault();handleAddProductionPerson('${client.id}');}"
+                      class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-600 transition">
+                    <button 
+                      type="button" 
+                      onclick="handleAddProductionPerson('${client.id}')" 
+                      class="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-xs shrink-0" 
+                      title="Dodaj osebo">
+                      <i data-lucide="plus" class="w-4 h-4"></i>
+                      <span>Dodaj</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Seznam oseb -->
+                <div class="flex flex-wrap gap-1.5 mt-3 min-h-[46px] p-2 bg-slate-950/60 border border-slate-800/80 rounded-2xl items-center">
+                  ${peopleList.length > 0 ? peopleList.map((person, idx) => `
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 text-slate-200 text-xs font-medium transition shadow-xs group">
+                      <i data-lucide="user" class="w-3.5 h-3.5 text-indigo-400"></i>
+                      <span>${escapeHtml(person)}</span>
+                      <button type="button" onclick="handleRemoveProductionPerson('${client.id}', ${idx})" class="text-slate-400 hover:text-rose-400 p-0.5 rounded transition ml-1" title="Odstrani osebo">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </span>
+                  `).join('') : `
+                    <div class="text-[11px] text-slate-500 italic px-2 py-1 flex items-center gap-1.5">
+                      <i data-lucide="info" class="w-3.5 h-3.5 text-slate-600"></i>
+                      <span>Ni dodanih oseb. Vpišite ime in kliknite gumb <strong>+ Dodaj</strong>.</span>
+                    </div>
+                  `}
+                </div>
+              </div>
+
+              <!-- 2. Lokacije za snemanje -->
+              <div class="flex flex-col justify-between p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="block font-bold uppercase tracking-wider text-slate-300 text-xs">
+                      Lokacije za snemanje
+                    </label>
+                    <span class="text-[10px] text-slate-400 font-semibold px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">
+                      ${locationsList.length} ${locationsList.length === 1 ? 'lokacija' : (locationsList.length === 2 ? 'lokaciji' : (locationsList.length <= 4 ? 'lokacije' : 'lokacij'))}
+                    </span>
+                  </div>
+
+                  <!-- Vnosno polje + gumb + -->
+                  <div class="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      id="newProdLocationInput-${client.id}" 
+                      placeholder="Npr. Trgovina in delikatesa, kuhinja, skladišče..." 
+                      onkeydown="if(event.key==='Enter'){event.preventDefault();handleAddProductionLocation('${client.id}');}"
+                      class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-600 transition">
+                    <button 
+                      type="button" 
+                      onclick="handleAddProductionLocation('${client.id}')" 
+                      class="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-xs shrink-0" 
+                      title="Dodaj lokacijo">
+                      <i data-lucide="plus" class="w-4 h-4"></i>
+                      <span>Dodaj</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Seznam lokacij -->
+                <div class="flex flex-wrap gap-1.5 mt-3 min-h-[46px] p-2 bg-slate-950/60 border border-slate-800/80 rounded-2xl items-center">
+                  ${locationsList.length > 0 ? locationsList.map((loc, idx) => `
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 text-slate-200 text-xs font-medium transition shadow-xs group">
+                      <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-400"></i>
+                      <span>${escapeHtml(loc)}</span>
+                      <button type="button" onclick="handleRemoveProductionLocation('${client.id}', ${idx})" class="text-slate-400 hover:text-rose-400 p-0.5 rounded transition ml-1" title="Odstrani lokacijo">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </span>
+                  `).join('') : `
+                    <div class="text-[11px] text-slate-500 italic px-2 py-1 flex items-center gap-1.5">
+                      <i data-lucide="info" class="w-3.5 h-3.5 text-slate-600"></i>
+                      <span>Ni dodanih lokacij. Vpišite lokacijo in kliknite gumb <strong>+ Dodaj</strong>.</span>
+                    </div>
+                  `}
+                </div>
+              </div>
 
               <div>
                 <label class="block font-bold uppercase tracking-wider text-slate-300 mb-1 text-xs">Povezava do baze fotografij in videov (Drive)</label>
@@ -5252,7 +5339,7 @@
       const ideas = client.crm?.ideas || [];
       const activeIdeas = getClientActiveIdeas(client);
       const scripts = client.crm?.scripts || [];
-      const locations = client.crm?.production_guidelines?.resources?.locations || '';
+      const calLocationsList = normalizeProductionList(client.crm?.production_guidelines?.resources?.locations);
       const assetsLink = (client.crm?.production_guidelines?.resources?.assets_link || client.crm?.resource_links?.drive || '').trim();
       posts.sort((a,b) => (a.date || '2000').localeCompare(b.date || '2000') || (a.time || '').localeCompare(b.time || ''));
 
@@ -5758,16 +5845,34 @@
                     </div>
                     <span>Lokacije za snemanje</span>
                   </div>
-                  <span class="text-[10px] text-slate-500 font-medium">Auto-save</span>
+                  <span class="text-[10px] text-slate-400 font-semibold px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">
+                    ${calLocationsList.length}
+                  </span>
                 </div>
                 <p class="text-[11px] text-slate-400 leading-relaxed">
                   Lokacije in ambienti, primerni za snemanje video vsebin:
                 </p>
-                <textarea 
-                  oninput="handleAutoSaveCrmSubfield('production_guidelines.resources', 'locations', this.value); handleSmartFieldInput(this);"
-                  rows="3"
-                  placeholder="Npr. Delavnica ob 6:00, salon, prodajalna v centru, skladišče..." 
-                  class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 leading-relaxed placeholder:text-slate-600 resize-none">${escapeHtml(locations)}</textarea>
+                <div class="flex items-center gap-1.5">
+                  <input type="text"
+                    id="calProdLocationInput-${client.id}"
+                    placeholder="Dodaj lokacijo..."
+                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); handleAddCalendarLocation('${client.id}'); }"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-600">
+                  <button type="button" onclick="handleAddCalendarLocation('${client.id}')" class="p-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl transition shrink-0" title="Dodaj lokacijo">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+                <div class="flex flex-wrap gap-1.5 mt-2 min-h-[32px]">
+                  ${calLocationsList.length > 0 ? calLocationsList.map((loc, idx) => `
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs shadow-xs">
+                      <i data-lucide="map-pin" class="w-3 h-3 text-rose-400"></i>
+                      <span>${escapeHtml(loc)}</span>
+                      <button type="button" onclick="handleRemoveProductionLocation('${client.id}', ${idx})" class="text-slate-400 hover:text-rose-400 ml-1 p-0.5" title="Odstrani lokacijo">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                      </button>
+                    </span>
+                  `).join('') : '<span class="text-[11px] text-slate-500 italic">Ni dodanih lokacij.</span>'}
+                </div>
               </div>
 
               <!-- 4. Gumb Arhiv vsebine (Baza fotografij in videov) -->
@@ -6004,6 +6109,150 @@
         showToast(`Dodano ${added} konkurentov iz vprašalnika!`);
       } else {
         showToast('Vsi navedeni konkurenti so že na seznamu.');
+      }
+    }
+
+    // --- POMOŽNE FUNKCIJE ZA OSEBE IN LOKACIJE ZA SNEMANJE ---
+    function normalizeProductionList(val) {
+      if (Array.isArray(val)) {
+        return val.map(x => String(x).trim()).filter(Boolean);
+      }
+      if (!val || typeof val !== 'string') return [];
+      const lines = val.split('\n').map(l => l.trim()).filter(Boolean);
+      const items = [];
+      lines.forEach(l => {
+        const cleaned = l.replace(/^([0-9]+[.)]|[-*•])\s*/, '').trim();
+        if (cleaned) items.push(cleaned);
+      });
+      if (items.length === 1 && items[0].includes(',')) {
+        return items[0].split(',').map(s => s.trim()).filter(Boolean);
+      }
+      return items;
+    }
+
+    function handleAddProductionPerson(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      const inputEl = document.getElementById(`newProdPersonInput-${clientId}`);
+      const val = inputEl ? inputEl.value.trim() : '';
+      if (!val) return;
+
+      if (!client.crm) client.crm = {};
+      if (!client.crm.production_guidelines) client.crm.production_guidelines = {};
+      if (!client.crm.production_guidelines.resources) client.crm.production_guidelines.resources = {};
+
+      const currentList = normalizeProductionList(client.crm.production_guidelines.resources.people);
+      const newItems = val.split(/[\n,]+/).map(s => s.trim().replace(/^([0-9]+[.)]|[-*•])\s*/, '')).filter(Boolean);
+
+      let added = 0;
+      newItems.forEach(item => {
+        if (!currentList.includes(item)) {
+          currentList.push(item);
+          added++;
+        }
+      });
+
+      if (added > 0) {
+        client.crm.production_guidelines.resources.people = currentList;
+        scheduleAutoSave();
+        renderWorkspaceTabContent();
+        showToast(added === 1 ? 'Oseba za snemanje je shranjena.' : `Dodanih ${added} oseb za snemanje.`);
+      } else {
+        showToast('Oseba je že na seznamu.');
+      }
+    }
+
+    function handleRemoveProductionPerson(clientId, index) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      if (!client.crm?.production_guidelines?.resources) return;
+
+      const currentList = normalizeProductionList(client.crm.production_guidelines.resources.people);
+      if (index >= 0 && index < currentList.length) {
+        currentList.splice(index, 1);
+        client.crm.production_guidelines.resources.people = currentList;
+        scheduleAutoSave();
+        renderWorkspaceTabContent();
+        showToast('Oseba je odstranjena.');
+      }
+    }
+
+    function handleAddProductionLocation(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      const inputEl = document.getElementById(`newProdLocationInput-${clientId}`);
+      const val = inputEl ? inputEl.value.trim() : '';
+      if (!val) return;
+
+      if (!client.crm) client.crm = {};
+      if (!client.crm.production_guidelines) client.crm.production_guidelines = {};
+      if (!client.crm.production_guidelines.resources) client.crm.production_guidelines.resources = {};
+
+      const currentList = normalizeProductionList(client.crm.production_guidelines.resources.locations);
+      const newItems = val.split(/[\n,]+/).map(s => s.trim().replace(/^([0-9]+[.)]|[-*•])\s*/, '')).filter(Boolean);
+
+      let added = 0;
+      newItems.forEach(item => {
+        if (!currentList.includes(item)) {
+          currentList.push(item);
+          added++;
+        }
+      });
+
+      if (added > 0) {
+        client.crm.production_guidelines.resources.locations = currentList;
+        scheduleAutoSave();
+        renderWorkspaceTabContent();
+        showToast(added === 1 ? 'Lokacija za snemanje je shranjena.' : `Dodanih ${added} lokacij za snemanje.`);
+      } else {
+        showToast('Lokacija je že na seznamu.');
+      }
+    }
+
+    function handleRemoveProductionLocation(clientId, index) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      if (!client.crm?.production_guidelines?.resources) return;
+
+      const currentList = normalizeProductionList(client.crm.production_guidelines.resources.locations);
+      if (index >= 0 && index < currentList.length) {
+        currentList.splice(index, 1);
+        client.crm.production_guidelines.resources.locations = currentList;
+        scheduleAutoSave();
+        renderWorkspaceTabContent();
+        showToast('Lokacija je odstranjena.');
+      }
+    }
+
+    function handleAddCalendarLocation(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      const inputEl = document.getElementById(`calProdLocationInput-${clientId}`);
+      const val = inputEl ? inputEl.value.trim() : '';
+      if (!val) return;
+
+      if (!client.crm) client.crm = {};
+      if (!client.crm.production_guidelines) client.crm.production_guidelines = {};
+      if (!client.crm.production_guidelines.resources) client.crm.production_guidelines.resources = {};
+
+      const currentList = normalizeProductionList(client.crm.production_guidelines.resources.locations);
+      const newItems = val.split(/[\n,]+/).map(s => s.trim().replace(/^([0-9]+[.)]|[-*•])\s*/, '')).filter(Boolean);
+
+      let added = 0;
+      newItems.forEach(item => {
+        if (!currentList.includes(item)) {
+          currentList.push(item);
+          added++;
+        }
+      });
+
+      if (added > 0) {
+        client.crm.production_guidelines.resources.locations = currentList;
+        scheduleAutoSave();
+        renderWorkspaceTabContent();
+        showToast(added === 1 ? 'Lokacija za snemanje je shranjena.' : `Dodanih ${added} lokacij za snemanje.`);
+      } else {
+        showToast('Lokacija je že na seznamu.');
       }
     }
 
@@ -10712,7 +10961,10 @@ Odgovori se samodejno sproti shranjujejo. Hvala za vaš čas!`;
       const crm = client.crm || {};
       const brand = crm.brand_strategy || {};
       const prod = crm.production_guidelines || {};
-      const locations = prod.resources?.locations || '';
+      const locationsList = normalizeProductionList(prod.resources?.locations);
+      const locations = locationsList.join(', ');
+      const peopleList = normalizeProductionList(prod.resources?.people);
+      const people = peopleList.join(', ');
 
       const companyName = client.company_name || 'Naročnik';
       const industry = fields.q1_industry || fields.q1_text || fields.company_description || 'Storitve / Izdelki';
@@ -10742,7 +10994,7 @@ Tvoja naloga je, da na podlagi spodnjih parametrov in avtorjevega okvirnega konc
 - **Panoga / Dejavnost:** ${industry}
 - **Ciljna publika:** ${targetAudience}
 - **Ton komunikacije:** ${tone}
-${locations ? `- **Lokacije za snemanje na voljo:** ${locations}` : ''}
+${locations ? `- **Lokacije za snemanje na voljo:** ${locations}\n` : ''}${people ? `- **Nastopajoče osebe za snemanje:** ${people}\n` : ''}
 
 ---
 
