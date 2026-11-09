@@ -5205,6 +5205,7 @@
     function renderWsClientCalendar(client) {
       const posts = client.crm?.content_calendar || [];
       const ideas = client.crm?.ideas || [];
+      const activeIdeas = getClientActiveIdeas(client);
       const scripts = client.crm?.scripts || [];
       const locations = client.crm?.production_guidelines?.resources?.locations || '';
       const assetsLink = (client.crm?.production_guidelines?.resources?.assets_link || client.crm?.resource_links?.drive || '').trim();
@@ -5678,7 +5679,7 @@
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    ${ideas.length}
+                    ${activeIdeas.length}
                   </span>
                   <i data-lucide="arrow-right" class="w-4 h-4 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all"></i>
                 </div>
@@ -6905,6 +6906,15 @@
       return CONTENT_PILLAR_OPTIONS.map(o => o.name);
     }
 
+    // Pomožna funkcija za pridobitev samo aktualnih (neizkoriščenih) idej naročnika
+    function getClientActiveIdeas(client) {
+      if (!client || !client.crm) return [];
+      const allIdeas = client.crm.ideas || [];
+      const scripts = client.crm.scripts || [];
+      const scriptedIdeaIds = new Set(scripts.map(s => s.linked_idea_id).filter(Boolean));
+      return allIdeas.filter(i => i.status !== 'used' && i.status !== 'scripted' && !scriptedIdeaIds.has(i.id));
+    }
+
     // --- QUICK IDEAS (ROUTED TO FULL PAGE) ---
     function openQuickIdeaModal(clientId = null) {
       openIdeasPage(clientId);
@@ -7068,13 +7078,71 @@
       else switchTopTab('clients');
     }
 
+    let studioIdeasSidebarOpen = false;
+
+    function toggleStudioIdeasSidebar(forceState = null) {
+      if (forceState !== null) studioIdeasSidebarOpen = forceState;
+      else studioIdeasSidebarOpen = !studioIdeasSidebarOpen;
+
+      const sidebar = document.getElementById('studioIdeasSidebar');
+      const toggleBtn = document.getElementById('studioIdeasSidebarToggleBtn');
+      const toggleText = document.getElementById('studioIdeasSidebarToggleText');
+      const toggleIcon = document.getElementById('studioIdeasSidebarToggleIcon');
+
+      if (sidebar) {
+        if (studioIdeasSidebarOpen) {
+          sidebar.classList.remove('hidden');
+        } else {
+          sidebar.classList.add('hidden');
+        }
+      }
+      if (toggleBtn) {
+        if (studioIdeasSidebarOpen) {
+          toggleBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-400 rounded-xl transition active:scale-95 shadow-md shadow-amber-950/20';
+          if (toggleText) toggleText.textContent = 'Skrij ideje';
+          if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'panel-left-close');
+        } else {
+          toggleBtn.className = 'inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs';
+          if (toggleText) toggleText.textContent = 'Zapisane ideje';
+          if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'lightbulb');
+        }
+        lucide.createIcons({ root: toggleBtn });
+      }
+    }
+
+    function applyIdeaToScriptStudio(ideaId) {
+      const client = clients.find(c => c.id === currentClientId);
+      if (!client || !client.crm?.ideas) return;
+      const idea = client.crm.ideas.find(i => i.id === ideaId);
+      if (!idea) return;
+
+      const spTitle = document.getElementById('spTitle');
+      const spLinkedIdeaId = document.getElementById('spLinkedIdeaId');
+      const spCoreMessage = document.getElementById('spCoreMessage');
+      const spConcept = document.getElementById('spConcept');
+
+      if (spTitle) spTitle.value = idea.title || '';
+      if (spLinkedIdeaId) spLinkedIdeaId.value = idea.id;
+      if (spCoreMessage && !spCoreMessage.value.trim()) spCoreMessage.value = idea.notes || '';
+      if (spConcept) spConcept.value = idea.notes || '';
+
+      if (idea.format) selectScriptFormat(idea.format);
+      if (idea.pillar) selectScriptPillar(idea.pillar);
+
+      showToast(`Ideja "${idea.title.slice(0, 25)}..." je prenesena v scenarij!`);
+      // Pomakni fokus na 1. korak
+      revealScriptStep(2);
+      spTitle?.focus();
+    }
+
     function renderScriptwriterStudio(client, activeScriptId = null, prefillFromIdeaId = null) {
       const container = document.getElementById('scriptwriterStudioContainer');
       if (!container || !client) return;
 
       if (!client.crm) client.crm = {};
       const scripts = client.crm.scripts || [];
-      const ideas = client.crm.ideas || [];
+      const allIdeas = client.crm.ideas || [];
+      const activeIdeas = getClientActiveIdeas(client);
 
       // Month & Monthly Quota Calculation
       const now = new Date();
@@ -7105,7 +7173,7 @@
 
       let prefillIdea = null;
       if (prefillFromIdeaId) {
-        prefillIdea = ideas.find(i => i.id === prefillFromIdeaId) || null;
+        prefillIdea = allIdeas.find(i => i.id === prefillFromIdeaId) || null;
       }
 
       const sTitle = activeScript?.title || prefillIdea?.title || '';
@@ -7174,16 +7242,11 @@
               </div>
             </div>
 
-            <!-- Right: Action buttons -->
+            <!-- Right: Action buttons (BREZ gumbov 'Shrani scenarij', 'Zapisane ideje' in zamegljenega 'Nov scenarij') -->
             <div class="flex flex-wrap items-center gap-2">
               <button type="button" onclick="openScriptGuidelinesModal()" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition shadow-xs" title="Odpri navodila za pisanje scenarija po fazah">
                 <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400"></i>
                 <span>Smernice po fazah</span>
-              </button>
-
-              <button type="button" onclick="openIdeasPage('${client.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition active:scale-95 shadow-xs">
-                <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i>
-                <span>Zapisane ideje (${ideas.length})</span>
               </button>
 
               <button type="button" onclick="openScriptsListPage('${client.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl transition active:scale-95 shadow-xs">
@@ -7191,9 +7254,10 @@
                 <span>Napisani scenariji (${scripts.length})</span>
               </button>
 
-              <button type="button" onclick="openScriptPage('${client.id}', 'new')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition active:scale-95">
-                <i data-lucide="plus" class="w-4 h-4 text-emerald-400"></i>
-                <span>Nov scenarij</span>
+              <!-- Gumb levo za prikaz/skritje zapisanih idej -->
+              <button id="studioIdeasSidebarToggleBtn" type="button" onclick="toggleStudioIdeasSidebar()" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold ${studioIdeasSidebarOpen ? 'text-amber-950 bg-amber-400 hover:bg-amber-300 border-amber-400 shadow-md shadow-amber-950/20' : 'text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 shadow-xs'} border rounded-xl transition active:scale-95" title="Pokaži ali skrij zapisane ideje levo od scenarija">
+                <i id="studioIdeasSidebarToggleIcon" data-lucide="${studioIdeasSidebarOpen ? 'panel-left-close' : 'lightbulb'}" class="w-3.5 h-3.5"></i>
+                <span id="studioIdeasSidebarToggleText">${studioIdeasSidebarOpen ? 'Skrij ideje' : 'Zapisane ideje'} (${activeIdeas.length})</span>
               </button>
 
               ${isEditing && activeScript ? `
@@ -7202,22 +7266,202 @@
                   <span>Natisni PDF</span>
                 </button>
               ` : ''}
-
-              <button type="button" onclick="handleSaveScriptPage('${client.id}')" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition flex items-center gap-1.5 active:scale-95">
-                <i data-lucide="save" class="w-4 h-4"></i>
-                <span>Shrani scenarij</span>
-              </button>
             </div>
           </div>
 
-          <!-- VERTICAL PROGRESSIVE REVEAL SCRIPTWRITER (OD ZGORAJ PROTI DOL) -->
-          <div class="max-w-4xl mx-auto w-full space-y-5">
+          <!-- GLAVNA VSEBINA: ZAPISANE IDEJE NA LEVI + SCENARIJ NA DESNI -->
+          <div class="flex flex-col lg:flex-row items-start gap-6">
+
+            <!-- LEVO STRANSKO POLJE: ZAPISANE IDEJE (pokaže se / skrije na gumb) -->
+            <aside id="studioIdeasSidebar" class="${studioIdeasSidebarOpen ? '' : 'hidden'} w-full lg:w-80 xl:w-96 shrink-0 space-y-4">
+              <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3.5 lg:sticky lg:top-24 max-h-[85vh] overflow-y-auto">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                      <i data-lucide="lightbulb" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-bold uppercase tracking-wider text-white">Zapisane ideje</h4>
+                      <p class="text-[10px] text-slate-400">Klikni "Uporabi" za prenos v scenarij</p>
+                    </div>
+                  </div>
+                  <button type="button" onclick="toggleStudioIdeasSidebar(false)" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800" title="Skrij ideje">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                  </button>
+                </div>
+
+                ${activeIdeas.length === 0 ? `
+                  <div class="p-6 text-center rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+                    <p class="text-xs text-slate-400">Ni aktualnih neporabljenih idej.</p>
+                    <button type="button" onclick="openIdeasPage('${client.id}')" class="text-xs font-bold text-amber-400 hover:underline">
+                      + Odpri banko idej
+                    </button>
+                  </div>
+                ` : `
+                  <div class="space-y-3">
+                    ${activeIdeas.map(idea => `
+                      <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-500/40 transition shadow-sm space-y-2 group">
+                        <div class="flex items-center justify-between gap-1 flex-wrap">
+                          <span class="px-2 py-0.5 rounded-lg text-[9px] font-black bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            ${escapeHtml(idea.format || 'Reels / Video')}
+                          </span>
+                          ${idea.pillar ? `<span class="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-slate-800 text-slate-400">#${escapeHtml(idea.pillar)}</span>` : ''}
+                        </div>
+                        <h5 class="text-xs font-bold text-white group-hover:text-amber-300 transition leading-snug">${escapeHtml(idea.title)}</h5>
+                        ${idea.notes ? `<p class="text-[11px] text-slate-400 line-clamp-3 leading-relaxed">${escapeHtml(idea.notes)}</p>` : ''}
+                        <div class="pt-2 border-t border-slate-800/70 flex items-center justify-between">
+                          <span class="text-[10px] text-slate-500 font-mono">${idea.created_at ? new Date(idea.created_at).toLocaleDateString('sl-SI') : ''}</span>
+                          <button type="button" onclick="applyIdeaToScriptStudio('${idea.id}')" class="px-3 py-1 rounded-xl text-[11px] font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 transition active:scale-95 shadow-xs flex items-center gap-1">
+                            <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i>
+                            <span>Uporabi v scenariju</span>
+                          </button>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+            </aside>
+
+            <!-- DESNO/GLAVNO: VERTICAL PROGRESSIVE REVEAL SCRIPTWRITER (OD ZGORAJ PROTI DOL) -->
+            <div class="flex-1 w-full space-y-5">
             
             <form id="scriptPageForm" onsubmit="event.preventDefault(); handleSaveScriptPage('${client.id}');" class="space-y-5">
               <input type="hidden" id="spScriptId" value="${activeScript ? activeScript.id : ''}">
               <input type="hidden" id="spLinkedIdeaId" value="${linkedIdeaId}">
               <input type="hidden" id="spTargetMonth" value="${targetMonthStr}">
               <input type="hidden" id="spFormat" value="${escapeHtml(sFormat)}">
+              <input type="hidden" id="spPillar" value="${escapeHtml(sPillar || (pillarList[0] || ''))}">
+
+              <!-- 1. KORAK: NASLOV SCENARIJA (vedno viden na vrhu) -->
+              <div id="scriptStep1" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400">1. korak</span>
+                  <span class="text-[11px] text-slate-500 font-medium">Naslov vsebine</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white">Naslov scenarija</h3>
+                <input id="spTitle" type="text" value="${escapeHtml(sTitle)}" placeholder="Vnesite naslov scenarija..." class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-2xl p-4 text-base sm:text-lg font-bold text-white placeholder-slate-600 focus:outline-none transition shadow-inner" onkeydown="if(event.key==='Enter'){event.preventDefault(); revealScriptStep(2);}">
+                
+                <div id="step1NextBtn" class="pt-2 flex justify-end ${isEditing ? 'hidden' : ''}">
+                  <button type="button" onclick="revealScriptStep(2)" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-indigo-950/40">
+                    <span>Naprej: Format & Steber</span>
+                    <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 2. KORAK: FORMAT IN VSEBINSKI STEBER (prikaže se pod naslovom) -->
+              <div id="scriptStep2" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5 ${isEditing ? '' : 'hidden'}">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400">2. korak</span>
+                  <span class="text-[11px] text-slate-500 font-medium">Format in vsebinski steber</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white">Izbor formata in stebra</h3>
+
+                <!-- Format selection pills -->
+                <div class="space-y-2">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">Format vsebine</label>
+                  <div id="formatPillsContainer" class="flex flex-wrap gap-2">
+                    ${['Reels / Video (9:16)', 'Vrtiljak (Carousel)', 'Fotografija / Grafika', 'Zgodba (Story)', 'Članek / Tekst'].map(fmt => {
+                      const isSel = sFormat === fmt || (fmt.startsWith('Reels') && sFormat.includes('Reels'));
+                      return `
+                        <button type="button" onclick="selectScriptFormat('${escapeHtml(fmt)}')" class="format-pill px-4 py-2.5 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${isSel ? 'bg-indigo-600 text-white border-indigo-500 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'}">
+                          <span>${escapeHtml(fmt)}</span>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+
+                <!-- Pillar selection pills -->
+                <div class="space-y-2">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">Vsebinski steber</label>
+                  <div id="pillarPillsContainer" class="flex flex-wrap gap-2">
+                    ${pillarList.map(pName => {
+                      const isSel = (sPillar === pName) || (!sPillar && pName === pillarList[0]);
+                      return `
+                        <button type="button" onclick="selectScriptPillar('${escapeHtml(pName)}')" class="pillar-pill px-4 py-2.5 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${isSel ? 'bg-indigo-600 text-white border-indigo-500 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'}">
+                          <span>${escapeHtml(pName)}</span>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+
+                <div id="step2NextBtn" class="pt-2 flex justify-end ${isEditing ? 'hidden' : ''}">
+                  <button type="button" onclick="revealScriptStep(3)" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-indigo-950/40">
+                    <span>Naprej: Okvirni scenarij</span>
+                    <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 3. KORAK: OKVIRNI SCENARIJ & GENERIRANJE AI PROMPTA (prikaže se pod formatom) -->
+              <div id="scriptStep3" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5 ${isEditing ? '' : 'hidden'}">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400">3. korak</span>
+                  <span class="text-[11px] text-slate-500 font-medium">Okvirni koncept & AI</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white">Okvirni scenarij & AI prompt</h3>
+
+                <div class="space-y-1.5">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Ključno sporočilo (kaj želim doseči s to vsebino)
+                  </label>
+                  <input id="spCoreMessage" type="text" value="${escapeHtml(sCoreMessage)}" placeholder="Npr. Predstaviti razliko med obema vrstama sira in gledalca spodbuditi k obisku delikatese..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Okvirni koncept scenarija (kako si zamislite to idejo)
+                  </label>
+                  <textarea id="spConcept" rows="5" placeholder="Zapišite svojo zamisel in okvirni potek vsebine v grobem...">${escapeHtml(sConcept)}</textarea>
+                </div>
+
+                <!-- Akcijski gumb: Generiraj AI prompt -->
+                <div class="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div class="text-xs font-bold text-white">Generiranje prompta za AI agenta</div>
+                    <div class="text-[11px] text-slate-400">Združi kontekst naročnika, parametre, koncept ter smernice po fazah.</div>
+                  </div>
+                  <button type="button" onclick="handleGenerateAiScriptPrompt('${client.id}')" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition flex items-center gap-2 active:scale-95 shadow-md shadow-indigo-950/40">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+                    <span>Generiraj AI prompt</span>
+                  </button>
+                </div>
+
+                <div id="step3NextBtn" class="pt-2 flex justify-end ${isEditing ? 'hidden' : ''}">
+                  <button type="button" onclick="revealScriptStep(4)" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-indigo-950/40">
+                    <span>Naprej: Lepljenje končnega scenarija</span>
+                    <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 4. KORAK: LEPLJENJE KONČNEGA SCENARIJA (ločen zadnji korak) -->
+              <div id="scriptStep4" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4 ${isEditing ? '' : 'hidden'}">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">4. korak (zadnji korak)</span>
+                  <span class="text-[11px] text-slate-500 font-medium">Končni scenarij</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white">Lepljenje končnega scenarija</h3>
+                <p class="text-xs text-slate-400">Sem prilepite končni scenarij s hookom, jedrom in CTA-jem, ki ga pripravi AI agent.</p>
+                
+                <textarea id="spFinalScript" rows="8" placeholder="Sem prilepite končni scenarij z hookom, kadri, govorom in CTA-jem, ki ga pripravi AI agent...">${escapeHtml(sFinalScript)}</textarea>
+
+                <div class="pt-4 flex items-center justify-end border-t border-slate-800/80">
+                  <button type="submit" class="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-2 active:scale-95 shadow-lg shadow-emerald-950/40">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Shrani scenarij</span>
+                  </button>
+                </div>
+              </div>
+
+            </form>
+            </div>
+          </div>
+        </div>
+      `;
               <input type="hidden" id="spPillar" value="${escapeHtml(sPillar || (pillarList[0] || ''))}">
 
               <!-- 1. KORAK: NASLOV SCENARIJA (vedno viden na vrhu) -->
