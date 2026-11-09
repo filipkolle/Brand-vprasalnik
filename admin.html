@@ -8603,14 +8603,14 @@
       if (!text) return '';
       let escaped = escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong style="color: #0f172a; font-weight: 700;">$1</strong>');
       // Pretvori [tekst](url) povezave
-      escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all;">$1</a>');
+      escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all; font-weight: 600;">$1 ↗</a>');
       // Pretvori neposredne spletne povezave (http, https, www) v klikabilne v PDF izpisu
-      escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all;">$1</a>');
-      escaped = escaped.replace(/(^|[^/])(www\.[^\s<]+)/g, '$1<a href="https://$2" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all;">$2</a>');
+      escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all; font-weight: 600;">$1 ↗</a>');
+      escaped = escaped.replace(/(^|[^/])(www\.[^\s<]+)/g, '$1<a href="https://$2" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all; font-weight: 600;">$2 ↗</a>');
       return escaped;
     }
 
-    // --- STRUKTURIRANI ANALIZATOR VSEBINE SCENARIJA (PO VZORU SNEMALNE KNJIGE) ---
+    // --- STRUKTURIRANI ANALIZATOR VSEBINE SCENARIJA (IZLUŠČI VSEBINSKO TABELO IN TEHNIČNE SPECIFIKACIJE) ---
     function parseScriptForPrint(script, scriptIdx) {
       const rawTitle = (script.title || 'Brez naslova').trim();
       const cleanTitle = rawTitle.replace(/^0*[0-9]+[\s.:–-]+/, '').replace(/[«»"]/g, '').trim();
@@ -8628,7 +8628,8 @@
         rekviziti: '',
         referenca: '',
         cast: '',
-        location: ''
+        location: '',
+        notes: []
       };
 
       // 1. Analiza polja Koncept (če obstaja)
@@ -8649,14 +8650,47 @@
         }
       }
 
-      // 2. Analiza vrstic končnega scenarija (izlušči metapodatke iz uvoda in vrstice tabele)
+      // 2. Analiza vrstic končnega scenarija (izlušči metapodatke iz uvoda in vrstice tabele ter tehnične specifikacije)
       const lines = rawFinal.split('\n').map(l => l.trim());
       const bodyLines = [];
       let inMeta = true;
+      let inTechSpecs = false;
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         if (!line) continue;
+
+        // Prepoznaj začetek tehničnih specifikacij (faza 4 ali blok tehničnih specifikacij kjerkoli v besedilu)
+        if (/^(?:#{1,4}\s*)?(?:FAZA\s*4\b|TEHNIČN[AEIO]|PRODUKCIJSK[AEIO]|SPECIFIKACIJ[AEIO]|TEHNIČNA\s*NAVODILA|PRODUKCIJSKA\s*NAVODILA|OPOMBE\s*ZA\s*PRODUKCIJO)/i.test(line)) {
+          inTechSpecs = true;
+          inMeta = false;
+          continue;
+        }
+
+        if (inTechSpecs) {
+          const cleanL = line.replace(/^[-•*]\s*/, '').trim();
+          if (!cleanL) continue;
+
+          const mLoc = cleanL.match(/^(?:Lokacija(?:\s*&\s*osvetlitev)?|Prostor):\s*(.+)$/i);
+          if (mLoc) { meta.location = (meta.location ? meta.location + ', ' : '') + mLoc[1].trim(); continue; }
+
+          const mCast = cleanL.match(/^(?:Nastopajoči|Nastopajoče osebe|Osebe|Igralci):\s*(.+)$/i);
+          if (mCast) { meta.cast = (meta.cast ? meta.cast + ', ' : '') + mCast[1].trim(); continue; }
+
+          const mProps = cleanL.match(/^(?:Rekviziti(?:\s*&\s*priprava)?|Priprava|Oprema):\s*(.+)$/i);
+          if (mProps) { meta.rekviziti = (meta.rekviziti ? meta.rekviziti + '; ' : '') + mProps[1].trim(); continue; }
+
+          const mExec = cleanL.match(/^(?:Izvedba|Potek videa|Ton|Stil|Energija(?:\s*&\s*tempo)?|Tempo):\s*(.+)$/i);
+          if (mExec) { meta.izvedba = (meta.izvedba ? meta.izvedba + '; ' : '') + mExec[1].trim(); continue; }
+
+          const mRef = cleanL.match(/^(?:Referenca|Primer videa|Primer končnega izgleda|Povezava):\s*(https?:\/\/[^\s]+)$/i) || cleanL.match(/(https?:\/\/[^\s]+)/i);
+          if (mRef) { meta.referenca = mRef[1].trim(); continue; }
+
+          if (cleanL.length > 3 && !cleanL.includes('|')) {
+            meta.notes.push(cleanL);
+          }
+          continue;
+        }
 
         if (inMeta) {
           // Table header delimiter
@@ -8688,7 +8722,7 @@
           if (/^https?:\/\/[^\s]+$/.test(line)) { meta.referenca = line; continue; }
 
           // Prepoznavanje začetka tabele / telesa snemalne knjige
-          if (/^(?:HOOK\b|JEDRO\b|CTA\b|FAZA\s+[0-9]+|#{1,3}\s*FAZA|DRUŽABNE\s+PRILOŽNOSTI|INDIVIDUALNE\s+PRILOŽNOSTI|IZTOČNICE\s+ZA\s+GOVORKI|UVOD:|Hook:|Kader\s+[0-9]+|[0-9]+\.\s+[A-ZČŠŽa-zčšž]|BARBARA:|POSNETEK\s+OSEBE)/i.test(line)) {
+          if (/^(?:HOOK\b|JEDRO\b|CTA\b|FAZA\s+[123]|#{1,3}\s*(?:FAZA\s+[123]|HOOK|JEDRO|CTA)|DRUŽABNE\s+PRILOŽNOSTI|INDIVIDUALNE\s+PRILOŽNOSTI|IZTOČNICE\s+ZA\s+GOVORKI|UVOD:|Hook:|Kader\s+[0-9]+|[0-9]+\.\s+[A-ZČŠŽa-zčšž]|BARBARA:|POSNETEK\s+OSEBE)/i.test(line)) {
             inMeta = false;
             bodyLines.push(line);
             continue;
@@ -8857,137 +8891,164 @@
       };
     }
 
-    // --- GENERATOR STRUKTURIRANEGA HTML-JA ZA POSAMEZEN SCENARIJ V PDF IZPISU (VZOR: Scenariji_O_Sole_Mio.pdf) ---
+    // --- GENERATOR STRUKTURIRANEGA IN ESTETSKO DOVRŠENEGA HTML-JA ZA SCENARIJ V PDF IZPISU ---
     function renderSingleScriptPrintHtml(client, script, scriptIdx = 1, totalScripts = 1) {
       const parsed = parseScriptForPrint(script, scriptIdx);
       const { cleanTitle, idxPadded, format, pillar, meta, rows, rawFinal } = parsed;
       const clientName = client.company_name || client.name || 'NAROČNIK';
       const pageNum = scriptIdx + 1; // Naslovna stran je stran 1
 
-      // Podnaslovne postavke (ločene s pikico · )
-      const subtitleParts = [];
-      if (format) subtitleParts.push(escapeHtml(format));
-      if (pillar) subtitleParts.push(escapeHtml(pillar));
-      if (meta.cast) subtitleParts.push(`Nastopajoči: <span style="color: #0f172a;">${escapeHtml(meta.cast)}</span>`);
-      if (meta.location) subtitleParts.push(`Lokacija: <span style="color: #0f172a;">${escapeHtml(meta.location)}</span>`);
-
-      // Seznam metapodatkov
-      const metaEntries = [];
-      if (meta.koncept) metaEntries.push(['KONCEPT', meta.koncept, false]);
-      if (meta.kljucno_sporocilo) metaEntries.push(['KLJUČNO SPOROČILO', meta.kljucno_sporocilo, false]);
-      if (meta.izvedba) metaEntries.push(['IZVEDBA', meta.izvedba, false]);
-      if (meta.rekviziti) metaEntries.push(['REKVIZITI', meta.rekviziti, false]);
-      if (meta.referenca) metaEntries.push(['REFERENCA', meta.referenca, true]);
+      // Ali imamo tehnične specifikacije za prikaz pod scenarijem?
+      const hasTechSpecs = !!(meta.location || meta.cast || meta.rekviziti || meta.izvedba || meta.referenca || (meta.notes && meta.notes.length > 0));
 
       let html = `
         <div class="print-script-sheet" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; line-height: 1.45; font-size: 8.5pt;">
           
-          <!-- Tekoča zgornja glava strani (kot v Scenariji_O_Sole_Mio.pdf) -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 22px; font-size: 7pt; font-weight: 700; color: #64748b; letter-spacing: 0.12em; text-transform: uppercase; page-break-inside: avoid; break-inside: avoid;">
-            <div>${escapeHtml(clientName)}</div>
-            <div style="display: flex; gap: 15px; align-items: center;">
+          <!-- Tekoča zgornja glava strani z barvnim poudarkom -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #4f46e5; padding-bottom: 6px; margin-bottom: 20px; font-size: 7.5pt; font-weight: 700; color: #64748b; letter-spacing: 0.1em; text-transform: uppercase; page-break-inside: avoid; break-inside: avoid;">
+            <div style="color: #4f46e5; font-weight: 900; letter-spacing: 0.15em;">${escapeHtml(clientName)}</div>
+            <div style="display: flex; gap: 14px; align-items: center;">
               <span>Scenariji za video vsebine</span>
-              <span style="color: #0f172a; font-weight: 800; font-size: 7.5pt;">${pageNum}</span>
+              <span style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-weight: 800; font-size: 7.5pt; padding: 1px 8px; border-radius: 9999px;">${pageNum}</span>
             </div>
           </div>
 
-          <!-- Številka scenarija in naslov -->
-          <div style="margin-bottom: 18px; page-break-inside: avoid; break-inside: avoid;">
-            <div style="font-size: 38pt; font-weight: 900; line-height: 1; color: #0f172a; margin-bottom: 4px; letter-spacing: -0.02em;">
-              ${idxPadded}
+          <!-- Številka scenarija in naslov z barvnimi značkami -->
+          <div style="margin-bottom: 16px; page-break-inside: avoid; break-inside: avoid;">
+            <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px;">
+              <span style="font-size: 34pt; font-weight: 900; line-height: 1; color: #4338ca; letter-spacing: -0.03em;">
+                ${idxPadded}
+              </span>
+              <h1 style="font-size: 20pt; font-weight: 800; line-height: 1.2; color: #0f172a; margin: 0; letter-spacing: -0.01em;">
+                ${escapeHtml(cleanTitle)}
+              </h1>
             </div>
-            <h1 style="font-size: 20pt; font-weight: 800; line-height: 1.15; color: #0f172a; margin: 0 0 6px 0; letter-spacing: -0.01em;">
-              ${escapeHtml(cleanTitle)}
-            </h1>
-            <div style="font-size: 8pt; color: #64748b; font-weight: 600; line-height: 1.4;">
-              ${subtitleParts.join(' <span style="color: #94a3b8; margin: 0 4px;">·</span> ')}
+            
+            <!-- Interaktivne in estetske značke (Format & Steber) -->
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px;">
+              ${format ? `
+                <span style="display: inline-flex; align-items: center; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-size: 7.5pt; font-weight: 700; padding: 2px 9px; border-radius: 9999px; letter-spacing: 0.02em;">
+                  🎬 ${escapeHtml(format)}
+                </span>
+              ` : ''}
+              ${pillar ? `
+                <span style="display: inline-flex; align-items: center; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 7.5pt; font-weight: 700; padding: 2px 9px; border-radius: 9999px; letter-spacing: 0.02em;">
+                  🏷️ ${escapeHtml(pillar)}
+                </span>
+              ` : ''}
             </div>
           </div>
 
-          <!-- Razdelki metapodatkov (čista tipografija brez okvirjev po vzoru referenčnega PDF-ja) -->
-          ${metaEntries.length > 0 ? `
-            <div style="display: flex; flex-direction: column; gap: 9px; margin-bottom: 20px; page-break-inside: avoid; break-inside: avoid;">
-              ${metaEntries.map(([label, text, isLink]) => `
-                <div>
-                  <div style="font-size: 7pt; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
-                    ${escapeHtml(label)}
-                  </div>
-                  <div style="font-size: 8.5pt; color: #0f172a; line-height: 1.42; white-space: pre-line;">
-                    ${isLink ? formatInlineMarkdownPrint(text) : escapeHtml(text)}
+          <!-- Koncept in Ključno sporočilo (Zgornji vizualni vsebinski okvir) -->
+          ${(meta.koncept || meta.kljucno_sporocilo) ? `
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #4f46e5; border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 18px; page-break-inside: avoid; break-inside: avoid;">
+              ${meta.koncept ? `
+                <div style="margin-bottom: ${meta.kljucno_sporocilo ? '8px' : '0'};">
+                  <span style="font-size: 6.8pt; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.09em; display: block; margin-bottom: 2px;">
+                    💡 KONCEPT
+                  </span>
+                  <div style="font-size: 8.5pt; color: #1e293b; line-height: 1.45; font-weight: 500;">
+                    ${formatInlineMarkdownPrint(meta.koncept)}
                   </div>
                 </div>
-              `).join('')}
+              ` : ''}
+              ${meta.kljucno_sporocilo ? `
+                <div>
+                  <span style="font-size: 6.8pt; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.09em; display: block; margin-bottom: 2px;">
+                    🎯 KLJUČNO SPOROČILO
+                  </span>
+                  <div style="font-size: 8.5pt; color: #0f172a; line-height: 1.45; font-weight: 600;">
+                    ${formatInlineMarkdownPrint(meta.kljucno_sporocilo)}
+                  </div>
+                </div>
+              ` : ''}
             </div>
           ` : ''}
 
-          <!-- Produkcijska tabela (Snemalna knjiga): DEL | VIZUAL | GOVOR | TEKST NA ZASLONU -->
+          <!-- Glavna produkcijska tabela (Snemalna knjiga): DEL | VIZUAL | GOVOR | TEKST NA ZASLONU -->
       `;
 
       if (rows.length > 0) {
         html += `
-          <table style="width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 8pt; page-break-inside: auto;">
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 6px; font-size: 8pt; page-break-inside: auto; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden;">
             <thead>
-              <tr style="border-top: 1.5px solid #0f172a; border-bottom: 1.5px solid #0f172a;">
-                <th style="padding: 6px 8px; font-size: 7pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #0f172a; text-align: left; width: 14%;">DEL</th>
-                <th style="padding: 6px 8px; font-size: 7pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #0f172a; text-align: left; width: 36%;">VIZUAL</th>
-                <th style="padding: 6px 8px; font-size: 7pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #0f172a; text-align: left; width: 36%;">GOVOR</th>
-                <th style="padding: 6px 8px; font-size: 7pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #0f172a; text-align: left; width: 14%;">TEKST NA ZASLONU</th>
+              <tr style="background: #1e293b; color: #ffffff;">
+                <th style="padding: 7px 10px; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; text-align: left; width: 14%; border-bottom: 2px solid #4f46e5;">DEL</th>
+                <th style="padding: 7px 10px; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; text-align: left; width: 36%; border-bottom: 2px solid #4f46e5;">VIZUAL</th>
+                <th style="padding: 7px 10px; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; text-align: left; width: 36%; border-bottom: 2px solid #4f46e5;">GOVOR</th>
+                <th style="padding: 7px 10px; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; text-align: left; width: 14%; border-bottom: 2px solid #4f46e5;">TEKST NA ZASLONU</th>
               </tr>
             </thead>
             <tbody>
         `;
 
         let lastSection = '';
-        rows.forEach(r => {
+        rows.forEach((r, rowIdx) => {
           const showSectionHeader = r.section && r.section !== lastSection;
           if (showSectionHeader) {
             lastSection = r.section;
           }
 
-          // Format Vizual: poudari vodilno lokacijo (npr. "Pred trgovino:", "Kuhinja:")
+          // Barvna značka za posamezen del (HOOK / JEDRO / CTA)
+          let sectionBadgeHtml = '';
+          if (showSectionHeader) {
+            const secUpper = r.section.toUpperCase();
+            if (secUpper.includes('HOOK')) {
+              sectionBadgeHtml = `<span style="display: inline-block; background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; padding: 2px 7px; border-radius: 4px; font-weight: 900; font-size: 7pt; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">⚡ HOOK</span>`;
+            } else if (secUpper.includes('JEDRO')) {
+              sectionBadgeHtml = `<span style="display: inline-block; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 2px 7px; border-radius: 4px; font-weight: 900; font-size: 7pt; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">🎬 JEDRO</span>`;
+            } else if (secUpper.includes('CTA')) {
+              sectionBadgeHtml = `<span style="display: inline-block; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 7px; border-radius: 4px; font-weight: 900; font-size: 7pt; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">🎯 CTA</span>`;
+            } else {
+              sectionBadgeHtml = `<span style="display: inline-block; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 2px 7px; border-radius: 4px; font-weight: 900; font-size: 7pt; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">${escapeHtml(r.section)}</span>`;
+            }
+          }
+
+          // Format Vizual: poudari vodilno lokacijo z barvnim poudarkom
           let formattedVisual = escapeHtml(r.visual || '—');
           const mLocPrefix = formattedVisual.match(/^([A-Za-zČŠŽčšž0-9\s]+:)\s*(.*)/);
           if (mLocPrefix && mLocPrefix[1].length < 35) {
-            formattedVisual = `<strong style="color: #0f172a;">${mLocPrefix[1]}</strong> ${mLocPrefix[2]}`;
+            formattedVisual = `<strong style="color: #4338ca;">${mLocPrefix[1]}</strong> ${mLocPrefix[2]}`;
           }
 
-          // Format Govor: poudari govorca pred narekovaji (npr. "Barbara:", "VO (telefon):")
+          // Format Govor: poudari govorca pred narekovaji
           let formattedSpeech = escapeHtml(r.speech || '—');
           const mSpkPrefix = formattedSpeech.match(/^([A-Za-zČŠŽčšž0-9\s()]+\s*:)\s*(.*)/);
           if (mSpkPrefix && mSpkPrefix[1].length < 35) {
-            formattedSpeech = `<strong style="color: #0f172a;">${mSpkPrefix[1]}</strong> ${mSpkPrefix[2]}`;
+            formattedSpeech = `<strong style="color: #0f172a; font-weight: 800;">${mSpkPrefix[1]}</strong> ${mSpkPrefix[2]}`;
           }
 
           // Format Tekst na zaslonu
           const cleanScreen = (r.screen_text || '—').trim();
+          const screenHtml = cleanScreen !== '—' 
+            ? `<span style="display: inline-block; background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; font-weight: 800; font-size: 7pt; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.04em;">${escapeHtml(cleanScreen)}</span>`
+            : '<span style="color: #94a3b8;">—</span>';
+
+          const bgRow = rowIdx % 2 === 0 ? '#ffffff' : '#fcfdff';
 
           html += `
-            <tr style="border-bottom: 1px solid #e2e8f0; page-break-inside: avoid; break-inside: avoid;">
+            <tr style="background: ${bgRow}; border-bottom: 1px solid #e2e8f0; page-break-inside: avoid; break-inside: avoid;">
               <!-- DEL -->
-              <td style="padding: 7px 8px; vertical-align: top; width: 14%;">
-                ${showSectionHeader ? `
-                  <div style="font-size: 7.5pt; font-weight: 900; color: #0f172a; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 2px;">
-                    ${escapeHtml(r.section)}
-                  </div>
-                ` : ''}
-                <div style="font-size: 8pt; font-weight: 600; color: #334155;">
+              <td style="padding: 8px 10px; vertical-align: top; width: 14%; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #e2e8f0;">
+                ${sectionBadgeHtml}
+                <div style="font-size: 8pt; font-weight: 700; color: #1e293b;">
                   ${escapeHtml(r.del || '—')}
                 </div>
               </td>
 
               <!-- VIZUAL -->
-              <td style="padding: 7px 8px; vertical-align: top; width: 36%; color: #334155; line-height: 1.4; white-space: pre-line;">
+              <td style="padding: 8px 10px; vertical-align: top; width: 36%; color: #334155; line-height: 1.42; white-space: pre-line; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #e2e8f0;">
                 ${formattedVisual}
               </td>
 
               <!-- GOVOR -->
-              <td style="padding: 7px 8px; vertical-align: top; width: 36%; color: #0f172a; line-height: 1.4; white-space: pre-line;">
+              <td style="padding: 8px 10px; vertical-align: top; width: 36%; color: #0f172a; line-height: 1.42; white-space: pre-line; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #e2e8f0;">
                 ${formattedSpeech}
               </td>
 
               <!-- TEKST NA ZASLONU -->
-              <td style="padding: 7px 8px; vertical-align: top; width: 14%; font-weight: 800; font-size: 7.5pt; color: #1e293b; text-transform: uppercase; letter-spacing: 0.03em;">
-                ${cleanScreen}
+              <td style="padding: 8px 10px; vertical-align: top; width: 14%; text-align: left; border-bottom: 1px solid #e2e8f0;">
+                ${screenHtml}
               </td>
             </tr>
           `;
@@ -9005,6 +9066,96 @@
         `;
       }
 
+      // --- TEHNIČNE SPECIFIKACIJE & PRODUKCIJA (PRIKAZANE POD SCENARIJEM PREGLEDNO IN INTERAKTIVNO) ---
+      if (hasTechSpecs) {
+        html += `
+          <div style="margin-top: 20px; page-break-inside: avoid; break-inside: avoid;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+              <span style="font-size: 7.2pt; font-weight: 800; color: #4338ca; background: #eef2ff; border: 1px solid #c7d2fe; padding: 2px 8px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.08em;">Produkcijske opombe</span>
+              <span style="font-size: 8.5pt; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.06em;">Tehnične specifikacije za snemanje</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px;">
+              
+              <!-- Lokacija snemanja -->
+              ${meta.location ? `
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px;">
+                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
+                    📍 Lokacija snemanja
+                  </div>
+                  <div style="font-size: 8pt; font-weight: 700; color: #0f172a; line-height: 1.35;">
+                    ${escapeHtml(meta.location)}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Nastopajoči -->
+              ${meta.cast ? `
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px;">
+                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
+                    👥 Nastopajoče osebe
+                  </div>
+                  <div style="font-size: 8pt; font-weight: 700; color: #0f172a; line-height: 1.35;">
+                    ${escapeHtml(meta.cast)}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Rekviziti -->
+              ${meta.rekviziti ? `
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px;">
+                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
+                    📦 Rekviziti in priprava
+                  </div>
+                  <div style="font-size: 8pt; font-weight: 600; color: #1e293b; line-height: 1.35;">
+                    ${formatInlineMarkdownPrint(meta.rekviziti)}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Izvedba & Ton -->
+              ${meta.izvedba ? `
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px;">
+                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
+                    🎬 Izvedba, stil & dinamika
+                  </div>
+                  <div style="font-size: 8pt; font-weight: 600; color: #1e293b; line-height: 1.35;">
+                    ${formatInlineMarkdownPrint(meta.izvedba)}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Referenca s klikabilnim gumbom -->
+              ${meta.referenca ? `
+                <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 6px; padding: 8px 11px;">
+                  <div style="font-size: 6.8pt; font-weight: 800; color: #4338ca; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px;">
+                    🔗 Video referenca / Primer
+                  </div>
+                  <div style="font-size: 8pt; font-weight: 700; line-height: 1.35;">
+                    <a href="${escapeHtml(meta.referenca)}" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all; display: inline-flex; align-items: center; gap: 4px;">
+                      <span>Odpri referenčni video</span> ↗
+                    </a>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Dodatne opombe -->
+              ${meta.notes && meta.notes.length > 0 ? `
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 11px; grid-column: 1 / -1;">
+                  <div style="font-size: 6.8pt; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px;">
+                    📝 Dodatni produkcijski napotki
+                  </div>
+                  <div style="font-size: 8pt; font-weight: 500; color: #334155; line-height: 1.35;">
+                    ${meta.notes.map(n => escapeHtml(n)).join(' · ')}
+                  </div>
+                </div>
+              ` : ''}
+
+            </div>
+          </div>
+        `;
+      }
+
       html += `</div>`;
       return html;
     }
@@ -9017,28 +9168,41 @@
       return `
         <div class="print-script-page" style="min-height: 90vh; display: flex; flex-direction: column; justify-content: space-between; padding: 24px 0 20px 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; page-break-after: always; break-after: page;">
           <div>
-            <!-- Ime naročnika / Znamka -->
-            <div style="font-size: 11pt; font-weight: 800; letter-spacing: 0.15em; color: #0f172a; text-transform: uppercase; margin-bottom: 55px;">
+            <!-- Ime naročnika / Znamka z barvnim poudarkom -->
+            <div style="font-size: 11pt; font-weight: 900; letter-spacing: 0.16em; color: #4f46e5; text-transform: uppercase; margin-bottom: 40px; display: inline-flex; align-items: center; gap: 8px;">
+              <span style="width: 8px; height: 8px; background: #4f46e5; border-radius: 9999px; display: inline-block;"></span>
               ${escapeHtml(clientName)}
             </div>
             
-            <!-- Glavni naslov dokumenta -->
-            <h1 style="font-size: 40pt; font-weight: 900; line-height: 1.05; color: #0f172a; margin: 0 0 10px 0; letter-spacing: -0.02em;">
-              Scenariji<br><span style="color: #0f172a;">za video vsebine</span>
+            <!-- Glavni naslov dokumenta z barvnim poudarkom -->
+            <h1 style="font-size: 38pt; font-weight: 900; line-height: 1.05; color: #0f172a; margin: 0 0 10px 0; letter-spacing: -0.02em;">
+              Scenariji <span style="color: #4f46e5;">za video vsebine</span>
             </h1>
-            <p style="font-size: 9pt; color: #64748b; font-weight: 600; margin: 0 0 45px 0;">
-              ${escapeHtml(formatStr)} · ${scripts.length} ${scripts.length === 1 ? 'scenarij' : (scripts.length === 2 ? 'scenarija' : (scripts.length <= 4 ? 'scenariji' : 'scenarijev'))}
-            </p>
+            <div style="margin: 0 0 45px 0;">
+              <span style="display: inline-block; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-size: 8.5pt; font-weight: 700; padding: 3px 12px; border-radius: 9999px;">
+                ${escapeHtml(formatStr)} · ${scripts.length} ${scripts.length === 1 ? 'scenarij' : (scripts.length === 2 ? 'scenarija' : (scripts.length <= 4 ? 'scenariji' : 'scenarijev'))}
+              </span>
+            </div>
 
-            <!-- Kazalo scenarijev (Čista postavitev po vzoru Scenariji_O_Sole_Mio.pdf) -->
-            <div style="display: flex; flex-direction: column; gap: 16px; max-width: 650px;">
+            <!-- Kazalo scenarijev (Čista, estetska in pregledna kartična postavitev) -->
+            <div style="display: flex; flex-direction: column; gap: 10px; max-width: 680px;">
               ${scripts.map((s, idx) => {
                 const cleanT = (s.title || 'Brez naslova').replace(/^0*[0-9]+[\s.:–-]+/, '').replace(/[«»"]/g, '').trim();
                 return `
-                  <div>
-                    <div style="font-size: 15pt; font-weight: 900; color: #0f172a; line-height: 1;">${String(idx + 1).padStart(2, '0')}</div>
-                    <div style="font-size: 10.5pt; font-weight: 700; color: #0f172a; margin-top: 2px;">${escapeHtml(cleanT)}</div>
-                    ${s.pillar ? `<div style="font-size: 8pt; font-weight: 600; color: #64748b; margin-top: 1px;">${escapeHtml(s.pillar)}</div>` : ''}
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <span style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-size: 9pt; font-weight: 900; padding: 3px 8px; border-radius: 4px; min-width: 24px; text-align: center;">
+                        ${String(idx + 1).padStart(2, '0')}
+                      </span>
+                      <span style="font-size: 10pt; font-weight: 700; color: #0f172a;">
+                        ${escapeHtml(cleanT)}
+                      </span>
+                    </div>
+                    ${s.pillar ? `
+                      <span style="display: inline-flex; align-items: center; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 7.5pt; font-weight: 700; padding: 2px 8px; border-radius: 9999px; white-space: nowrap;">
+                        ${escapeHtml(s.pillar)}
+                      </span>
+                    ` : ''}
                   </div>
                 `;
               }).join('')}
@@ -10900,13 +11064,14 @@ Tvoja naloga je, da na podlagi spodnjih parametrov in avtorjevega koncepta skons
 ## ⚠️ KRITIČNA PRAVILA ZA IZHOD (OBVEZNO UPOŠTEVAJ):
 1. **STROGA PREPOVED SLIK:** NE generiraj in NE pošiljaj nobenih slik, fotografij ali skic. Za scenarij je potreben **IZKLJUČNO TEKST**.
 2. **BREZ KLEPETA:** Brez uvodnega ali zaključnega klepeta AI-ja (npr. "Seveda, tukaj je scenarij...") — vrni izključno čist scenarij v spodaj predpisani strukturi.
-3. **METAPODATKI NA VRHU:** Scenarij mora na vrhu vsebovati natančne metapodatke (KONCEPT, KLJUČNO SPOROČILO, IZVEDBA, REKVIZITI, REFERENCA, NASTOPAJOČI, LOKACIJA).
-4. **PRAVILA ZA PRODUKCIJSKO TABELO:**
-   - Stolpci v tabeli morajo biti točno: DEL | VIZUAL | GOVOR | TEKST NA ZASLONU (stolpec se imenuje **VIZUAL**, nikoli Vizualno).
-   - Vsebina je razdeljena na 3 dele: **HOOK**, **JEDRO** in **CTA** (faze so odstranjene, ostanejo le deli HOOK, JEDRO in CTA).
+3. **STRUKTURA SCENARIJA:**
+   - Na vrhu navedi samo **KONCEPT** in **KLJUČNO SPOROČILO**.
+   - Nato sledi produkcijska tabela scenarija s stolpci: **DEL | VIZUAL | GOVOR | TEKST NA ZASLONU** (stolpec se imenuje **VIZUAL**, nikoli Vizualno).
+   - Tabela je razdeljena na 3 dele: **HOOK**, **JEDRO** in **CTA** (faze so odstranjene, ostanejo le deli HOOK, JEDRO in CTA).
    - V stolpcu VIZUAL vedno začni z lokacijo ali kadrom v krepkem tisku (npr. **Kuhinja:** ali **B-roll delikatese:**).
    - V stolpcu GOVOR vedno navedi govorca v krepkem tisku ter točno besedilo v narekovajih (npr. **Barbara:** »...«). Če v kadru ni govora, zapiši »—«.
    - V stolpcu TEKST NA ZASLONU navedi kratek, udaren napis z VELIKIMI TISKANIMI ČRKAMI (npr. **5 € ALI 20 €?**). Če ni napisa, zapiši »—«.
+   - **POD SCENARIJEM** (ne v tabeli!) navedi razdelek **TEHNIČNE SPECIFIKACIJE:** z lokacijo, nastopajočimi, rekviziti, izvedbo in referenco.
 
 ---
 
@@ -10939,18 +11104,20 @@ ${concept || "Avtor je določil naslov in format ter želi kreativen, privlačen
 
 KONCEPT: [1–2 jasna stavka o bistvu in privlačnosti videa]
 KLJUČNO SPOROČILO: [1 stavek - bistvo, ki si ga gledalec zapomni]
-IZVEDBA: [Kratek opis stila izvedbe, npr. Dinamičen govor v kamero + B-roll detajlov / hitri rezi]
-REKVIZITI: [Točen seznam rekvizitov, produktov in pripomočkov za snemanje]
-REFERENCA: [Povezava do video reference ali primer formata, če obstaja, sicer —]
-NASTOPAJOČI: [Kdo nastopa, npr. ${people || "Ime nastopajoče osebe"}]
-LOKACIJA: [Kje se snema, npr. ${locations || "Točna lokacija snemanja"}]
 
 DEL | VIZUAL | GOVOR | TEKST NA ZASLONU
 HOOK | [Lokacija / kader]: [Opis prvega dinamičnega vizuala v prvih 3 sekundah] | [Oseba]: »[Točen, udaren uvodni stavek]« | [Kratek napis z VELIKIMI ČRKAMI ali —]
 JEDRO | [Lokacija / kader 1]: [Opis dejanja, B-rolla ali prikaza] | [Oseba]: »[Nadaljevanje zgodbe / pojasnilo]« | [Napis ali —]
 JEDRO | [Lokacija / kader 2]: [Naslednji kader / reakcija / detajl] | [Oseba]: »[Ključni argument ali demonstracija]« | [Napis ali —]
 JEDRO | [Lokacija / kader 3]: [Zaključni del jedra] | [Oseba]: »[Razrešitev / končni vtis]« | [Napis ali —]
-CTA | [Lokacija / zaključni kader]: [Zaključek, pogled v kamero ali skupen kader] | [Oseba]: »[Jasen in neposreden poziv k dejanju]« | [CTA napis na zaslonu ali —]`;
+CTA | [Lokacija / zaključni kader]: [Zaključek, pogled v kamero ali skupen kader] | [Oseba]: »[Jasen in neposreden poziv k dejanju]« | [CTA napis na zaslonu ali —]
+
+TEHNIČNE SPECIFIKACIJE:
+- Lokacija: [Kje se snema, npr. ${locations || "Točna lokacija snemanja"}]
+- Nastopajoči: [Kdo nastopa, npr. ${people || "Ime nastopajoče osebe"}]
+- Rekviziti: [Točen seznam rekvizitov, produktov in pripomočkov za snemanje]
+- Izvedba: [Kratek opis stila izvedbe, npr. Dinamičen govor v kamero + B-roll detajlov / hitri rezi]
+- Referenca: [Povezava do video reference ali primer formata, če obstaja, sicer —]`;
 
       // Copy to clipboard
       navigator.clipboard.writeText(promptText).then(() => {
