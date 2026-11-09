@@ -8,7 +8,7 @@
   <!-- Google Fonts: Montserrat -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -117,6 +117,16 @@
       .print-no-break {
         page-break-inside: avoid;
         break-inside: avoid;
+      }
+      table {
+        page-break-inside: auto;
+      }
+      tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      thead {
+        display: table-header-group;
       }
     }
 
@@ -8339,119 +8349,535 @@
       );
     }
 
-    // --- POMOŽNA FUNKCIJA: STRNJEN IN PREGLEDEN IZPIS BESEDILA SCENARIJA ---
+// --- POMOŽNA FUNKCIJA: PRETVORBA BESEDILA V OBLIKOVAN HTML S KLIKABILNIMI POVEZAVAMI ---
     function formatInlineMarkdownPrint(text) {
+      if (!text) return '';
       let escaped = escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong style="color: #0f172a; font-weight: 700;">$1</strong>');
-      // Pretvori URL-je (http://, https:// ali www.) v klikabilne povezave v PDF-ju
+      // Pretvori [tekst](url) povezave
+      escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all;">$1</a>');
+      // Pretvori neposredne spletne povezave (http, https, www) v klikabilne v PDF izpisu
       escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all;">$1</a>');
       escaped = escaped.replace(/(^|[^/])(www\.[^\s<]+)/g, '$1<a href="https://$2" target="_blank" rel="noopener noreferrer" style="color: #4f46e5; text-decoration: underline; word-break: break-all;">$2</a>');
       return escaped;
     }
 
-    function formatScriptPrintText(rawText) {
-      if (!rawText) return '<p style="color: #64748b; font-style: italic; margin: 0;">Scenarij še ni pripravljen.</p>';
-      
-      // Normalizacija prelomov vrstic in odprava odvečnih zaporednih praznih vrstic
-      const cleanText = rawText.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
-      const lines = cleanText.split('\n');
+    // --- STRUKTURIRANI ANALIZATOR VSEBINE SCENARIJA (PO VZORU SNEMALNE KNJIGE) ---
+    function parseScriptForPrint(script, scriptIdx) {
+      const rawTitle = (script.title || 'Brez naslova').trim();
+      const cleanTitle = rawTitle.replace(/^0*[0-9]+[\s.:–-]+/, '').replace(/[«»"]/g, '').trim();
+      const idxPadded = String(scriptIdx || 1).padStart(2, '0');
+      const format = (script.format || 'Reels / Video').trim();
+      const pillar = (script.pillar || '').trim();
+      const rawConcept = (script.concept || '').trim();
+      const rawFinal = (script.final_script || script.body_visual || '').trim();
+      const coreMsg = (script.core_message || '').trim();
 
-      return lines.map(line => {
-        const trimmed = line.trim();
+      const meta = {
+        cast: '',
+        location: '',
+        framing: '',
+        core_message: coreMsg,
+        concept: '',
+        concept_label: 'KONCEPT',
+        execution: '',
+        subformat: '',
+        tone: '',
+        broll_general: '',
+        video_example: '',
+        video_example_label: 'Primer videa:'
+      };
 
-        // Preskočimo markdown ločilne črte (--- ali ***)
-        if (/^([-*_]){3,}$/.test(trimmed)) {
-          return '';
+      // 1. Analiza polja Koncept (če obstaja)
+      if (rawConcept) {
+        const cLines = rawConcept.split('\n').map(l => l.trim()).filter(Boolean);
+        for (const cl of cLines) {
+          const mFmt = cl.match(/^Format:\s*(.+)$/i);
+          if (mFmt) { meta.subformat = mFmt[1].trim(); continue; }
+          const mCon = cl.match(/^(?:Okvirni koncept|Koncept):\s*(.+)$/i);
+          if (mCon) {
+            if (/okvirni/i.test(cl)) meta.concept_label = 'OKVIRNI KONCEPT';
+            meta.concept = (meta.concept ? meta.concept + '\n' : '') + mCon[1].trim();
+            continue;
+          }
+          const mCore = cl.match(/^(?:Ključno sporočilo|Cilj):\s*(.+)$/i);
+          if (mCore) { if (!meta.core_message) meta.core_message = mCore[1].trim(); continue; }
+          const mVid = cl.match(/(https?:\/\/[^\s]+)/i);
+          if (mVid && !meta.video_example) { meta.video_example = mVid[1].trim(); }
+          if (!cl.toLowerCase().startsWith('format:') && !cl.toLowerCase().startsWith('koncept:') && !cl.toLowerCase().startsWith('ključno')) {
+            meta.concept = (meta.concept ? meta.concept + '\n' : '') + cl;
+          }
+        }
+      }
+
+      // 2. Analiza vrstic končnega scenarija (izlušči metapodatke iz uvoda in vrstice tabele)
+      const lines = rawFinal.split('\n').map(l => l.trim());
+      const bodyLines = [];
+      let inMeta = true;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+
+        if (inMeta) {
+          const mCast = line.match(/^(?:Nastopajoči|Nastopajoče osebe|Osebe|Igralci):\s*(.+)$/i);
+          if (mCast) { meta.cast = mCast[1].trim(); continue; }
+
+          const mLoc = line.match(/^(?:Lokacija|Prostor):\s*(.+)$/i);
+          if (mLoc) { meta.location = mLoc[1].trim(); continue; }
+
+          const mFraming = line.match(/^(?:Kader|Kadrovanje):\s*(.+)$/i);
+          if (mFraming) { meta.framing = mFraming[1].trim(); continue; }
+
+          const mCore = line.match(/^(?:Ključno sporočilo|Cilj):\s*(.+)$/i);
+          if (mCore) { if (!meta.core_message) meta.core_message = mCore[1].trim(); continue; }
+
+          const mExec = line.match(/^(?:Izvedba|IZVEDBA):\s*(.+)$/i);
+          if (mExec) { meta.execution = mExec[1].trim(); continue; }
+
+          const mCon = line.match(/^(?:Okvirni koncept|Koncept|OKVIRNI KONCEPT|KONCEPT):\s*(.+)$/i);
+          if (mCon) {
+            if (/okvirni/i.test(line)) meta.concept_label = 'OKVIRNI KONCEPT';
+            meta.concept = (meta.concept ? meta.concept + '\n' : '') + mCon[1].trim();
+            continue;
+          }
+
+          const mFmt = line.match(/^(?:Format|FORMAT):\s*(.+)$/i);
+          if (mFmt) { meta.subformat = mFmt[1].trim(); continue; }
+
+          const mTone = line.match(/^(?:Ton|TON|Potek videa):\s*(.+)$/i);
+          if (mTone) { meta.tone = mTone[1].trim(); continue; }
+
+          const mBroll = line.match(/^(?:B-roll|B-ROLL):\s*(.+)$/i);
+          if (mBroll) { meta.broll_general = mBroll[1].trim(); continue; }
+
+          const mVid = line.match(/^(?:Primer videa|Primer končnega izgleda videa|PRIMER VIDEA:?):\s*(https?:\/\/[^\s]+)$/i);
+          if (mVid) {
+            if (/končnega/i.test(line)) meta.video_example_label = 'Primer končnega izgleda videa:';
+            meta.video_example = mVid[1].trim();
+            continue;
+          }
+          if (/^https?:\/\/[^\s]+$/.test(line)) {
+            meta.video_example = line;
+            continue;
+          }
+
+          // Prepoznavanje začetka tabele / telesa snemalne knjige
+          if (/^(?:FAZA\s+[0-9]+|#{1,3}\s*FAZA|DRUŽABNE\s+PRILOŽNOSTI|INDIVIDUALNE\s+PRILOŽNOSTI|IZTOČNICE\s+ZA\s+GOVORKI|UVOD:|HOOK:|Hook:|Kader\s+[0-9]+|[0-9]+\.\s+[A-ZČŠŽa-zčšž]|BARBARA:|POSNETEK\s+OSEBE)/i.test(line)) {
+            inMeta = false;
+            bodyLines.push(line);
+            continue;
+          }
+
+          // Uvodna poved koncepta pred tabelo
+          if (!meta.concept && line.length > 20 && !line.includes(':')) {
+            meta.concept = line;
+            continue;
+          } else if (meta.concept && line.length > 10 && !line.includes(':')) {
+            meta.concept += ' ' + line;
+            continue;
+          }
         }
 
-        // Očistimo morebitne vodilne markdown znake za naslove (#, ##, ###) in ** za preverjanje
-        const strippedHeading = trimmed.replace(/^#{1,6}\s*/, '').replace(/^\*\*(.+)\*\*$/, '$1').trim();
+        bodyLines.push(line);
+      }
 
-        // 1. Glavni naslovi faz (npr. FAZA 1, ### FAZA 2, 1. FAZA, FAZA: 1 ...)
-        if (/^(FAZA\s+[0-9]+|[0-9]+\.\s*FAZA|FAZA\s*:\s*[0-9]+)/i.test(strippedHeading) || /^#{1,3}\s+/.test(trimmed)) {
-          return `
-            <div style="font-size: 11pt; font-weight: 800; color: #4338ca; text-transform: uppercase; margin-top: 12px; margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1.5px solid #e0e7ff; letter-spacing: 0.02em; page-break-after: avoid; break-after: avoid;">
-              ${formatInlineMarkdownPrint(strippedHeading)}
-            </div>
-          `;
+      // 3. Razdelitev telesa na faze/razdelke in posamezne vrstice kadrov
+      const sections = [];
+      let currentSec = { title: '', rows: [] };
+
+      function flushSec(newTitle) {
+        if (currentSec.rows.length > 0 || currentSec.title) {
+          sections.push(currentSec);
+        }
+        currentSec = { title: newTitle, rows: [] };
+      }
+
+      let currentRow = null;
+      function flushRow() {
+        if (currentRow && (currentRow.del || currentRow.visual || currentRow.speech || currentRow.screen_text || currentRow.notes)) {
+          currentSec.rows.push(currentRow);
+        }
+        currentRow = null;
+      }
+
+      for (let j = 0; j < bodyLines.length; j++) {
+        const bl = bodyLines[j];
+
+        // Glavni razdelki (FAZA 1, FAZA 2, DRUŽABNE PRILOŽNOSTI, itd.)
+        if (/^(?:FAZA\s+[0-9]+|#{1,3}\s*FAZA\s+[0-9]+|DRUŽABNE\s+PRILOŽNOSTI|INDIVIDUALNE\s+PRILOŽNOSTI|IZTOČNICE\s+ZA\s+GOVORKI:?|TEHNIČNA\s+&\s+PRODUKCIJSKA\s+NAVODILA|HOOK$|JEDRO$|CTA$)/i.test(bl)) {
+          flushRow();
+          let cleanSecTitle = bl.replace(/^#{1,3}\s*/, '').replace(/:/g, ' ·').toUpperCase();
+          flushSec(cleanSecTitle);
+          continue;
         }
 
-        // 2. Oznake kadrov ali točk (npr. Kader 1:, 1. Parmigiano Reggiano ...)
-        const strippedBullet = strippedHeading.replace(/^[-•*]\s*/, '').trim();
-        if (/^(Kader\s+[0-9]+|Prizor\s+[0-9]+|[0-9]+\.\s+[A-ZČŠŽ])/i.test(strippedBullet) && strippedBullet.length < 90) {
-          return `
-            <div style="font-weight: 800; color: #0f172a; margin-top: 8px; margin-bottom: 2px; page-break-after: avoid; break-after: avoid;">
-              ${formatInlineMarkdownPrint(strippedBullet)}
-            </div>
-          `;
+        // Glava posamezne vrstice kadra (npr. Kader 1, 1. Parmigiano, Hook, CTA, Degustacija...)
+        const mRow = bl.match(/^((?:Kader\s+[0-9]+(?:[\s–—]+[^:(]+)?|[0-9]+\.\s+[^:(]+|Hook\b|CTA\b|Uvod\b|Napoved\s*igre\b|Pravila\b|Igra\b|Degustacija\b|Priprava\b|Nabiranje\s*sestavin\b|Zaključek\b|Zaključek\s*\/\s*CTA\b|POSNETEK\s+OSEBE\b|BARBARA\b|INJA\s*IN\s*FILIP\b|Ostale\s*mortadele\b|Sestavine\s*in\s*proizvodnja\b|Najbolj\s*prodajan\s*izdelek\b))(?:[\s:–—]+(.*))?$/i);
+
+        if (mRow && !bl.toLowerCase().startsWith('govor') && !bl.toLowerCase().startsWith('vizual') && !bl.toLowerCase().startsWith('tekst')) {
+          flushRow();
+          let hName = mRow[1].trim().replace(/^[-•*]\s*/, '');
+          let rest = (mRow[2] || '').trim();
+
+          let tMatch = bl.match(/\(([0-9]+[–\-][0-9]+\s*s)\)/i) || bl.match(/([0-9]+:[0-9]+[–\-][0-9]+:[0-9]+)/);
+          let timeStr = tMatch ? tMatch[1] : '';
+
+          currentRow = {
+            del: hName,
+            time: timeStr,
+            kdo_loc: '',
+            visual: '',
+            speech: '',
+            screen_text: '',
+            notes: ''
+          };
+
+          if (rest) {
+            // Izlušči lokacijo ali nastopajočega, če je v isti vrstici
+            const mLoc = rest.match(/(?:lokacija|pred trgovino|v trgovini|kuhinja|delikatesa):\s*([^.]+)/i);
+            if (mLoc) {
+              currentRow.kdo_loc = mLoc[1].trim();
+              rest = rest.replace(mLoc[0], '').trim();
+            }
+            // Izlušči govor v narekovajih
+            const mSpeech = rest.match(/»([^«]+)«|"([^"]+)"/);
+            if (mSpeech) {
+              currentRow.speech = mSpeech[0];
+              rest = rest.replace(mSpeech[0], '').trim();
+            }
+            if (rest) currentRow.visual = rest;
+          }
+          continue;
         }
 
-        // 3. Podnaslovi znotraj faze (npr. Vizualni kader, Govor, Tekst na zaslonu ...)
-        if (/^(\*\*)?(Vizualni kader|Vizualni kadri|Vizualni potek|Verbalni hook|Vizualni hook|Govor|Govorno besedilo|Tekst na zaslonu|Napis na zaslonu|Lastnosti|Lastnosti sira|Osebnost|Kadrovanje|Zvok|Lokacija|Osvetlitev|Rekviziti|Opombe)/i.test(strippedBullet)) {
-          return `
-            <div style="color: #1e293b; margin-top: 4px; margin-bottom: 2px; line-height: 1.45; page-break-inside: avoid; break-inside: avoid;">
-              ${formatInlineMarkdownPrint(strippedBullet)}
-            </div>
-          `;
+        if (!currentRow) {
+          currentRow = { del: '', time: '', kdo_loc: '', visual: '', speech: '', screen_text: '', notes: '' };
         }
 
-        // 4. Prazna vrstica - kompakten razmik namesto velikih lukenj
-        if (!trimmed) {
-          return `<div style="height: 5px;"></div>`;
+        if (/^(?:Vizualni kader|Vizualni kadri|Vizualno|Slika|B-roll):/i.test(bl)) {
+          const val = bl.replace(/^(?:Vizualni kader|Vizualni kadri|Vizualno|Slika|B-roll):\s*/i, '').trim();
+          currentRow.visual = currentRow.visual ? currentRow.visual + '\n' + val : val;
+          continue;
+        }
+        if (/^(?:Govor|Voiceover|Klic(?:\s*\(voiceover\))?):/i.test(bl)) {
+          const val = bl.replace(/^(?:Govor|Voiceover|Klic(?:\s*\(voiceover\))?):\s*/i, '').trim();
+          currentRow.speech = currentRow.speech ? currentRow.speech + '\n' + val : val;
+          continue;
+        }
+        if (/^(?:Tekst na zaslonu|Napis na zaslonu):/i.test(bl)) {
+          const val = bl.replace(/^(?:Tekst na zaslonu|Napis na zaslonu):\s*/i, '').trim();
+          currentRow.screen_text = currentRow.screen_text ? currentRow.screen_text + '\n' + val : val;
+          continue;
+        }
+        if (/^(?:Lastnosti|Osebnost|Iztočnice):/i.test(bl)) {
+          currentRow.notes = currentRow.notes ? currentRow.notes + '\n' + bl : bl;
+          continue;
+        }
+        if (bl.startsWith('»') && bl.endsWith('«')) {
+          currentRow.speech = currentRow.speech ? currentRow.speech + '\n' + bl : bl;
+          continue;
+        }
+        if (bl.startsWith('⚬') || bl.startsWith('-') || bl.startsWith('•')) {
+          if (currentRow.notes || !currentRow.visual) {
+            currentRow.notes = currentRow.notes ? currentRow.notes + '\n' + bl : bl;
+          } else {
+            currentRow.visual = currentRow.visual ? currentRow.visual + '\n' + bl : bl;
+          }
+          continue;
         }
 
-        // 5. Standardno besedilo / alineje
-        return `<div style="color: #334155; margin-bottom: 2px; line-height: 1.45;">${formatInlineMarkdownPrint(line)}</div>`;
-      }).join('');
+        // Dodatne vrstice znotraj trenutnega kadra
+        if (!currentRow.visual) currentRow.visual = bl;
+        else if (!currentRow.speech && (bl.includes('»') || bl.includes('"'))) currentRow.speech = bl;
+        else currentRow.visual += ' ' + bl;
+      }
+
+      flushRow();
+      if (currentSec.rows.length > 0) sections.push(currentSec);
+
+      return {
+        rawTitle,
+        cleanTitle,
+        idxPadded,
+        format,
+        pillar,
+        meta,
+        sections,
+        rawFinal
+      };
     }
 
-    // --- HTML GENERATOR ZA EN SCENARIJ V PDF IZPISU ---
-    function renderSingleScriptPrintHtml(client, script) {
-      const scriptText = (script.final_script || script.body_visual || script.concept || '').trim();
-      const coreMsg = (script.core_message || '').trim();
-      const concept = (script.concept || '').trim();
+    // --- GENERATOR STRUKTURIRANEGA HTML-JA ZA POSAMEZEN SCENARIJ V PDF IZPISU ---
+    function renderSingleScriptPrintHtml(client, script, scriptIdx = 1, totalScripts = 1) {
+      const parsed = parseScriptForPrint(script, scriptIdx);
+      const { cleanTitle, idxPadded, format, pillar, meta, sections, rawFinal } = parsed;
 
-      // Preveri ali je koncept enak sporočilu ali končnemu scenariju, da preprečimo podvajanje
-      const isConceptSameAsCore = concept && coreMsg && concept.replace(/\s+/g, ' ') === coreMsg.replace(/\s+/g, ' ');
-      const isConceptSameAsFinal = concept && scriptText && concept.replace(/\s+/g, ' ') === scriptText.replace(/\s+/g, ' ');
+      // Zaznavanje stolpcev glede na vsebino
+      let hasScreenText = false;
+      let hasKdoLoc = false;
+      let hasNotesOnly = false;
+      let hasCallVoiceover = false;
 
-      return `
-        <div style="color: #0f172a; line-height: 1.45; font-size: 10pt; font-family: Montserrat, -apple-system, sans-serif;">
+      sections.forEach(sec => {
+        sec.rows.forEach(r => {
+          if (r.screen_text) hasScreenText = true;
+          if (r.kdo_loc) hasKdoLoc = true;
+          if (r.notes && !r.speech && !r.visual) hasNotesOnly = true;
+          if (r.del.toLowerCase().includes('priložnost') || (r.speech && r.speech.includes('Pozdravljeni') && r.visual && r.visual.toLowerCase().includes('plošče'))) hasCallVoiceover = true;
+        });
+      });
+
+      // Barvna shema stebra (ujemajoča se z dizajnom)
+      let pillarBadgeColor = 'background: #e0f2fe; color: #0369a1; border-color: #bae6fd;';
+      const pLow = pillar.toLowerCase();
+      if (pLow.includes('promocij')) pillarBadgeColor = 'background: #e0e7ff; color: #3730a3; border-color: #c7d2fe;';
+      else if (pLow.includes('zabav')) pillarBadgeColor = 'background: #fef3c7; color: #92400e; border-color: #fde68a;';
+      else if (pLow.includes('kulis')) pillarBadgeColor = 'background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff;';
+      else if (pLow.includes('izobraž') || pLow.includes('edukac')) pillarBadgeColor = 'background: #dcfce7; color: #166534; border-color: #bbf7d0;';
+
+      let html = `
+        <div class="print-script-sheet" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; line-height: 1.45; font-size: 8.5pt;">
           
-          <!-- Čist naslov scenarija brez datumov in odvečnih glava/noga tekstov -->
-          <div style="border-bottom: 2px solid #6366f1; padding-bottom: 6px; margin-bottom: 10px; page-break-inside: avoid; break-inside: avoid;">
-            <h1 style="font-size: 15pt; font-weight: 900; margin: 0 0 3px 0; color: #0f172a; line-height: 1.25;">
-              ${escapeHtml(script.title || 'Brez naslova')}
-            </h1>
-            <div style="font-size: 9pt; color: #64748b; display: flex; flex-wrap: wrap; gap: 12px;">
-              <span>Format: <strong style="color: #1e293b;">${escapeHtml(script.format || 'Reels / Video')}</strong></span>
-              ${script.pillar ? `<span>Steber: <strong style="color: #1e293b;">${escapeHtml(script.pillar)}</strong></span>` : ''}
+          <!-- Zgornja glava s številko scenarija in naslovom -->
+          <div style="margin-bottom: 12px; page-break-inside: avoid; break-inside: avoid;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+              <h2 style="font-size: 16pt; font-weight: 800; color: #093165; margin: 0 0 6px 0; line-height: 1.25; letter-spacing: -0.01em;">
+                <span style="display: inline-block; margin-right: 8px; color: #6366f1;">${idxPadded}</span>${escapeHtml(cleanTitle)}
+              </h2>
+              <div style="font-size: 9.5pt; font-weight: 700; color: #64748b; white-space: nowrap;">
+                ${scriptIdx || 1}
+              </div>
             </div>
-          </div>
 
-          <!-- Ključno sporočilo & Koncept (Strnjen prikaz brez podvajanja) -->
-          ${(coreMsg || (concept && !isConceptSameAsCore && !isConceptSameAsFinal)) ? `
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #6366f1; border-radius: 5px; padding: 5px 8px; margin-bottom: 8px; font-size: 9pt; line-height: 1.35; color: #334155; page-break-inside: avoid; break-inside: avoid;">
-              ${coreMsg ? `<div><strong>Ključno sporočilo (Cilj):</strong> ${escapeHtml(coreMsg)}</div>` : ''}
-              ${(concept && !isConceptSameAsCore && !isConceptSameAsFinal) ? `
-                <div style="${coreMsg ? 'margin-top: 3px; padding-top: 3px; border-top: 1px dashed #e2e8f0;' : ''}">
-                  <strong>Okvirni koncept:</strong> <span style="white-space: pre-wrap;">${escapeHtml(concept)}</span>
-                </div>
+            <!-- Oznake (Badges) -->
+            <div style="display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-top: 4px;">
+              <span style="display: inline-block; padding: 2px 9px; border-radius: 9999px; font-size: 8pt; font-weight: 700; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
+                ${escapeHtml(format)}
+              </span>
+              ${pillar ? `
+                <span style="display: inline-block; padding: 2px 9px; border-radius: 9999px; font-size: 8pt; font-weight: 700; ${pillarBadgeColor} border: 1px solid;">
+                  ${escapeHtml(pillar)}
+                </span>
+              ` : ''}
+              ${meta.cast ? `
+                <span style="display: inline-block; padding: 2px 9px; border-radius: 9999px; font-size: 8pt; font-weight: 600; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0;">
+                  Nastopajoči: <strong style="color: #0f172a;">${escapeHtml(meta.cast)}</strong>
+                </span>
+              ` : ''}
+              ${meta.location ? `
+                <span style="display: inline-block; padding: 2px 9px; border-radius: 9999px; font-size: 8pt; font-weight: 600; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0;">
+                  Lokacija: <strong style="color: #0f172a;">${escapeHtml(meta.location)}</strong>
+                </span>
+              ` : ''}
+              ${meta.framing ? `
+                <span style="display: inline-block; padding: 2px 9px; border-radius: 9999px; font-size: 8pt; font-weight: 600; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0;">
+                  Kader: <strong style="color: #0f172a;">${escapeHtml(meta.framing)}</strong>
+                </span>
               ` : ''}
             </div>
-          ` : ''}
-
-          <!-- Vsebina scenarija (Brez umetnih okvirjev in odvečnih praznin) -->
-          <div style="font-size: 10pt; line-height: 1.45; color: #1e293b;">
-            ${formatScriptPrintText(scriptText)}
           </div>
 
-          <!-- Dodatne produkcijske opombe (če so posebej vnesene) -->
-          ${script.production_notes ? `
-            <div style="margin-top: 10px; padding-top: 6px; border-top: 1px dashed #cbd5e1; font-size: 9pt; color: #475569; page-break-inside: avoid; break-inside: avoid;">
-              <strong>Dodatne produkcijske opombe:</strong> ${escapeHtml(script.production_notes)}
-            </div>
-          ` : ''}
+          <!-- Tabela metapodatkov in konteksta (Koncept, Izvedba, Cilj...) -->
+          ${(() => {
+            const metaEntries = [];
+            if (meta.core_message) metaEntries.push(['KLJUČNO SPOROČILO', meta.core_message]);
+            if (meta.concept) metaEntries.push([meta.concept_label || 'KONCEPT', meta.concept]);
+            if (meta.execution) metaEntries.push(['IZVEDBA', meta.execution]);
+            if (meta.subformat) metaEntries.push(['FORMAT', meta.subformat]);
+            if (meta.tone) metaEntries.push(['TON', meta.tone]);
+            if (meta.broll_general) metaEntries.push(['B-ROLL', meta.broll_general]);
+            if (meta.video_example) metaEntries.push([meta.video_example_label || 'Primer videa:', meta.video_example]);
 
+            if (metaEntries.length === 0) return '';
+            return `
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 8.5pt; page-break-inside: avoid; break-inside: avoid;">
+                ${metaEntries.map(([k, v]) => `
+                  <tr>
+                    <td style="width: 140px; font-weight: 800; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; vertical-align: top; padding: 2.5px 10px 2.5px 0;">
+                      ${escapeHtml(k)}
+                    </td>
+                    <td style="color: #1e293b; line-height: 1.45; vertical-align: top; padding: 2.5px 0;">
+                      ${formatInlineMarkdownPrint(v)}
+                    </td>
+                  </tr>
+                `).join('')}
+              </table>
+            `;
+          })()}
+      `;
+
+      // Določitev definicije stolpcev za snemalno knjigo
+      let colDefs = [];
+      if (hasScreenText) {
+        colDefs = [
+          { key: 'del', title: cleanTitle.toLowerCase().includes('sir') ? 'SIR / KADER' : 'KADER', width: '22%' },
+          { key: 'visual', title: cleanTitle.toLowerCase().includes('sir') ? 'VIZUALNI KADRI' : 'VIZUALNI KADER', width: '38%' },
+          { key: 'speech', title: 'GOVOR', width: '26%' },
+          { key: 'screen_text', title: 'TEKST NA ZASLONU', width: '14%' }
+        ];
+      } else if (hasNotesOnly) {
+        colDefs = [
+          { key: 'idx', title: '#', width: '5%' },
+          { key: 'del', title: 'TEMA', width: '30%' },
+          { key: 'notes', title: 'IZTOČNICE', width: '65%' }
+        ];
+      } else if (hasCallVoiceover) {
+        colDefs = [
+          { key: 'idx', title: '#', width: '5%' },
+          { key: 'del', title: 'PRILOŽNOST', width: '25%' },
+          { key: 'speech', title: 'KLIC (VOICEOVER)', width: '38%' },
+          { key: 'visual', title: 'B-ROLL', width: '32%' }
+        ];
+      } else if (hasKdoLoc) {
+        colDefs = [
+          { key: 'del', title: 'DEL', width: '16%' },
+          { key: 'kdo_loc', title: 'LOKACIJA / KDO', width: '14%' },
+          { key: 'visual', title: 'VIZUALNO / DOGAJANJE', width: '35%' },
+          { key: 'speech', title: 'GOVOR', width: '35%' }
+        ];
+      } else {
+        colDefs = [
+          { key: 'del', title: 'DEL / KADER', width: '18%' },
+          { key: 'visual', title: 'VIZUALNO / DOGAJANJE', width: '42%' },
+          { key: 'speech', title: 'GOVOR', width: '40%' }
+        ];
+      }
+
+      // Preverjanje, ali imamo strukturirane vrstice
+      const totalParsedRows = sections.reduce((acc, s) => acc + s.rows.length, 0);
+
+      if (totalParsedRows > 0) {
+        // Tabela snemalne knjige
+        html += `
+          <table style="width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 8.5pt; page-break-inside: auto;">
+            <thead>
+              <tr style="border-bottom: 2px solid #cbd5e1; background: #f8fafc;">
+                ${colDefs.map(c => `
+                  <th style="padding: 7px 8px; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; text-align: left; width: ${c.width};">
+                    ${c.title}
+                  </th>
+                `).join('')}
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        let globalRowIdx = 1;
+        sections.forEach(sec => {
+          if (sec.title && sec.title !== 'GLAVNO') {
+            html += `
+              <tr style="page-break-inside: avoid; break-inside: avoid;">
+                <td colspan="${colDefs.length}" style="padding: 6px 8px; background: #f1f5f9; font-size: 7.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #093165; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                  ${escapeHtml(sec.title)}
+                </td>
+              </tr>
+            `;
+          }
+
+          sec.rows.forEach(r => {
+            let cleanDel = r.del;
+            let rowNum = '';
+            const mNum = cleanDel.match(/^([0-9]+)\.\s*(.*)/);
+            if (mNum) {
+              rowNum = mNum[1];
+              cleanDel = mNum[2];
+            }
+
+            html += `<tr style="border-bottom: 1px solid #e2e8f0; page-break-inside: avoid; break-inside: avoid;">`;
+
+            colDefs.forEach(c => {
+              let cellContent = '';
+              if (c.key === 'idx') {
+                cellContent = `<span style="font-weight: 800; color: #093165;">${rowNum || globalRowIdx}</span>`;
+              } else if (c.key === 'del') {
+                cellContent = `
+                  <div style="font-weight: 700; color: #0f172a;">${formatInlineMarkdownPrint(cleanDel || r.del || '—')}</div>
+                  ${r.time ? `<div style="font-size: 7.5pt; font-weight: 600; color: #64748b; margin-top: 2px;">${escapeHtml(r.time)}</div>` : ''}
+                  ${r.notes && !hasNotesOnly ? `<div style="font-size: 7.5pt; color: #64748b; margin-top: 4px; white-space: pre-wrap;">${formatInlineMarkdownPrint(r.notes)}</div>` : ''}
+                `;
+              } else if (c.key === 'kdo_loc') {
+                cellContent = `<span style="font-weight: 600; color: #334155;">${escapeHtml(r.kdo_loc || '—')}</span>`;
+              } else if (c.key === 'visual') {
+                cellContent = `<div style="color: #334155; line-height: 1.45; white-space: pre-line;">${formatInlineMarkdownPrint(r.visual || '—')}</div>`;
+              } else if (c.key === 'speech') {
+                cellContent = `<div style="color: #0f172a; line-height: 1.45; font-weight: 500; white-space: pre-line;">${formatInlineMarkdownPrint(r.speech || '—')}</div>`;
+              } else if (c.key === 'screen_text') {
+                cellContent = `<div style="font-weight: 800; font-size: 7.5pt; color: #1e293b; text-transform: uppercase; letter-spacing: 0.03em; white-space: pre-line;">${formatInlineMarkdownPrint(r.screen_text || '—')}</div>`;
+              } else if (c.key === 'notes') {
+                cellContent = `<div style="color: #334155; line-height: 1.45; white-space: pre-line;">${formatInlineMarkdownPrint(r.notes || r.visual || '—')}</div>`;
+              }
+
+              html += `<td style="padding: 8px 8px; vertical-align: top;">${cellContent}</td>`;
+            });
+
+            html += `</tr>`;
+            globalRowIdx++;
+          });
+        });
+
+        html += `
+            </tbody>
+          </table>
+        `;
+      } else {
+        // Varno rezervno oblikovanje, če scenarij nima standardnih kadrov
+        html += `
+          <div style="font-size: 9.5pt; line-height: 1.55; color: #1e293b; margin-top: 8px; white-space: pre-line;">
+            ${formatInlineMarkdownPrint(rawFinal || 'Scenarij še nima vsebine.')}
+          </div>
+        `;
+      }
+
+      // Produkcijske opombe, če obstajajo
+      if (script.production_notes) {
+        html += `
+          <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed #cbd5e1; font-size: 8.5pt; color: #475569; page-break-inside: avoid; break-inside: avoid;">
+            <strong style="color: #0f172a;">Dodatne produkcijske opombe:</strong> ${formatInlineMarkdownPrint(script.production_notes)}
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+      return html;
+    }
+
+    // --- GENERATOR NASLOVNE STRANI (KAZALO) V PDF IZPISU VSEH SCENARIJEV ---
+    function renderCoverPagePrintHtml(client, scripts) {
+      const clientName = client.company_name || client.name || 'Naročnik';
+      const formatStr = scripts[0]?.format || 'Reels / Video';
+
+      return `
+        <div class="print-script-page" style="min-height: 90vh; display: flex; flex-direction: column; justify-content: space-between; padding: 24px 0 20px 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; page-break-after: always; break-after: page;">
+          <div>
+            <!-- Ime naročnika / Znamka -->
+            <div style="font-size: 15pt; font-weight: 900; letter-spacing: 0.18em; color: #093165; text-transform: uppercase; margin-bottom: 36px;">
+              ${escapeHtml(clientName)}
+            </div>
+            
+            <!-- Glavni naslov dokumenta -->
+            <h1 style="font-size: 36pt; font-weight: 900; line-height: 1.05; color: #0f172a; margin: 0 0 10px 0; letter-spacing: -0.02em;">
+              Scenariji za video vsebine
+            </h1>
+            <p style="font-size: 11pt; color: #64748b; font-weight: 600; margin: 0 0 44px 0;">
+              ${escapeHtml(formatStr)} · ${scripts.length} ${scripts.length === 1 ? 'scenarij' : (scripts.length === 2 ? 'scenarija' : (scripts.length <= 4 ? 'scenariji' : 'scenarijev'))}
+            </p>
+
+            <!-- Kazalo scenarijev -->
+            <div style="display: flex; flex-direction: column; gap: 11px; max-width: 650px;">
+              ${scripts.map((s, idx) => {
+                const cleanT = (s.title || 'Brez naslova').replace(/^0*[0-9]+[\s.:–-]+/, '').replace(/[«»"]/g, '').trim();
+                return `
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 7px;">
+                    <div style="display: flex; align-items: baseline; gap: 12px;">
+                      <span style="font-size: 10.5pt; font-weight: 800; color: #093165; width: 26px;">${String(idx + 1).padStart(2, '0')}</span>
+                      <span style="font-size: 10.5pt; font-weight: 700; color: #0f172a;">${escapeHtml(cleanT)}</span>
+                    </div>
+                    ${s.pillar ? `<span style="font-size: 8.5pt; font-weight: 600; color: #64748b; white-space: nowrap;">${escapeHtml(s.pillar)}</span>` : ''}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
         </div>
       `;
     }
@@ -8472,20 +8898,22 @@
     function printScript(clientId, scriptId) {
       const client = clients.find(c => c.id === clientId);
       if (!client) return;
-      const script = (client.crm?.scripts || []).find(s => s.id === scriptId);
+      const allScripts = client.crm?.scripts || [];
+      const scriptIndex = allScripts.findIndex(s => s.id === scriptId);
+      const script = scriptIndex >= 0 ? allScripts[scriptIndex] : null;
       if (!script) return;
 
       const container = document.getElementById('printReportContainer');
       container.innerHTML = `
-        <div style="font-family: Montserrat, -apple-system, sans-serif; color: #0f172a; line-height: 1.45; padding: 0;">
-          ${renderSingleScriptPrintHtml(client, script)}
+        <div class="print-script-page" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; line-height: 1.45; padding: 0;">
+          ${renderSingleScriptPrintHtml(client, script, scriptIndex + 1, allScripts.length)}
         </div>
       `;
 
       executeCleanPrint();
     }
 
-    // --- NATIS VSEH SCENARIJEV (VSAK V SVOJEM PROSTORU / NA SVOJI STRANI) ---
+    // --- NATIS VSEH SCENARIJEV (NASLOVNA STRAN + VSAK SCENARIJ V STRUKTURIRANI SNEMALNI KNJIGI) ---
     function printAllScripts(clientId, filter = 'all') {
       const client = clients.find(c => c.id === clientId);
       if (!client) return;
@@ -8505,12 +8933,14 @@
       }
 
       const container = document.getElementById('printReportContainer');
-      container.innerHTML = scriptsToPrint.map((s, idx) => `
-        <div class="print-script-page" style="${idx > 0 ? 'page-break-before: always; break-before: page;' : ''} font-family: Montserrat, -apple-system, sans-serif; color: #0f172a; line-height: 1.45; padding: 0; margin-bottom: 16px;">
-          ${renderSingleScriptPrintHtml(client, s)}
+      const coverHtml = renderCoverPagePrintHtml(client, scriptsToPrint);
+      const scriptsHtml = scriptsToPrint.map((s, idx) => `
+        <div class="print-script-page" style="page-break-before: always; break-before: page; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; line-height: 1.45; padding: 0;">
+          ${renderSingleScriptPrintHtml(client, s, idx + 1, scriptsToPrint.length)}
         </div>
       `).join('');
 
+      container.innerHTML = coverHtml + scriptsHtml;
       executeCleanPrint();
     }
 
