@@ -2342,15 +2342,6 @@
         });
       }
 
-      if (Array.isArray(crm.content_calendar)) {
-        crm.content_calendar = crm.content_calendar.map(p => {
-          const normPillar = normalizePillarName(p.pillar || stripTrailingFormatSuffix(p.title || ''));
-          const updatedPost = { ...p, pillar: normPillar };
-          updatedPost.title = cleanCalendarPostTitle(updatedPost);
-          return updatedPost;
-        });
-      }
-
       if (Array.isArray(crm.ideas)) {
         crm.ideas = crm.ideas.map(i => ({
           ...i,
@@ -2363,6 +2354,79 @@
           ...s,
           pillar: normalizePillarName(s.pillar)
         }));
+      }
+
+      if (Array.isArray(crm.content_calendar)) {
+        const scriptsList = Array.isArray(crm.scripts) ? crm.scripts : [];
+        const ideasList = Array.isArray(crm.ideas) ? crm.ideas : [];
+
+        // Sort indices chronologically so the earliest post keeps a linked script/idea and later duplicates are cleaned
+        const sortedIndices = crm.content_calendar
+          .map((_, idx) => idx)
+          .sort((ia, ib) => {
+            const a = crm.content_calendar[ia];
+            const b = crm.content_calendar[ib];
+            return (a.date || '').localeCompare(b.date || '') || (a.time || '').localeCompare(b.time || '');
+          });
+
+        const usedLinkedKeys = new Set();
+        const usedRecurrenceTitles = new Set();
+        const cleanedCalendar = new Array(crm.content_calendar.length);
+
+        sortedIndices.forEach(idx => {
+          const p = crm.content_calendar[idx];
+          const strippedRawTitle = stripTrailingFormatSuffix(p.title || '');
+          const normPillar = normalizePillarName(
+            p.pillar || (OFFICIAL_PILLAR_MAP[strippedRawTitle.toLowerCase()] ? strippedRawTitle : '')
+          );
+
+          let linkKey = p.linked_id || (p.script_id ? 'script_' + p.script_id : (p.idea_id ? 'idea_' + p.idea_id : ''));
+          if (!linkKey && strippedRawTitle && !OFFICIAL_PILLAR_MAP[strippedRawTitle.toLowerCase()]) {
+            const matchScript = scriptsList.find(s => s.title && s.title.trim().toLowerCase() === strippedRawTitle.toLowerCase());
+            if (matchScript) linkKey = 'script_' + matchScript.id;
+            else {
+              const matchIdea = ideasList.find(i => i.title && i.title.trim().toLowerCase() === strippedRawTitle.toLowerCase());
+              if (matchIdea) linkKey = 'idea_' + matchIdea.id;
+            }
+          }
+
+          const recTitleKey = p.recurrence_id && strippedRawTitle
+            ? `${p.recurrence_id}::${strippedRawTitle.toLowerCase()}`
+            : '';
+          const isPillarTitle = !!OFFICIAL_PILLAR_MAP[strippedRawTitle.toLowerCase()] ||
+            (normPillar && strippedRawTitle.toLowerCase() === normPillar.toLowerCase());
+
+          const isDuplicateLink = (linkKey && usedLinkedKeys.has(linkKey)) ||
+            (!isPillarTitle && recTitleKey && usedRecurrenceTitles.has(recTitleKey));
+
+          if (isDuplicateLink) {
+            // Vsaka objava v koledarju ima svoj scenarij - odstrani podvojen scenarij s prihodnjih ponovitev
+            cleanedCalendar[idx] = {
+              ...p,
+              pillar: normPillar,
+              linked_id: '',
+              script_id: null,
+              idea_id: null,
+              objective: '',
+              title: normPillar || p.format || 'Objava'
+            };
+            record._needsCalendarCleanupSync = true;
+          } else {
+            if (linkKey) usedLinkedKeys.add(linkKey);
+            if (!isPillarTitle && recTitleKey) usedRecurrenceTitles.add(recTitleKey);
+            const updatedPost = {
+              ...p,
+              pillar: normPillar,
+              linked_id: linkKey || '',
+              script_id: linkKey.startsWith('script_') ? linkKey.replace('script_', '') : null,
+              idea_id: linkKey.startsWith('idea_') ? linkKey.replace('idea_', '') : null
+            };
+            updatedPost.title = cleanCalendarPostTitle(updatedPost);
+            cleanedCalendar[idx] = updatedPost;
+          }
+        });
+
+        crm.content_calendar = cleanedCalendar;
       }
 
       const strategyStats = calculateStrategyStats(crm, answers);
@@ -2410,6 +2474,19 @@
         clients = (data || []).map(formatClientRecord);
         document.getElementById('topClientCount').innerText = clients.length;
 
+        // Če so bili pri branju odstranjeni podvojeni scenariji na ponavljajočih se objavah, posodobi zapis v Supabase
+        clients.forEach(c => {
+          if (c._needsCalendarCleanupSync && supabaseClient) {
+            delete c._needsCalendarCleanupSync;
+            c.answers.crm = c.crm;
+            supabaseClient
+              .from('marketing_questionnaires')
+              .update({ answers: c.answers, updated_at: new Date().toISOString() })
+              .eq('id', c.id)
+              .then(() => {});
+          }
+        });
+
         // Render current active view
         updateTopLevelView();
 
@@ -2455,6 +2532,19 @@
 
         clients = (data || []).map(formatClientRecord);
         document.getElementById('topClientCount').innerText = clients.length;
+
+        // Če so bili pri branju odstranjeni podvojeni scenariji na ponavljajočih se objavah, posodobi zapis v Supabase
+        clients.forEach(c => {
+          if (c._needsCalendarCleanupSync && supabaseClient) {
+            delete c._needsCalendarCleanupSync;
+            c.answers.crm = c.crm;
+            supabaseClient
+              .from('marketing_questionnaires')
+              .update({ answers: c.answers, updated_at: new Date().toISOString() })
+              .eq('id', c.id)
+              .then(() => {});
+          }
+        });
 
         const targetClient = clients.find(c => c.id === clientId);
         if (targetClient) {
@@ -10220,6 +10310,52 @@
       }
     }
 
+    function buildPostModalScriptIdeaOptionsHtml(client, currentPostId = null, selectedLinkVal = '') {
+      const scripts = client?.crm?.scripts || [];
+      const ideas = client?.crm?.ideas || [];
+      const calendar = client?.crm?.content_calendar || [];
+
+      // Zberi scenarije in ideje, ki so že dodeljeni drugim objavam v koledarju
+      const assignedToOtherPost = new Map();
+      calendar.forEach(p => {
+        if (currentPostId && p.id === currentPostId) return;
+        const lKey = p.linked_id || (p.script_id ? 'script_' + p.script_id : (p.idea_id ? 'idea_' + p.idea_id : ''));
+        if (lKey && !assignedToOtherPost.has(lKey)) {
+          assignedToOtherPost.set(lKey, p.date || '');
+        }
+      });
+
+      const formatShortDate = (ymd) => {
+        if (!ymd) return 'v koledarju';
+        const parts = ymd.split('-');
+        if (parts.length === 3) return `${parseInt(parts[2], 10)}. ${parseInt(parts[1], 10)}. ${parts[0]}`;
+        return ymd;
+      };
+
+      let html = `<option value="">— Brez povezave (ročni vnos) —</option>`;
+      if (scripts.length > 0) {
+        html += `<optgroup label="🎬 Napisani scenariji">${scripts.map(s => {
+          const val = 'script_' + s.id;
+          const isSelected = selectedLinkVal === val;
+          const assignedDate = assignedToOtherPost.get(val);
+          const isDisabled = !isSelected && !!assignedDate;
+          const suffix = isDisabled ? ` — že dodeljen (${formatShortDate(assignedDate)})` : ` (${escapeHtml(s.format || 'Video')})`;
+          return `<option value="${val}" ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}>${escapeHtml(s.title)}${suffix}</option>`;
+        }).join('')}</optgroup>`;
+      }
+      if (ideas.length > 0) {
+        html += `<optgroup label="💡 Zapisane ideje">${ideas.map(i => {
+          const val = 'idea_' + i.id;
+          const isSelected = selectedLinkVal === val;
+          const assignedDate = assignedToOtherPost.get(val);
+          const isDisabled = !isSelected && !!assignedDate;
+          const suffix = isDisabled ? ` — že dodeljena (${formatShortDate(assignedDate)})` : '';
+          return `<option value="${val}" ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}>${escapeHtml(i.title)}${suffix}</option>`;
+        }).join('')}</optgroup>`;
+      }
+      return html;
+    }
+
     function openAddPostModal(presetClientId = null, presetDate = null, prefillTitle = null, prefillFormat = null, prefillPillar = null, prefillBrief = null, prefillCta = null, linkedScriptOrIdeaId = null) {
       document.getElementById('postModalTitle').innerText = 'Načrtuj objavo v koledar';
       const submitBtn = document.getElementById('postModalSubmitBtn');
@@ -10251,16 +10387,7 @@
       // Populate script / idea link dropdown
       const linkSelect = document.getElementById('postModalScriptIdeaSelect');
       if (linkSelect && client) {
-        const scripts = client.crm?.scripts || [];
-        const ideas = client.crm?.ideas || [];
-        let html = `<option value="">— Brez povezave (ročni vnos) —</option>`;
-        if (scripts.length > 0) {
-          html += `<optgroup label="🎬 Napisani scenariji">${scripts.map(s => `<option value="script_${s.id}" ${linkedScriptOrIdeaId === 'script_' + s.id ? 'selected' : ''}>${escapeHtml(s.title)} (${escapeHtml(s.format || 'Video')})</option>`).join('')}</optgroup>`;
-        }
-        if (ideas.length > 0) {
-          html += `<optgroup label="💡 Zapisane ideje">${ideas.map(i => `<option value="idea_${i.id}" ${linkedScriptOrIdeaId === 'idea_' + i.id ? 'selected' : ''}>${escapeHtml(i.title)}</option>`).join('')}</optgroup>`;
-        }
-        linkSelect.innerHTML = html;
+        linkSelect.innerHTML = buildPostModalScriptIdeaOptionsHtml(client, null, linkedScriptOrIdeaId || '');
         if (linkedScriptOrIdeaId) {
           linkSelect.value = linkedScriptOrIdeaId;
           handleSelectScriptOrIdeaForPost(linkedScriptOrIdeaId);
@@ -10291,6 +10418,9 @@
 
       const normPostPillar = normalizePillarName(post.pillar);
       const cleanedPostTitle = cleanCalendarPostTitle({ ...post, pillar: normPostPillar });
+      const postPlatforms = (Array.isArray(post.platforms) && post.platforms.length > 0)
+        ? post.platforms
+        : [post.platform || 'Instagram'];
 
       window.editingPostOriginal = {
         id: post.id,
@@ -10298,6 +10428,7 @@
         time: post.time || '18:00',
         format: post.format || 'Reels / Video',
         pillar: normPostPillar || '',
+        platforms: [...postPlatforms],
         title: cleanedPostTitle || '',
         recurrence_id: post.recurrence_id || null,
         is_recurring: !!(post.recurrence_id || post.is_recurring),
@@ -10327,25 +10458,16 @@
       if (linkSelect) {
         const scripts = client.crm?.scripts || [];
         const ideas = client.crm?.ideas || [];
-        let html = `<option value="">— Brez povezave (ročni vnos) —</option>`;
-        if (scripts.length > 0) {
-          html += `<optgroup label="🎬 Napisani scenariji">${scripts.map(s => `<option value="script_${s.id}">${escapeHtml(s.title)} (${escapeHtml(s.format || 'Video')})</option>`).join('')}</optgroup>`;
-        }
-        if (ideas.length > 0) {
-          html += `<optgroup label="💡 Zapisane ideje">${ideas.map(i => `<option value="idea_${i.id}">${escapeHtml(i.title)}</option>`).join('')}</optgroup>`;
-        }
-        linkSelect.innerHTML = html;
-
-        // Auto-select linked script/idea
         let targetLinkVal = window.editingPostOriginal.linked_id;
         if (!targetLinkVal) {
-          const matchScript = scripts.find(s => s.title && post.title && (s.title.trim().toLowerCase() === post.title.trim().toLowerCase() || post.title.includes(s.title)));
+          const matchScript = scripts.find(s => s.title && post.title && s.title.trim().toLowerCase() === post.title.trim().toLowerCase());
           if (matchScript) targetLinkVal = 'script_' + matchScript.id;
           else {
-            const matchIdea = ideas.find(i => i.title && post.title && (i.title.trim().toLowerCase() === post.title.trim().toLowerCase() || post.title.includes(i.title)));
+            const matchIdea = ideas.find(i => i.title && post.title && i.title.trim().toLowerCase() === post.title.trim().toLowerCase());
             if (matchIdea) targetLinkVal = 'idea_' + matchIdea.id;
           }
         }
+        linkSelect.innerHTML = buildPostModalScriptIdeaOptionsHtml(client, post.id, targetLinkVal || '');
         linkSelect.value = targetLinkVal || '';
       }
 
@@ -10367,9 +10489,6 @@
 
       if (pillarSelect && normPostPillar) pillarSelect.value = normPostPillar;
 
-      const postPlatforms = (Array.isArray(post.platforms) && post.platforms.length > 0)
-        ? post.platforms
-        : [post.platform || 'Instagram'];
       window.postModalSelectedPlatforms = [...postPlatforms];
       renderPostModalPlatformPills();
 
@@ -10436,16 +10555,37 @@
         time: timeVal,
         format: formatVal,
         pillar: pillarVal,
-        objective: postObjective,
+        objective: linkedVal ? postObjective : '',
         linked_id: linkedVal,
-        script_id: linkedVal.startsWith('script_') ? linkedVal.replace('script_', '') : (existingPost?.script_id || null),
-        idea_id: linkedVal.startsWith('idea_') ? linkedVal.replace('idea_', '') : (existingPost?.idea_id || null),
+        script_id: linkedVal.startsWith('script_') ? linkedVal.replace('script_', '') : null,
+        idea_id: linkedVal.startsWith('idea_') ? linkedVal.replace('idea_', '') : null,
         prod_status: existingPost?.prod_status || 'planned',
         pub_status: existingPost?.pub_status || 'scheduled',
         brief: existingPost?.brief || '',
         caption: existingPost?.caption || '',
         cta: existingPost?.cta || '',
         asset_link: existingPost?.asset_link || '',
+        updated_at: new Date().toISOString()
+      };
+
+      // Predloga za prihodnje ponovitve v seriji (brez scenarija/ideje, saj ima vsaka objava svoj scenarij)
+      const recurringSlotTemplateObj = {
+        title: pillarVal || formatVal,
+        platforms: selectedPlatforms,
+        platform: selectedPlatforms[0] || 'Instagram',
+        time: timeVal,
+        format: formatVal,
+        pillar: pillarVal,
+        objective: '',
+        linked_id: '',
+        script_id: null,
+        idea_id: null,
+        prod_status: 'planned',
+        pub_status: 'scheduled',
+        brief: '',
+        caption: '',
+        cta: '',
+        asset_link: '',
         updated_at: new Date().toISOString()
       };
 
@@ -10479,13 +10619,23 @@
         } else if (wasRecurring && isRecurring) {
           // Case B: Post stays recurring
           const dateChanged = dateStr !== orig.date;
+          const origPlatforms = Array.isArray(orig.platforms) && orig.platforms.length > 0
+            ? orig.platforms
+            : [existingPost?.platform || 'Instagram'];
+          const platformsChanged = JSON.stringify([...origPlatforms].sort()) !== JSON.stringify([...selectedPlatforms].sort());
+          const slotStructureChanged = (
+            timeVal !== (orig.time || '18:00') ||
+            formatVal !== (orig.format || 'Reels / Video') ||
+            pillarVal !== normalizePillarName(orig.pillar || '') ||
+            platformsChanged
+          );
 
           if (dateChanged) {
             // Date was changed on a recurring post
             const applyToAll = confirm(
               "Spremenili ste datum ponavljajoče se objave.\n\n" +
-              "Ali želite spremembo uveljaviti:\n\n" +
-              "• V redu (OK) = Za to in VSE NADALJNJE ponovitve do konca leta (prestavijo se na nov dan v tednu)\n" +
+              "Ali želite spremembo termina uveljaviti:\n\n" +
+              "• V redu (OK) = Za to in VSE NADALJNJE ponovitve do konca leta (prestavijo se na nov dan v tednu, pri čemer scenarij velja samo za to objavo)\n" +
               "• Prekliči (Cancel) = Samo za to posamezno objavo (ostale ponovitve ostanejo nespremenjene)"
             );
 
@@ -10493,7 +10643,7 @@
               // Remove old future occurrences in this series
               client.crm.content_calendar = client.crm.content_calendar.filter(p => !(p.recurrence_id === orig.recurrence_id && p.id !== existingPostId && p.date >= orig.date));
               
-              // Update this post
+              // Update this specific post (with its own script/idea)
               const updatedPost = {
                 ...existingPost,
                 ...basePostObj,
@@ -10505,7 +10655,7 @@
               const idx = client.crm.content_calendar.findIndex(p => p.id === existingPostId);
               if (idx >= 0) client.crm.content_calendar[idx] = updatedPost;
 
-              // Generate new future weekly instances until Dec 31
+              // Generate new future weekly instances until Dec 31 WITHOUT copying this post's script/idea
               const startDate = parseYmd(dateStr);
               const currentYear = startDate.getFullYear();
               let curr = new Date(startDate);
@@ -10515,7 +10665,7 @@
               while (curr.getFullYear() === currentYear) {
                 const instDateStr = formatYmd(curr);
                 const instPost = {
-                  ...basePostObj,
+                  ...recurringSlotTemplateObj,
                   id: 'post_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
                   date: instDateStr,
                   recurrence_id: orig.recurrence_id,
@@ -10541,42 +10691,63 @@
               showToast('Sprememba datuma uveljavljena samo za to objavo.');
             }
 
-          } else {
-            // Date NOT changed, but fields (format, pillar, time, etc.) might have changed
+          } else if (slotStructureChanged) {
+            // Date NOT changed, but slot structure (time, format, pillar, platforms) changed
             const applyToAll = confirm(
               "Ta objava je del tedenskega ponavljanja.\n\n" +
-              "Ali želite posodobljene podatke (ura, format, steber) uveljaviti:\n\n" +
-              "• V redu (OK) = Za to in VSE NADALJNJE ponovitve do konca leta\n" +
+              "Ali želite spremenjene parametre termina (ura, format, steber, omrežja) uveljaviti:\n\n" +
+              "• V redu (OK) = Za to in VSE NADALJNJE ponovitve do konca leta (izbrani scenarij se dodeli samo tej objavi)\n" +
               "• Prekliči (Cancel) = Samo za to posamezno objavo"
             );
 
+            // Always update the edited post with its own script/idea
+            const updatedCurrentPost = {
+              ...existingPost,
+              ...basePostObj,
+              id: existingPostId,
+              date: dateStr,
+              recurrence_id: orig.recurrence_id,
+              is_recurring: true
+            };
+            const currentIdx = client.crm.content_calendar.findIndex(p => p.id === existingPostId);
+            if (currentIdx >= 0) client.crm.content_calendar[currentIdx] = updatedCurrentPost;
+
             if (applyToAll) {
+              // For OTHER future occurrences in the series, ONLY update slot structure (never overwrite with this post's script/idea!)
               client.crm.content_calendar.forEach((p, idx) => {
-                if (p.recurrence_id === orig.recurrence_id && p.date >= orig.date) {
+                if (p.recurrence_id === orig.recurrence_id && p.id !== existingPostId && p.date >= orig.date) {
+                  const hasOwnLinkedContent = !!(p.linked_id || p.script_id || p.idea_id);
                   client.crm.content_calendar[idx] = {
                     ...p,
-                    ...basePostObj,
-                    id: p.id,
-                    date: p.date,
+                    platforms: selectedPlatforms,
+                    platform: selectedPlatforms[0] || 'Instagram',
+                    time: timeVal,
+                    format: formatVal,
+                    pillar: pillarVal,
+                    title: hasOwnLinkedContent ? p.title : (pillarVal || formatVal),
                     recurrence_id: orig.recurrence_id,
-                    is_recurring: true
+                    is_recurring: true,
+                    updated_at: new Date().toISOString()
                   };
                 }
               });
-              showToast('Posodobljene vse ponovitve v tej seriji do konca leta!');
+              showToast('Posodobljeni parametri serije (scenarij dodeljen samo tej objavi)!');
             } else {
-              const updatedPost = {
-                ...existingPost,
-                ...basePostObj,
-                id: existingPostId,
-                date: dateStr,
-                recurrence_id: orig.recurrence_id,
-                is_recurring: true
-              };
-              const idx = client.crm.content_calendar.findIndex(p => p.id === existingPostId);
-              if (idx >= 0) client.crm.content_calendar[idx] = updatedPost;
               showToast('Posodobljena samo ta posamezna objava.');
             }
+          } else {
+            // Only script/idea (or nothing structural) was changed -> update ONLY this single post without touching future occurrences!
+            const updatedPost = {
+              ...existingPost,
+              ...basePostObj,
+              id: existingPostId,
+              date: dateStr,
+              recurrence_id: orig.recurrence_id,
+              is_recurring: true
+            };
+            const idx = client.crm.content_calendar.findIndex(p => p.id === existingPostId);
+            if (idx >= 0) client.crm.content_calendar[idx] = updatedPost;
+            showToast('Scenarij / spremembe so shranjene za to objavo!');
           }
 
         } else if (!wasRecurring && isRecurring) {
@@ -10593,7 +10764,7 @@
           const idx = client.crm.content_calendar.findIndex(p => p.id === existingPostId);
           if (idx >= 0) client.crm.content_calendar[idx] = updatedPost;
 
-          // Generate future weekly occurrences until Dec 31
+          // Generate future weekly occurrences until Dec 31 WITHOUT copying this post's script/idea
           const startDate = parseYmd(dateStr);
           const currentYear = startDate.getFullYear();
           let curr = new Date(startDate);
@@ -10603,7 +10774,7 @@
           while (curr.getFullYear() === currentYear) {
             const instDateStr = formatYmd(curr);
             const instPost = {
-              ...basePostObj,
+              ...recurringSlotTemplateObj,
               id: 'post_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
               date: instDateStr,
               recurrence_id: recId,
@@ -10641,8 +10812,10 @@
 
           while (curr.getFullYear() === currentYear) {
             const instDateStr = formatYmd(curr);
+            // Samo prva objava (count === 0) dobi izbrani scenarij/idejo, vse prihodnje ponovitve pa so brez scenarija
+            const templateToUse = count === 0 ? basePostObj : recurringSlotTemplateObj;
             const instPost = {
-              ...basePostObj,
+              ...templateToUse,
               id: 'post_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
               date: instDateStr,
               recurrence_id: recId,

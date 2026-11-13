@@ -2812,6 +2812,58 @@
       return strippedTitle || rawTitle;
     }
 
+    function normalizeClientCalendarPosts(rawPosts) {
+      if (!Array.isArray(rawPosts)) return [];
+      const sortedIndices = rawPosts
+        .map((_, idx) => idx)
+        .sort((ia, ib) => {
+          const a = rawPosts[ia];
+          const b = rawPosts[ib];
+          return (a.date || '').localeCompare(b.date || '') || (a.time || '').localeCompare(b.time || '');
+        });
+
+      const usedLinkedKeys = new Set();
+      const usedRecurrenceTitles = new Set();
+      const result = new Array(rawPosts.length);
+
+      sortedIndices.forEach(idx => {
+        const p = rawPosts[idx];
+        const strippedRawTitle = stripClientTrailingFormatSuffix(p.title || '');
+        const normPillar = normalizeClientPillarName(
+          p.pillar || (CLIENT_OFFICIAL_PILLAR_MAP[strippedRawTitle.toLowerCase()] ? strippedRawTitle : '')
+        );
+        const linkKey = p.linked_id || (p.script_id ? 'script_' + p.script_id : (p.idea_id ? 'idea_' + p.idea_id : ''));
+        const recTitleKey = p.recurrence_id && strippedRawTitle
+          ? `${p.recurrence_id}::${strippedRawTitle.toLowerCase()}`
+          : '';
+        const isPillarTitle = !!CLIENT_OFFICIAL_PILLAR_MAP[strippedRawTitle.toLowerCase()] ||
+          (normPillar && strippedRawTitle.toLowerCase() === normPillar.toLowerCase());
+
+        const isDuplicate = (linkKey && usedLinkedKeys.has(linkKey)) ||
+          (!isPillarTitle && recTitleKey && usedRecurrenceTitles.has(recTitleKey));
+
+        if (isDuplicate) {
+          result[idx] = {
+            ...p,
+            pillar: normPillar,
+            linked_id: '',
+            script_id: null,
+            idea_id: null,
+            objective: '',
+            title: normPillar || p.format || 'Objava'
+          };
+        } else {
+          if (linkKey) usedLinkedKeys.add(linkKey);
+          if (!isPillarTitle && recTitleKey) usedRecurrenceTitles.add(recTitleKey);
+          const updated = { ...p, pillar: normPillar };
+          updated.title = cleanClientCalendarPostTitle(updated);
+          result[idx] = updated;
+        }
+      });
+
+      return result;
+    }
+
     function getClientStatusBadge(status) {
       switch (status) {
         case 'published':
@@ -2894,7 +2946,7 @@
     }
 
     function openClientPostDetailModal(postId) {
-      const posts = currentClientData?.answers?.crm?.content_calendar || existingCrmAnswers?.content_calendar || [];
+      const posts = normalizeClientCalendarPosts(currentClientData?.answers?.crm?.content_calendar || existingCrmAnswers?.content_calendar || []);
       const post = posts.find(p => p.id === postId);
       if (!post) return;
 
@@ -2996,7 +3048,8 @@
       if (modal) modal.classList.add('hidden');
     }
 
-    function renderClientCalendar(posts) {
+    function renderClientCalendar(rawPosts) {
+      const posts = normalizeClientCalendarPosts(rawPosts);
       const now = new Date();
       const monthNamesSl = ["Januar", "Februar", "Marec", "April", "Maj", "Junij", "Julij", "Avgust", "September", "Oktober", "November", "December"];
       const daysOfWeekSl = ["Pon", "Tor", "Sre", "Čet", "Pet", "Sob", "Ned"];
