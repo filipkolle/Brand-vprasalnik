@@ -229,9 +229,15 @@
         </div>
 
         <!-- Primary SAVE Button (Always available to guarantee saving) -->
-        <button id="btnHeaderSave" onclick="manualSaveQuestionnaire(this)" type="button" class="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-all active:scale-95 shadow-emerald-600/20" title="Ročno shrani vse odgovore v bazo">
-          <i data-lucide="save" class="w-4 h-4"></i>
+        <button id="btnHeaderSave" onclick="manualSaveQuestionnaire(this)" type="button" class="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 rounded-xl border border-slate-300 shadow-2xs transition-all active:scale-95" title="Ročno shrani vse odgovore v bazo">
+          <i data-lucide="save" class="w-3.5 h-3.5 text-slate-600"></i>
           <span>Shrani</span>
+        </button>
+
+        <!-- Submit Button in Header (Enabled when all 20 questions are filled) -->
+        <button id="btnHeaderSubmit" onclick="submitAndOpenDashboard(this)" type="button" disabled class="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-slate-400 bg-slate-100 rounded-xl transition-all border border-slate-200 cursor-not-allowed opacity-60" title="Izpolnite vseh 20 vprašanj za oddajo">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+          <span id="btnHeaderSubmitText">Oddaj odgovore (0/20)</span>
         </button>
 
         <button onclick="openResetModal()" type="button" class="px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-slate-200">
@@ -279,7 +285,24 @@
     </div>
   </header>
 
-  <!-- INTRO BANNER -->
+  <!-- QUESTIONNAIRE WRAPPER VIEW -->
+  <div id="questionnaireView" class="w-full flex flex-col flex-1">
+
+    <!-- EDIT MODE NOTICE BANNER (Visible when reviewing/updating an already submitted questionnaire) -->
+    <div id="editModeNotice" class="hidden bg-gradient-to-r from-amber-600 via-amber-500 to-orange-600 text-white px-4 py-3 shadow-md no-print sticky top-[102px] z-40">
+      <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-medium">
+        <div class="flex items-center gap-2">
+          <i data-lucide="edit-3" class="w-4 h-4 text-amber-100 shrink-0"></i>
+          <span><strong>Način urejanja:</strong> Urejate svoj oddani vprašalnik. Vsi popravki se sproti shranjujejo.</span>
+        </div>
+        <button onclick="openClientDashboard()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white text-amber-900 hover:bg-amber-50 font-bold rounded-xl shadow-xs transition active:scale-95 text-xs">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>Nazaj na Koledar & Dashboard</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- INTRO BANNER -->
   <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 w-full">
     <div class="bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-10 shadow-xl relative overflow-hidden card-print">
       <!-- Background Ambient Glow -->
@@ -1443,13 +1466,38 @@
                 Na podlagi pridobljenih informacij bomo pripravili celovito strategijo za predstavitev vašega podjetja, določili ključne komunikacijske smernice in pripravili vsebinski načrt, usmerjen v doseganje vaših poslovnih ciljev. <strong class="text-white font-bold">Svoje odgovore si lahko spodaj natisnete ali shranite kot PDF za svojo osebno evidenco ali nadaljnje namene.</strong>
               </p>
 
+              <!-- SUBMISSION STATUS & MAIN SUBMIT BUTTON (ENABLED AT 20/20) -->
+              <div id="submitCardBlock" class="p-5 sm:p-6 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                      <span id="submitStatusBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <i data-lucide="clock" class="w-3.5 h-3.5"></i> <span id="submitStatusText">Izpolnjeno: 0 od 20 vprašanj</span>
+                      </span>
+                    </div>
+                    <p id="submitStatusDesc" class="text-xs sm:text-sm text-slate-300">
+                      Za oddajo odgovorov in odprtje vašega koledarja objav izpolnite vseh 20 vprašanj.
+                    </p>
+                  </div>
+
+                  <!-- GLAVNI GUMB ZA ODDAJO ODGOVOROV (Omogočen ko je 20/20) -->
+                  <div>
+                    <button id="btnBottomSubmit" onclick="submitAndOpenDashboard(this)" type="button" disabled
+                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-xs sm:text-sm font-extrabold rounded-xl transition-all opacity-50 cursor-not-allowed bg-slate-800 text-slate-400 border border-slate-700 shadow-md">
+                      <i data-lucide="send" class="w-4 h-4"></i>
+                      <span id="btnBottomSubmitText">Oddaj odgovore (0/20)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <div class="flex flex-wrap items-center gap-3 no-print">
-                <button type="button" onclick="manualSaveQuestionnaire(this)" class="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md transition-all active:scale-95 shadow-emerald-600/30">
+                <button type="button" onclick="manualSaveQuestionnaire(this)" class="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 rounded-xl shadow-md transition-all active:scale-95 border border-slate-700">
                   <i data-lucide="save" class="w-4 h-4"></i>
-                  <span>Shrani celoten vprašalnik v bazo</span>
+                  <span>Shrani osnutek v bazo</span>
                 </button>
 
-                <button type="button" onclick="printReport()" class="inline-flex items-center gap-2 px-5 py-3 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition-all active:scale-95 shadow-indigo-600/30">
+                <button type="button" onclick="printReport()" class="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition-all active:scale-95 shadow-indigo-600/30">
                   <i data-lucide="printer" class="w-4 h-4"></i>
                   <span>Natisni ali Shrani kot PDF</span>
                 </button>
@@ -1467,6 +1515,260 @@
     <p>© 2026 • Vprašalnik za Spoznavanje Podjetja in Načrtovanje Marketinške Strategije</p>
     <p class="mt-1 text-slate-400">Vsi odgovori se samodejno varno shranjujejo.</p>
   </footer>
+
+  </div> <!-- /questionnaireView -->
+
+  <!-- ======================================================== -->
+  <!-- NAROČNIŠKI DASHBOARD VIEW (KOLEDAR & SHRANJENI VPRAŠALNIK) -->
+  <!-- ======================================================== -->
+  <div id="clientDashboardView" class="hidden w-full flex flex-col flex-1 bg-slate-50 min-h-screen">
+    
+    <!-- DASHBOARD TOP HEADER / NAV -->
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs no-print">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-primary-600 to-emerald-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0 font-extrabold text-sm">
+            <i data-lucide="calendar" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-extrabold text-sm sm:text-base text-slate-900 leading-tight" id="dashClientCompanyName">Portal za naročnika</h1>
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Vprašalnik oddan (20/20)
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium">Vsebinski koledar & Strateški vprašalnik</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Gumb za urejanje vprašalnika -->
+          <button onclick="openQuestionnaireView()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 rounded-xl border border-slate-300 shadow-2xs transition active:scale-95" title="Spremeni ali dopolni odgovore v vprašalniku">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <span>Uredi vprašalnik</span>
+          </button>
+
+          <!-- Natisni PDF -->
+          <button onclick="printReport()" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded-xl border border-slate-300 shadow-2xs transition active:scale-95">
+            <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-600"></i>
+            <span class="hidden sm:inline">Natisni PDF</span>
+          </button>
+
+          <!-- Osveži koledar -->
+          <button onclick="refreshClientDashboard(this)" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-xs transition active:scale-95 shadow-indigo-600/20" title="Preveri nove načrtovane objave v koledarju">
+            <i id="clientRefreshIcon" data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Osveži koledar</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- DASHBOARD BODY CONTAINER -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8 flex-1">
+
+      <!-- 1. HERO BANNER: POTRDITEV IN STATUS -->
+      <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden border border-indigo-500/20">
+        <div class="absolute -right-16 -top-16 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-16 -bottom-16 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 space-y-4">
+          <div class="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-emerald-400 bg-emerald-950/70 px-3.5 py-1.5 rounded-full border border-emerald-500/30">
+            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Vprašalnik je uspešno oddan
+          </div>
+
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Pozdravljeni v vašem naročniškem središču, <span id="dashHeroCompanyName" class="text-emerald-400">Naročnik</span>!
+          </h2>
+
+          <p class="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+            Vseh 20 odgovorov je varno shranjenih. Spodaj lahko spremljate načrtovane objave v vašem vsebinskem koledarju ter kadarkoli pregledujete ali posodobite oddane odgovore.
+          </p>
+
+          <!-- 3 Hitre info kartice -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs flex items-center justify-between">
+              <div>
+                <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Vprašalnik</div>
+                <div class="text-base font-bold text-white mt-0.5">20 / 20 izpolnjeno</div>
+              </div>
+              <button onclick="openQuestionnaireView()" type="button" class="px-2.5 py-1 text-xs font-bold text-indigo-300 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg transition" title="Odpri vprašalnik">
+                Uredi →
+              </button>
+            </div>
+
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
+              <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Objave v koledarju</div>
+              <div class="text-base font-bold text-white mt-0.5" id="dashPostsCount">0 načrtovanih</div>
+            </div>
+
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
+              <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Datum oddaje</div>
+              <div class="text-base font-bold text-white mt-0.5" id="dashSubmittedDate">Danes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. VSEBINSKI KOLEDAR NAROČNIKA -->
+      <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-6">
+        
+        <!-- Glava koledarja z navigacijo -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Vsebinski načrt</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Koledar načrtovanih objav</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Spremljajte datume, formate, kanale in vsebine objav za vaša družbena omrežja.</p>
+          </div>
+
+          <!-- Kontrole za koledar (Mesec naprej/nazaj, Danes, Preklop pogleda) -->
+          <div class="flex flex-wrap items-center gap-2">
+            
+            <!-- Mesec navigacija -->
+            <div class="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
+              <button onclick="changeClientCalendarMonth(-1)" type="button" class="w-8 h-8 rounded-lg hover:bg-white text-slate-600 flex items-center justify-center transition active:scale-95" title="Prejšnji mesec">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <span id="clientCalMonthTitle" class="px-3 text-xs font-bold text-slate-800 min-w-[130px] text-center">
+                November 2026
+              </span>
+              <button onclick="changeClientCalendarMonth(1)" type="button" class="w-8 h-8 rounded-lg hover:bg-white text-slate-600 flex items-center justify-center transition active:scale-95" title="Naslednji mesec">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <button onclick="resetClientCalendarMonth()" type="button" class="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl border border-slate-200 transition">
+              Danes
+            </button>
+
+            <!-- Preklop med pogledoma: Mesečni / Seznam -->
+            <div class="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200 text-xs font-bold">
+              <button id="btnViewModeMonth" onclick="setClientCalendarViewMode('month')" type="button" class="px-3 py-1.5 rounded-lg bg-white text-indigo-600 shadow-2xs transition">
+                Koledar
+              </button>
+              <button id="btnViewModeList" onclick="setClientCalendarViewMode('list')" type="button" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
+                Seznam
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Filtri po kanalih (Instagram, TikTok, Facebook...) -->
+        <div class="flex flex-wrap items-center gap-1.5 text-xs pb-1" id="clientPlatformFilters">
+          <!-- Generirano dinamično -->
+        </div>
+
+        <!-- GLAVNA VSEBINA KOLEDARJA (Mesečni grid ali Seznam) -->
+        <div id="clientCalendarContent">
+          <!-- Generirano dinamično -->
+        </div>
+
+      </div>
+
+      <!-- 3. KARTICA: VAŠ ODDANI VPRAŠALNIK (SHRANJENI ODGOVORI & UREJANJE) -->
+      <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Varno shranjeno</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Vaš oddani strateški vprašalnik</h3>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Vseh 20 odgovorov je shranjenih v sistemu. Če želite karkoli spremeniti ali dopolniti, lahko vprašalnik kadarkoli ponovno odprete.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="openQuestionnaireView()" type="button" class="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-xs transition active:scale-95 shadow-indigo-600/20">
+              <i data-lucide="edit-3" class="w-4 h-4"></i>
+              <span>Spremeni odgovore v vprašalniku</span>
+            </button>
+            <button onclick="printReport()" type="button" class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl border border-slate-200 transition">
+              <i data-lucide="printer" class="w-4 h-4 text-slate-600"></i>
+              <span class="hidden sm:inline">Natisni PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pregled 5 sklopov z odgovori in gumbi za hiter skok na uredi -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="dashSklopiSummaryGrid">
+          <!-- Generirano dinamično -->
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- DASHBOARD FOOTER -->
+    <footer class="mt-auto py-8 text-center text-xs text-slate-400 bg-white border-t border-slate-200/80 no-print">
+      <p>© 2026 • Portal za Naročnike & Marketinška Strategija</p>
+      <p class="mt-1 text-slate-400">Vprašalnik in vsebinski koledar sta varno sinhronizirana.</p>
+    </footer>
+
+  </div>
+
+  <!-- CLIENT POST DETAIL MODAL -->
+  <div id="clientPostModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 text-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2" id="clientModalBadges">
+          <!-- Badges -->
+        </div>
+        <button onclick="closeClientPostModal()" type="button" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div>
+        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1" id="clientModalDateTime">15. Nov ob 18:00</div>
+        <h3 class="text-lg font-bold text-slate-900" id="clientModalTitle">Naslov objave</h3>
+        <div class="text-xs font-semibold text-indigo-600 mt-1" id="clientModalPillar">Vsebinski steber</div>
+      </div>
+
+      <!-- Hook / trnek -->
+      <div id="clientModalHookWrapper" class="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl">
+        <div class="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-600"></i> Uvodni trnek (Hook)
+        </div>
+        <div class="text-xs text-amber-950 font-medium" id="clientModalHookText">—</div>
+      </div>
+
+      <!-- Vizualni opis / koncept -->
+      <div id="clientModalVisualWrapper" class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+        <div class="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+          <i data-lucide="camera" class="w-3.5 h-3.5 text-slate-600"></i> Vizualni koncept & navodila
+        </div>
+        <div class="text-xs text-slate-700 leading-relaxed" id="clientModalVisualText">—</div>
+      </div>
+
+      <!-- Besedilo objave (Caption) -->
+      <div id="clientModalCaptionWrapper" class="p-3.5 bg-indigo-50/50 border border-indigo-100 rounded-2xl">
+        <div class="text-[11px] font-bold text-indigo-900 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-indigo-600"></i> Besedilo objave (Caption & CTA)
+        </div>
+        <div class="text-xs text-slate-800 whitespace-pre-line leading-relaxed font-normal" id="clientModalCaptionText">—</div>
+      </div>
+
+      <!-- Povezava do posnetkov -->
+      <div id="clientModalLinkWrapper" class="hidden">
+        <a id="clientModalLinkBtn" href="#" target="_blank" rel="noopener noreferrer" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition">
+          <i data-lucide="external-link" class="w-4 h-4 text-indigo-600"></i>
+          <span>Odpri posnetke in gradiva (Google Drive)</span>
+        </a>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="closeClientPostModal()" type="button" class="w-full py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition border border-slate-200">
+          Zapri
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
@@ -1507,6 +1809,26 @@
     let currentSubmissionId = new URLSearchParams(window.location.search).get('id') || null;
     let existingCrmAnswers = null;
     let isInitialLoading = false;
+
+    // Client Dashboard & Submission State
+    let isQuestionnaireSubmitted = false;
+    let questionnaireSubmittedAt = null;
+    let currentClientData = null;
+    let currentDashboardMonthOffset = 0;
+    let clientCalendarViewMode = 'month'; // 'month' | 'list'
+    let clientCalendarPlatformFilter = 'all';
+
+    function formatYmd(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function parseYmd(str) {
+      const [y, m, d] = (str || '2000-01-01').split('-').map(Number);
+      return new Date(y, (m || 1) - 1, d || 1);
+    }
 
     // Form inputs and textareas
     const textFields = [
@@ -1901,6 +2223,14 @@
       if (existingCrmAnswers) {
         collected.crm = existingCrmAnswers;
       }
+      if (isQuestionnaireSubmitted) {
+        collected.submitted = true;
+        collected.submitted_at = questionnaireSubmittedAt || new Date().toISOString();
+        if (!collected.crm) collected.crm = {};
+        if (!collected.crm.status || collected.crm.status === 'questionnaire_in_progress' || collected.crm.status === 'new') {
+          collected.crm.status = 'questionnaire_completed';
+        }
+      }
 
       const hasContent = Object.values(collected.fields).some(v => v && v.trim().length > 0) ||
                          Object.values(collected.chips).some(arr => arr && arr.length > 0) ||
@@ -1962,6 +2292,7 @@
           }
         }
 
+        currentClientData = { ...payload, id: currentSubmissionId, answers: collected };
         updateSaveStatus('saved');
       } catch (err) {
         console.error('Napaka pri shranjevanju v Supabase:', err);
@@ -1989,12 +2320,24 @@
 
         if (error) throw error;
         if (data && data.answers) {
+          currentClientData = data;
           if (data.answers.crm) {
             existingCrmAnswers = data.answers.crm;
+          }
+          if (data.answers.submitted) {
+            isQuestionnaireSubmitted = true;
+            questionnaireSubmittedAt = data.answers.submitted_at;
           }
           applyDataToForm(data.answers, data);
           updateSaveStatus('saved');
           showToast('Odgovori so naloženi iz baze!');
+
+          // Če je vprašalnik že oddan ali je v URL view=dashboard, samodejno prikažemo dashboard
+          const urlParams = new URLSearchParams(window.location.search);
+          const viewParam = urlParams.get('view');
+          if (viewParam === 'dashboard' || (data.answers.submitted && viewParam !== 'form')) {
+            openClientDashboard();
+          }
         } else {
           console.warn('Vprašalnik s tem ID ne obstaja v bazi:', id);
           currentSubmissionId = null;
@@ -2179,7 +2522,794 @@
       const countEl = document.getElementById('progressCount');
       if (countEl) countEl.innerText = `${filledQuestions}/20 vprašanj`;
 
+      updateSubmitButtonsState(filledQuestions, totalQuestions);
+
       return { filledQuestions, pct };
+    }
+
+    // --- GUMB ZA ODDAJO & POSODABLJANJE STANJA (20/20) ---
+    function updateSubmitButtonsState(filledQuestions, totalQuestions) {
+      const isComplete = (filledQuestions === totalQuestions);
+
+      // 1. Gumb v glavi
+      const btnHeader = document.getElementById('btnHeaderSubmit');
+      const btnHeaderText = document.getElementById('btnHeaderSubmitText');
+      if (btnHeader && btnHeaderText) {
+        if (isComplete) {
+          btnHeader.disabled = false;
+          btnHeader.className = "inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs font-extrabold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl shadow-md shadow-emerald-600/30 transition-all active:scale-95 animate-pulse cursor-pointer border border-emerald-400/40";
+          btnHeaderText.innerText = "Oddaj odgovore ✓";
+          btnHeader.title = "Vseh 20 vprašanj je izpolnjenih! Oddajte odgovore in odprite svoj koledar.";
+        } else {
+          btnHeader.disabled = true;
+          btnHeader.className = "inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-slate-400 bg-slate-100 rounded-xl transition-all border border-slate-200 cursor-not-allowed opacity-60";
+          btnHeaderText.innerText = `Oddaj odgovore (${filledQuestions}/${totalQuestions})`;
+          btnHeader.title = `Za oddajo je potrebno izpolniti vseh 20 vprašanj (trenutno ${filledQuestions}/${totalQuestions})`;
+        }
+        lucide.createIcons({ root: btnHeader });
+      }
+
+      // 2. Glavni gumb na dnu obrazca
+      const btnBottom = document.getElementById('btnBottomSubmit');
+      const btnBottomText = document.getElementById('btnBottomSubmitText');
+      const statusBadge = document.getElementById('submitStatusBadge');
+      const statusText = document.getElementById('submitStatusText');
+      const statusDesc = document.getElementById('submitStatusDesc');
+
+      if (btnBottom && btnBottomText) {
+        if (isComplete) {
+          btnBottom.disabled = false;
+          btnBottom.className = "w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-xs sm:text-sm font-extrabold text-white bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 rounded-xl shadow-xl shadow-emerald-500/30 transform hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer border border-emerald-400/30 animate-pulse";
+          btnBottomText.innerText = "Oddaj odgovore & Odpri koledar 🚀";
+
+          if (statusBadge) statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+          if (statusText) statusText.innerText = "Vseh 20 vprašanj je izpolnjenih!";
+          if (statusDesc) statusDesc.innerText = "Odlično! Vaš vprašalnik je v celoti pripravljen. Kliknite gumb za oddajo in takojšen dostop do svojega koledarja objav.";
+        } else {
+          btnBottom.disabled = true;
+          btnBottom.className = "w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-xs sm:text-sm font-bold text-slate-400 bg-slate-800 rounded-xl transition-all opacity-60 cursor-not-allowed border border-slate-700 shadow-md";
+          btnBottomText.innerText = `Oddaj odgovore (${filledQuestions}/${totalQuestions})`;
+
+          if (statusBadge) statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+          if (statusText) statusText.innerText = `Izpolnjeno: ${filledQuestions} od ${totalQuestions} vprašanj`;
+          if (statusDesc) statusDesc.innerText = `Za oddajo vprašalnika in prejem vsebinskega koledarja izpolnite še preostala vprašanja (${totalQuestions - filledQuestions} preostalih).`;
+        }
+        lucide.createIcons({ root: btnBottom });
+      }
+    }
+
+    // --- ODDAJA ODGOVOROV IN PREHOD NA DASHBOARD ---
+    async function submitAndOpenDashboard(btnEl = null) {
+      const { filledQuestions } = calculateProgress();
+      if (filledQuestions < 20) {
+        showToast(`Za oddajo je potrebno izpolniti vseh 20 vprašanj (trenutno ${filledQuestions}/20).`);
+        return;
+      }
+
+      let originalHtml = '';
+      if (btnEl) {
+        btnEl.disabled = true;
+        originalHtml = btnEl.innerHTML;
+        btnEl.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin text-white"></i> <span>Oddajam odgovore...</span>`;
+        lucide.createIcons({ root: btnEl });
+      }
+
+      try {
+        isQuestionnaireSubmitted = true;
+        questionnaireSubmittedAt = new Date().toISOString();
+
+        // Shranimo v bazo
+        await saveData();
+
+        showToast('🎉 Hvala! Vaš vprašalnik je bil uspešno oddan.');
+        openClientDashboard();
+      } catch (err) {
+        console.error('Napaka pri oddaji:', err);
+        showToast('Napaka pri oddaji odgovorov. Poskusite ponovno.');
+      } finally {
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = originalHtml;
+          lucide.createIcons({ root: btnEl });
+        }
+      }
+    }
+
+    // --- PREKLOP MED POGLEDOMA: DASHBOARD & VPRAŠALNIK ---
+    function openClientDashboard() {
+      const qView = document.getElementById('questionnaireView');
+      const dView = document.getElementById('clientDashboardView');
+      const mainHeader = document.querySelector('body > header');
+      if (qView) qView.classList.add('hidden');
+      if (mainHeader) mainHeader.classList.add('hidden');
+      if (dView) dView.classList.remove('hidden');
+
+      // Posodobi URL
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', 'dashboard');
+      if (currentSubmissionId) url.searchParams.set('id', currentSubmissionId);
+      window.history.replaceState({}, '', url.toString());
+
+      renderClientDashboard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openQuestionnaireView(targetSklopId = null) {
+      const qView = document.getElementById('questionnaireView');
+      const dView = document.getElementById('clientDashboardView');
+      const mainHeader = document.querySelector('body > header');
+      if (dView) dView.classList.add('hidden');
+      if (mainHeader) mainHeader.classList.remove('hidden');
+      if (qView) qView.classList.remove('hidden');
+
+      // Obvestilni pas o načinu urejanja
+      const editNotice = document.getElementById('editModeNotice');
+      if (editNotice) {
+        if (isQuestionnaireSubmitted) {
+          editNotice.classList.remove('hidden');
+        } else {
+          editNotice.classList.add('hidden');
+        }
+      }
+
+      // Posodobi URL
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', 'form');
+      if (currentSubmissionId) url.searchParams.set('id', currentSubmissionId);
+      window.history.replaceState({}, '', url.toString());
+
+      if (targetSklopId) {
+        setTimeout(() => {
+          const el = document.getElementById(targetSklopId);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 120);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      calculateProgress();
+      lucide.createIcons();
+    }
+
+    // --- IZRIS NAROČNIŠKEGA DASHBOARDA ---
+    function renderClientDashboard() {
+      const company = (currentClientData?.company_name || document.getElementById('client_company')?.value || '').trim() || 'Naročnik';
+      const elCompany = document.getElementById('dashClientCompanyName');
+      const elHeroCompany = document.getElementById('dashHeroCompanyName');
+      if (elCompany) elCompany.innerText = company;
+      if (elHeroCompany) elHeroCompany.innerText = company;
+
+      // Datum oddaje
+      const dateRaw = questionnaireSubmittedAt || currentClientData?.updated_at || new Date().toISOString();
+      const dObj = new Date(dateRaw);
+      const slMonths = ["januar", "februar", "marec", "april", "maj", "junij", "julij", "avgust", "september", "oktober", "november", "december"];
+      const dateFormatted = `${dObj.getDate()}. ${slMonths[dObj.getMonth()]} ${dObj.getFullYear()} ob ${String(dObj.getHours()).padStart(2, '0')}:${String(dObj.getMinutes()).padStart(2, '0')}`;
+      const elDate = document.getElementById('dashSubmittedDate');
+      if (elDate) elDate.innerText = dateFormatted;
+
+      // Objave v koledarju
+      const posts = currentClientData?.answers?.crm?.content_calendar || existingCrmAnswers?.content_calendar || [];
+      const elCount = document.getElementById('dashPostsCount');
+      if (elCount) {
+        elCount.innerText = posts.length > 0 ? `${posts.length} načrtovanih` : 'V pripravi';
+      }
+
+      // Izris koledarja
+      renderClientCalendar(posts);
+
+      // Izris povzetka 5 sklopov vprašalnika
+      renderClientSklopiSummary();
+
+      lucide.createIcons();
+    }
+
+    const CLIENT_FORMAT_THEMES = {
+      video: {
+        label: 'Reels / Video',
+        icon: 'video',
+        bg: 'bg-indigo-50 border-indigo-200 text-indigo-950 hover:bg-indigo-100/90',
+        badge: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+        dot: 'bg-indigo-600',
+        timeColor: 'text-indigo-700'
+      },
+      carousel: {
+        label: 'Vrtiljak / Karusel',
+        icon: 'layers',
+        bg: 'bg-sky-50 border-sky-200 text-sky-950 hover:bg-sky-100/90',
+        badge: 'bg-sky-100 text-sky-800 border-sky-200',
+        dot: 'bg-sky-500',
+        timeColor: 'text-sky-700'
+      },
+      image: {
+        label: 'Fotografija / Grafika',
+        icon: 'image',
+        bg: 'bg-amber-50 border-amber-200 text-amber-950 hover:bg-amber-100/90',
+        badge: 'bg-amber-100 text-amber-800 border-amber-200',
+        dot: 'bg-amber-500',
+        timeColor: 'text-amber-700'
+      },
+      story: {
+        label: 'Zgodba (Story)',
+        icon: 'smartphone',
+        bg: 'bg-rose-50 border-rose-200 text-rose-950 hover:bg-rose-100/90',
+        badge: 'bg-rose-100 text-rose-800 border-rose-200',
+        dot: 'bg-rose-500',
+        timeColor: 'text-rose-700'
+      },
+      default: {
+        label: 'Objava',
+        icon: 'calendar',
+        bg: 'bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100',
+        badge: 'bg-slate-100 text-slate-800 border-slate-200',
+        dot: 'bg-slate-500',
+        timeColor: 'text-slate-700'
+      }
+    };
+
+    function getClientFormatTheme(formatStr) {
+      const f = (formatStr || '').toLowerCase();
+      if (f.includes('video') || f.includes('reels') || f.includes('tiktok')) return CLIENT_FORMAT_THEMES.video;
+      if (f.includes('vrtiljak') || f.includes('carousel') || f.includes('karusel')) return CLIENT_FORMAT_THEMES.carousel;
+      if (f.includes('slika') || f.includes('foto') || f.includes('grafika')) return CLIENT_FORMAT_THEMES.image;
+      if (f.includes('story') || f.includes('zgodba')) return CLIENT_FORMAT_THEMES.story;
+      return CLIENT_FORMAT_THEMES.default;
+    }
+
+    function getClientStatusBadge(status) {
+      switch (status) {
+        case 'published':
+          return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-100 text-teal-800 border border-teal-200">Objavljeno</span>';
+        case 'ready':
+        case 'brief_ready':
+          return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Pripravljeno</span>';
+        case 'production':
+        case 'editing':
+          return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-800 border border-blue-200">V produkciji</span>';
+        case 'review':
+        case 'approval':
+          return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200">V pregledu</span>';
+        default:
+          return '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">Načrtovano</span>';
+      }
+    }
+
+    function changeClientCalendarMonth(delta) {
+      currentDashboardMonthOffset += delta;
+      const posts = currentClientData?.answers?.crm?.content_calendar || existingCrmAnswers?.content_calendar || [];
+      renderClientCalendar(posts);
+    }
+
+    function resetClientCalendarMonth() {
+      currentDashboardMonthOffset = 0;
+      const posts = currentClientData?.answers?.crm?.content_calendar || existingCrmAnswers?.content_calendar || [];
+      renderClientCalendar(posts);
+    }
+
+    function setClientCalendarViewMode(mode) {
+      clientCalendarViewMode = mode;
+      const btnM = document.getElementById('btnViewModeMonth');
+      const btnL = document.getElementById('btnViewModeList');
+      if (btnM && btnL) {
+        if (mode === 'month') {
+          btnM.className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-600 shadow-2xs transition';
+          btnL.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition';
+        } else {
+          btnL.className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-600 shadow-2xs transition';
+          btnM.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition';
+        }
+      }
+      const posts = currentClientData?.answers?.crm?.content_calendar || existingCrmAnswers?.content_calendar || [];
+      renderClientCalendar(posts);
+    }
+
+    function setClientPlatformFilter(platform) {
+      clientCalendarPlatformFilter = platform;
+      const posts = currentClientData?.answers?.crm?.content_calendar || existingCrmAnswers?.content_calendar || [];
+      renderClientCalendar(posts);
+    }
+
+    async function refreshClientDashboard(btnEl = null) {
+      if (!supabaseClient || !currentSubmissionId) return;
+      const icon = document.getElementById('clientRefreshIcon');
+      if (icon) icon.classList.add('animate-spin');
+      try {
+        const { data, error } = await supabaseClient
+          .from('marketing_questionnaires')
+          .select('*')
+          .eq('id', currentSubmissionId)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data) {
+          currentClientData = data;
+          if (data.answers?.crm) {
+            existingCrmAnswers = data.answers.crm;
+          }
+          renderClientDashboard();
+          showToast('Koledar je osvežen z najnovejšimi podatki!');
+        }
+      } catch (err) {
+        console.error('Napaka pri osveževanju:', err);
+        showToast('Napaka pri osveževanju koledarja.');
+      } finally {
+        if (icon) icon.classList.remove('animate-spin');
+      }
+    }
+
+    function openClientPostDetailModal(postId) {
+      const posts = currentClientData?.answers?.crm?.content_calendar || existingCrmAnswers?.content_calendar || [];
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      const modal = document.getElementById('clientPostModal');
+      if (!modal) return;
+
+      const theme = getClientFormatTheme(post.format);
+
+      // Badges
+      const badgesEl = document.getElementById('clientModalBadges');
+      if (badgesEl) {
+        const platformsList = post.platforms && post.platforms.length > 0 ? post.platforms : [post.platform || 'Instagram'];
+        badgesEl.innerHTML = `
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${theme.badge}">
+            <i data-lucide="${theme.icon}" class="w-3.5 h-3.5"></i> ${escapeHtml(post.format || 'Objava')}
+          </span>
+          ${platformsList.map(pl => `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+              ${escapeHtml(pl)}
+            </span>
+          `).join('')}
+          ${getClientStatusBadge(post.prod_status || post.pub_status)}
+        `;
+      }
+
+      // Title & Date
+      const dObj = parseYmd(post.date);
+      const slMonths = ["januar", "februar", "marec", "april", "maj", "junij", "julij", "avgust", "september", "oktober", "november", "december"];
+      const dateStr = post.date ? `${dObj.getDate()}. ${slMonths[dObj.getMonth()]} ${dObj.getFullYear()}` : 'Nedoločen datum';
+      const timeStr = post.time ? `ob ${post.time}` : '';
+      
+      const elDateTime = document.getElementById('clientModalDateTime');
+      if (elDateTime) elDateTime.innerText = `${dateStr} ${timeStr}`;
+
+      const elTitle = document.getElementById('clientModalTitle');
+      if (elTitle) elTitle.innerText = post.title || 'Brez naslova';
+
+      const elPillar = document.getElementById('clientModalPillar');
+      if (elPillar) {
+        elPillar.innerText = post.pillar ? `🏷️ Vsebinski steber: ${post.pillar}` : '';
+      }
+
+      // Hook
+      const hookWrap = document.getElementById('clientModalHookWrapper');
+      const hookText = document.getElementById('clientModalHookText');
+      if (hookWrap && hookText) {
+        if (post.objective || post.brief) {
+          hookWrap.classList.remove('hidden');
+          hookText.innerText = post.objective || post.brief;
+        } else {
+          hookWrap.classList.add('hidden');
+        }
+      }
+
+      // Visual
+      const visWrap = document.getElementById('clientModalVisualWrapper');
+      const visText = document.getElementById('clientModalVisualText');
+      if (visWrap && visText) {
+        if (post.brief && post.objective) {
+          visWrap.classList.remove('hidden');
+          visText.innerText = post.brief;
+        } else {
+          visWrap.classList.add('hidden');
+        }
+      }
+
+      // Caption
+      const capWrap = document.getElementById('clientModalCaptionWrapper');
+      const capText = document.getElementById('clientModalCaptionText');
+      if (capWrap && capText) {
+        const fullCaption = [post.caption, post.cta ? `Poziv k dejanju (CTA): ${post.cta}` : ''].filter(Boolean).join('\n\n');
+        if (fullCaption) {
+          capWrap.classList.remove('hidden');
+          capText.innerText = fullCaption;
+        } else {
+          capWrap.classList.add('hidden');
+        }
+      }
+
+      // Link
+      const linkWrap = document.getElementById('clientModalLinkWrapper');
+      const linkBtn = document.getElementById('clientModalLinkBtn');
+      if (linkWrap && linkBtn) {
+        if (post.asset_link) {
+          linkWrap.classList.remove('hidden');
+          linkBtn.href = post.asset_link;
+        } else {
+          linkWrap.classList.add('hidden');
+        }
+      }
+
+      modal.classList.remove('hidden');
+      lucide.createIcons({ root: modal });
+    }
+
+    function closeClientPostModal() {
+      const modal = document.getElementById('clientPostModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderClientCalendar(posts) {
+      const now = new Date();
+      const monthNamesSl = ["Januar", "Februar", "Marec", "April", "Maj", "Junij", "Julij", "Avgust", "September", "Oktober", "November", "December"];
+      const daysOfWeekSl = ["Pon", "Tor", "Sre", "Čet", "Pet", "Sob", "Ned"];
+
+      const monthDate = new Date(now.getFullYear(), now.getMonth() + currentDashboardMonthOffset, 1);
+      const mYear = monthDate.getFullYear();
+      const mMonth = monthDate.getMonth();
+      const monthTitle = `${monthNamesSl[mMonth]} ${mYear}`;
+
+      const elMonthTitle = document.getElementById('clientCalMonthTitle');
+      if (elMonthTitle) elMonthTitle.innerText = monthTitle;
+
+      // Platform filter buttons
+      const platformsMap = {};
+      posts.forEach(p => {
+        const pls = p.platforms && p.platforms.length > 0 ? p.platforms : [p.platform || 'Instagram'];
+        pls.forEach(pl => { platformsMap[pl] = (platformsMap[pl] || 0) + 1; });
+      });
+
+      const filterEl = document.getElementById('clientPlatformFilters');
+      if (filterEl) {
+        let filterHtml = `
+          <button onclick="setClientPlatformFilter('all')" class="px-2.5 py-1 rounded-lg font-bold text-xs transition border ${
+            clientCalendarPlatformFilter === 'all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
+          }">
+            Vsa omrežja (${posts.length})
+          </button>
+        `;
+        Object.keys(platformsMap).forEach(pl => {
+          const isActive = clientCalendarPlatformFilter === pl;
+          filterHtml += `
+            <button onclick="setClientPlatformFilter('${escapeHtml(pl)}')" class="px-2.5 py-1 rounded-lg font-semibold text-xs transition border ${
+              isActive ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
+            }">
+              ${escapeHtml(pl)} (${platformsMap[pl]})
+            </button>
+          `;
+        });
+        filterEl.innerHTML = filterHtml;
+      }
+
+      // Filter posts by selected platform
+      let filteredPosts = [...posts];
+      if (clientCalendarPlatformFilter !== 'all') {
+        filteredPosts = filteredPosts.filter(p => {
+          const pls = p.platforms && p.platforms.length > 0 ? p.platforms : [p.platform || 'Instagram'];
+          return pls.includes(clientCalendarPlatformFilter);
+        });
+      }
+
+      // Target container
+      const container = document.getElementById('clientCalendarContent');
+      if (!container) return;
+
+      // EMPTY STATE: If no posts in the whole calendar
+      if (posts.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 sm:py-16 text-center rounded-2xl bg-slate-50 border border-slate-200/80 p-6 sm:p-8 space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto shadow-inner">
+              <i data-lucide="calendar-clock" class="w-7 h-7"></i>
+            </div>
+            <div class="max-w-md mx-auto space-y-1.5">
+              <h4 class="text-base font-bold text-slate-900">Vsebinski koledar je v pripravi</h4>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Hvala za oddajo vprašalnika! Naša ekipa na podlagi vaših 20 strateških odgovorov trenutno pripravlja mesečni načrt objav, scenarije in strategijo.
+              </p>
+            </div>
+            <div class="pt-2 flex flex-wrap items-center justify-center gap-3">
+              <button onclick="refreshClientDashboard(this)" type="button" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-xs transition active:scale-95 shadow-indigo-600/20">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span>Preveri posodobitve koledarja</span>
+              </button>
+              <button onclick="openQuestionnaireView()" type="button" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-300 transition active:scale-95">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5 text-indigo-600"></i> <span>Preglej / uredi vprašalnik</span>
+              </button>
+            </div>
+          </div>
+        `;
+        lucide.createIcons({ root: container });
+        return;
+      }
+
+      // VIEW 1: MONTH VIEW
+      if (clientCalendarViewMode === 'month') {
+        const todayStr = formatYmd(now);
+        const firstDayOfMonth = new Date(mYear, mMonth, 1);
+        const lastDayOfMonth = new Date(mYear, mMonth + 1, 0);
+        let startDayIndex = firstDayOfMonth.getDay() - 1;
+        if (startDayIndex === -1) startDayIndex = 6;
+        const totalDaysInMonth = lastDayOfMonth.getDate();
+
+        let gridHtml = `
+          <div class="grid grid-cols-7 gap-2 text-center font-bold text-[11px] uppercase tracking-wider text-slate-400 mb-2 pb-2 border-b border-slate-100">
+            ${daysOfWeekSl.map(d => `<div>${d}</div>`).join('')}
+          </div>
+          <div class="grid grid-cols-7 gap-2 auto-rows-fr">
+        `;
+
+        // Empty padding days before day 1
+        for (let i = 0; i < startDayIndex; i++) {
+          gridHtml += `<div class="min-h-[110px] sm:min-h-[125px] bg-slate-50/60 rounded-2xl border border-slate-100 p-2 opacity-30"></div>`;
+        }
+
+        // Days of current month
+        for (let day = 1; day <= totalDaysInMonth; day++) {
+          const dayDate = new Date(mYear, mMonth, day);
+          const dayStr = formatYmd(dayDate);
+          const isToday = dayStr === todayStr;
+          const dayPosts = filteredPosts.filter(p => p.date === dayStr);
+
+          gridHtml += `
+            <div class="min-h-[110px] sm:min-h-[125px] bg-white rounded-2xl border ${
+              isToday ? 'border-indigo-500 shadow-sm ring-2 ring-indigo-500/20' : 'border-slate-200'
+            } p-2 flex flex-col justify-between transition hover:border-indigo-300">
+              
+              <div class="flex items-center justify-between text-[11px] font-bold mb-1">
+                <span class="${
+                  isToday ? 'w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-500 pl-0.5'
+                }">${day}</span>
+                ${dayPosts.length > 0 ? `
+                  <span class="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-full border border-indigo-100">
+                    ${dayPosts.length}
+                  </span>
+                ` : ''}
+              </div>
+
+              <div class="space-y-1.5 overflow-y-auto max-h-[90px] scrollbar-none flex-1">
+                ${dayPosts.map(p => {
+                  const theme = getClientFormatTheme(p.format);
+                  return `
+                    <div onclick="openClientPostDetailModal('${escapeHtml(p.id)}')" title="${escapeHtml(p.title)} (klikni za podrobnosti)" class="text-[10px] p-1.5 rounded-xl border ${theme.bg} cursor-pointer transition space-y-0.5 shadow-2xs">
+                      <div class="flex items-center justify-between gap-1 text-[9px]">
+                        <span class="font-mono font-bold ${theme.timeColor}">${p.time || '18:00'}</span>
+                        <div class="flex items-center gap-1 font-bold ${theme.timeColor}">
+                          <i data-lucide="${theme.icon}" class="w-2.5 h-2.5"></i>
+                          <span class="truncate">${theme.label.split('/')[0].trim()}</span>
+                        </div>
+                      </div>
+                      <div class="font-bold truncate leading-tight">${escapeHtml(p.title)}</div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        gridHtml += `</div>`;
+        container.innerHTML = gridHtml;
+        lucide.createIcons({ root: container });
+        return;
+      }
+
+      // VIEW 2: LIST / TIMELINE VIEW
+      if (clientCalendarViewMode === 'list') {
+        const sorted = [...filteredPosts].sort((a,b) => (a.date || '').localeCompare(b.date || '') || (a.time || '').localeCompare(b.time || ''));
+        
+        let listHtml = `
+          <div class="divide-y divide-slate-100 border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
+        `;
+
+        sorted.forEach(p => {
+          const theme = getClientFormatTheme(p.format);
+          const dObj = parseYmd(p.date);
+          const dayName = daysOfWeekSl[dObj.getDay() === 0 ? 6 : dObj.getDay() - 1];
+          const platformsList = p.platforms && p.platforms.length > 0 ? p.platforms : [p.platform || 'Instagram'];
+
+          listHtml += `
+            <div onclick="openClientPostDetailModal('${escapeHtml(p.id)}')" class="p-4 hover:bg-slate-50 transition cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+                <div class="w-12 h-12 rounded-xl border ${theme.bg} flex flex-col items-center justify-center shrink-0 shadow-2xs">
+                  <span class="text-[9px] font-bold uppercase tracking-wider ${theme.timeColor}">${dayName}</span>
+                  <span class="text-sm font-extrabold leading-none">${dObj.getDate()}</span>
+                </div>
+                <div class="min-w-0 space-y-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${theme.badge}">
+                      <i data-lucide="${theme.icon}" class="w-3 h-3"></i> ${escapeHtml(p.format || 'Objava')}
+                    </span>
+                    <span class="text-xs font-mono font-bold text-slate-500">${p.time || '18:00'}</span>
+                    ${getClientStatusBadge(p.prod_status || p.pub_status)}
+                  </div>
+                  <h4 class="text-sm font-bold text-slate-900 truncate">${escapeHtml(p.title)}</h4>
+                  <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span>${platformsList.join(', ')}</span>
+                    ${p.pillar ? `<span>•</span><span>${escapeHtml(p.pillar)}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                <span class="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                  Podrobnosti <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </span>
+              </div>
+            </div>
+          `;
+        });
+
+        listHtml += `</div>`;
+        container.innerHTML = listHtml;
+        lucide.createIcons({ root: container });
+      }
+    }
+
+    function renderClientSklopiSummary() {
+      const container = document.getElementById('dashSklopiSummaryGrid');
+      if (!container) return;
+
+      const answers = currentClientData?.answers || collectData();
+      const fields = answers.fields || {};
+      const chips = answers.chips || {};
+
+      // Sklop 1
+      const s1Biz = chips.q1_business_type || [];
+      const s1Reach = chips.q1_reach || [];
+      const s1Values = chips.q4_values || [];
+      const s1Price = chips.q5_price_range || [];
+      const s1Summary = [...s1Biz, ...s1Reach, ...s1Values.slice(0, 3), ...s1Price].filter(Boolean);
+
+      // Sklop 2
+      const s2Products = [fields.q6_top1, fields.q6_top2, fields.q6_top3].filter(Boolean);
+      const s2Adv = chips.q7_advantages || [];
+
+      // Sklop 3
+      const s3Audience = chips.q10_audience_type || [];
+      const s3Age = chips.q10_age_group || [];
+      const s3Pain = chips.q11_painpoints || [];
+      const s3Questions = chips.q12_questions || [];
+
+      // Sklop 4
+      const s4Short = chips.q14_short_goals || [];
+      const s4Long = chips.q15_long_goals || [];
+      const s4ProdsCount = (answers.q16_products && answers.q16_products.length > 0) ? answers.q16_products.filter(p => p && p.trim()).length : 0;
+
+      // Sklop 5
+      const s5Words = [fields.q17_word1, fields.q17_word2, fields.q17_word3].filter(Boolean);
+      const s5Tone = chips.q19_tone_chips || [];
+      const s5Address = chips.q19_address_form || [];
+      const s5NoGo = chips.q20_nogo || [];
+
+      function renderPills(list, max = 5) {
+        if (!list || list.length === 0) return '<span class="text-xs text-slate-400 italic">Ni izpolnjeno</span>';
+        const visible = list.slice(0, max);
+        return visible.map(it => `
+          <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-200 truncate max-w-full shadow-2xs">
+            ${escapeHtml(it)}
+          </span>
+        `).join('') + (list.length > max ? `<span class="text-xs text-slate-400 font-bold self-center">+${list.length - max}</span>` : '');
+      }
+
+      container.innerHTML = `
+        <!-- 1. Sklop -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-4 hover:border-indigo-300 transition">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">1</span>
+                <h4 class="text-sm font-bold text-slate-900">Predstavitev podjetja</h4>
+              </div>
+              <button onclick="openQuestionnaireView('sklop-1')" type="button" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition">
+                Uredi →
+              </button>
+            </div>
+            <p class="text-xs text-slate-500">Poslovni model, doseg, vizija in ključne vrednote.</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${renderPills(s1Summary)}
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-200/60 text-right">
+            <button onclick="openQuestionnaireView('sklop-1')" type="button" class="text-xs font-semibold text-slate-600 hover:text-indigo-600 transition">
+              Uredi odgovore 1. sklopa →
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Sklop -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-4 hover:border-amber-300 transition">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center">2</span>
+                <h4 class="text-sm font-bold text-slate-900">Ponudba in prednosti</h4>
+              </div>
+              <button onclick="openQuestionnaireView('sklop-2')" type="button" class="text-xs font-bold text-amber-600 hover:text-amber-800 transition">
+                Uredi →
+              </button>
+            </div>
+            <p class="text-xs text-slate-500">Glavni produkti, storitve in konkurenčne prednosti (USP).</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${renderPills([...s2Products, ...s2Adv])}
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-200/60 text-right">
+            <button onclick="openQuestionnaireView('sklop-2')" type="button" class="text-xs font-semibold text-slate-600 hover:text-amber-600 transition">
+              Uredi odgovore 2. sklopa →
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Sklop -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-4 hover:border-emerald-300 transition">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center">3</span>
+                <h4 class="text-sm font-bold text-slate-900">Vaše stranke</h4>
+              </div>
+              <button onclick="openQuestionnaireView('sklop-3')" type="button" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition">
+                Uredi →
+              </button>
+            </div>
+            <p class="text-xs text-slate-500">Ciljna publika, težave, želje in pogosta vprašanja strank.</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${renderPills([...s3Audience, ...s3Age, ...s3Pain, ...s3Questions])}
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-200/60 text-right">
+            <button onclick="openQuestionnaireView('sklop-3')" type="button" class="text-xs font-semibold text-slate-600 hover:text-emerald-600 transition">
+              Uredi odgovore 3. sklopa →
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Sklop -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-4 hover:border-blue-300 transition">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">4</span>
+                <h4 class="text-sm font-bold text-slate-900">Cilji in promocija</h4>
+              </div>
+              <button onclick="openQuestionnaireView('sklop-4')" type="button" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition">
+                Uredi →
+              </button>
+            </div>
+            <p class="text-xs text-slate-500">Kratkoročni in dolgoročni cilji ter izdelki za promocijo.</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${renderPills([...s4Short, ...s4Long, s4ProdsCount > 0 ? `${s4ProdsCount} izdelkov za promocijo` : ''].filter(Boolean))}
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-200/60 text-right">
+            <button onclick="openQuestionnaireView('sklop-4')" type="button" class="text-xs font-semibold text-slate-600 hover:text-blue-600 transition">
+              Uredi odgovore 4. sklopa →
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. Sklop -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-4 hover:border-purple-300 transition md:col-span-2">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 font-bold text-xs flex items-center justify-center">5</span>
+                <h4 class="text-sm font-bold text-slate-900">Identiteta znamke, ton in no-go teme</h4>
+              </div>
+              <button onclick="openQuestionnaireView('sklop-5')" type="button" class="text-xs font-bold text-purple-600 hover:text-purple-800 transition">
+                Uredi →
+              </button>
+            </div>
+            <p class="text-xs text-slate-500">3 besede znamke, nagovor, ton komunikacije in prepovedane teme.</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${renderPills([...s5Words, ...s5Tone, ...s5Address, ...(s5NoGo.length ? s5NoGo.map(n => `No-Go: ${n}`) : [])])}
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-200/60 text-right">
+            <button onclick="openQuestionnaireView('sklop-5')" type="button" class="text-xs font-semibold text-slate-600 hover:text-purple-600 transition">
+              Uredi odgovore 5. sklopa →
+            </button>
+          </div>
+        </div>
+      `;
     }
 
     function getGroupCount(grpName) {
