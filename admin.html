@@ -2264,10 +2264,107 @@
     // -------------------------------------------------------------
     // DATA FETCHING & SYNCHRONIZATION
     // -------------------------------------------------------------
+    const OFFICIAL_PILLAR_MAP = {
+      'edukacija': 'Izobraževalne vsebine',
+      'izobraževalne vsebine': 'Izobraževalne vsebine',
+      'izobrazevalne vsebine': 'Izobraževalne vsebine',
+      'izobraževanje': 'Izobraževalne vsebine',
+      'izobrazevanje': 'Izobraževalne vsebine',
+      'zabava': 'Zabavne vsebine',
+      'zabavne vsebine': 'Zabavne vsebine',
+      'navdih': 'Navdihujoče vsebine',
+      'navdihujoče vsebine': 'Navdihujoče vsebine',
+      'navdihujoce vsebine': 'Navdihujoče vsebine',
+      'motivacija': 'Navdihujoče vsebine',
+      'za_kulisami': 'Za kulisami',
+      'za kulisami': 'Za kulisami',
+      'zakulisje': 'Za kulisami',
+      'skupnost': 'Skupnost & socialni dokaz',
+      'skupnost & socialni dokaz': 'Skupnost & socialni dokaz',
+      'skupnost in socialni dokaz': 'Skupnost & socialni dokaz',
+      'socialni dokaz': 'Skupnost & socialni dokaz',
+      'promocija': 'Promocijske vsebine',
+      'promocijske vsebine': 'Promocijske vsebine',
+      'prodaja': 'Promocijske vsebine'
+    };
+
+    function stripTrailingFormatSuffix(str) {
+      if (!str || typeof str !== 'string') return '';
+      return str.replace(/\s*\((?:Reels|Video|Vrtiljak|Carousel|Karusel|Fotografija|Grafika|Slika|Zgodba|Story|Tekstovna objava|Članek|Tekst|Daljši video)(?:[^)]*)\)\)?\s*$/i, '').trim();
+    }
+
+    function normalizePillarName(raw) {
+      if (!raw || typeof raw !== 'string') return '';
+      const cleaned = stripTrailingFormatSuffix(raw.trim());
+      const lower = cleaned.toLowerCase();
+      if (OFFICIAL_PILLAR_MAP[lower]) return OFFICIAL_PILLAR_MAP[lower];
+      return cleaned;
+    }
+
+    function cleanCalendarPostTitle(post) {
+      if (!post) return 'Objava';
+      const rawTitle = (post.title || '').trim();
+      const strippedTitle = stripTrailingFormatSuffix(rawTitle);
+      const normPillar = normalizePillarName(post.pillar);
+      const normStrippedTitle = normalizePillarName(strippedTitle);
+      const hasLinkedContent = !!(post.linked_id || post.script_id || post.idea_id);
+
+      // Če objava nima povezanega scenarija/ideje ali pa je naslov enak stebru (z opcijsko oznako formata v oklepaju), prikaži uradno ime vsebinskega stebra
+      if (!rawTitle) {
+        return normPillar || 'Objava';
+      }
+      if (OFFICIAL_PILLAR_MAP[strippedTitle.toLowerCase()] || (normPillar && normStrippedTitle.toLowerCase() === normPillar.toLowerCase())) {
+        return normPillar || normStrippedTitle;
+      }
+      if (!hasLinkedContent && strippedTitle !== rawTitle && normPillar) {
+        return normPillar;
+      }
+      return strippedTitle || rawTitle;
+    }
+
     function formatClientRecord(record) {
       const answers = record.answers || {};
       const stats = calculateQuestionnaireStats(answers);
       const crm = answers.crm || {};
+
+      // Normaliziraj imena vsebinskih stebrov v strategiji, koledarju, idejah in scenarijih
+      if (crm.content_strategy && Array.isArray(crm.content_strategy.content_pillars)) {
+        crm.content_strategy.content_pillars = crm.content_strategy.content_pillars.map(p => {
+          const normName = normalizePillarName(p.name || p.key);
+          const matchedOpt = typeof CONTENT_PILLAR_OPTIONS !== 'undefined'
+            ? CONTENT_PILLAR_OPTIONS.find(o => o.key === p.key || o.name === normName)
+            : null;
+          return {
+            ...p,
+            key: matchedOpt ? matchedOpt.key : (p.key || normName.toLowerCase().replace(/\s+/g, '_')),
+            name: matchedOpt ? matchedOpt.name : (normName || p.name)
+          };
+        });
+      }
+
+      if (Array.isArray(crm.content_calendar)) {
+        crm.content_calendar = crm.content_calendar.map(p => {
+          const normPillar = normalizePillarName(p.pillar || stripTrailingFormatSuffix(p.title || ''));
+          const updatedPost = { ...p, pillar: normPillar };
+          updatedPost.title = cleanCalendarPostTitle(updatedPost);
+          return updatedPost;
+        });
+      }
+
+      if (Array.isArray(crm.ideas)) {
+        crm.ideas = crm.ideas.map(i => ({
+          ...i,
+          pillar: normalizePillarName(i.pillar)
+        }));
+      }
+
+      if (Array.isArray(crm.scripts)) {
+        crm.scripts = crm.scripts.map(s => ({
+          ...s,
+          pillar: normalizePillarName(s.pillar)
+        }));
+      }
+
       const strategyStats = calculateStrategyStats(crm, answers);
       
       // Determine status strictly based on all 20 questions
@@ -7247,8 +7344,9 @@
       const activePillars = client?.crm?.content_strategy?.content_pillars || [];
       if (activePillars.length > 0) {
         return activePillars.map(p => {
-          const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === p.key || (p.name && o.name.toLowerCase() === p.name.toLowerCase()));
-          return opt ? opt.name : (p.name || p.key);
+          const normName = normalizePillarName(p.name || p.key);
+          const opt = CONTENT_PILLAR_OPTIONS.find(o => o.key === p.key || o.name.toLowerCase() === normName.toLowerCase());
+          return opt ? opt.name : (normName || p.name || p.key);
         });
       }
       return CONTENT_PILLAR_OPTIONS.map(o => o.name);
@@ -10175,7 +10273,7 @@
 
       // Prefill fields if provided
       if (prefillFormat) document.getElementById('postModalFormat').value = prefillFormat;
-      if (prefillPillar && pillarSelect) pillarSelect.value = prefillPillar;
+      if (prefillPillar && pillarSelect) pillarSelect.value = normalizePillarName(prefillPillar);
 
       // Preselect platforms
       const targetFormat = prefillFormat || 'Reels / Video';
@@ -10191,13 +10289,16 @@
       const post = (client.crm?.content_calendar || []).find(p => p.id === postId);
       if (!post) return;
 
+      const normPostPillar = normalizePillarName(post.pillar);
+      const cleanedPostTitle = cleanCalendarPostTitle({ ...post, pillar: normPostPillar });
+
       window.editingPostOriginal = {
         id: post.id,
         date: post.date,
         time: post.time || '18:00',
         format: post.format || 'Reels / Video',
-        pillar: post.pillar || '',
-        title: post.title || '',
+        pillar: normPostPillar || '',
+        title: cleanedPostTitle || '',
         recurrence_id: post.recurrence_id || null,
         is_recurring: !!(post.recurrence_id || post.is_recurring),
         linked_id: post.linked_id || (post.script_id ? 'script_' + post.script_id : (post.idea_id ? 'idea_' + post.idea_id : ''))
@@ -10215,7 +10316,10 @@
       const pillarSelect = document.getElementById('postModalPillar');
       if (pillarSelect) {
         const pillarList = getClientPillarOptions(client);
-        pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}" ${post.pillar === pName ? 'selected' : ''}>${escapeHtml(pName)}</option>`).join('');
+        if (normPostPillar && !pillarList.includes(normPostPillar)) {
+          pillarList.push(normPostPillar);
+        }
+        pillarSelect.innerHTML = pillarList.map(pName => `<option value="${escapeHtml(pName)}" ${normPostPillar === pName ? 'selected' : ''}>${escapeHtml(pName)}</option>`).join('');
       }
 
       // Populate script / idea link dropdown
@@ -10246,7 +10350,7 @@
       }
 
       const titleEl = document.getElementById('postModalTitleHidden');
-      if (titleEl) titleEl.value = post.title || '';
+      if (titleEl) titleEl.value = cleanedPostTitle || '';
       const objEl = document.getElementById('postModalObjectiveHidden');
       if (objEl) objEl.value = post.objective || '';
 
@@ -10261,7 +10365,7 @@
       document.getElementById('postModalFormat').value = post.format || 'Reels / Video';
       handlePostModalFormatChange(post.format || 'Reels / Video');
 
-      if (pillarSelect && post.pillar) pillarSelect.value = post.pillar;
+      if (pillarSelect && normPostPillar) pillarSelect.value = normPostPillar;
 
       const postPlatforms = (Array.isArray(post.platforms) && post.platforms.length > 0)
         ? post.platforms
@@ -10301,19 +10405,22 @@
       const dateStr = document.getElementById('postModalDate').value || formatYmd(new Date());
       const timeVal = document.getElementById('postModalTime').value || '18:00';
       const formatVal = document.getElementById('postModalFormat').value || 'Reels / Video';
-      const pillarVal = document.getElementById('postModalPillar')?.value?.trim() || '';
+      const pillarVal = normalizePillarName(document.getElementById('postModalPillar')?.value?.trim() || '');
       const isRecurring = document.getElementById('postModalRecurring')?.checked;
 
       const linkSelect = document.getElementById('postModalScriptIdeaSelect');
       const linkedVal = linkSelect?.value || '';
 
-      // Auto-derive title from linked script/idea or pillar/format
-      let postTitle = document.getElementById('postModalTitleHidden')?.value?.trim();
-      if (!postTitle && linkedVal && linkSelect.options[linkSelect.selectedIndex]) {
-        postTitle = linkSelect.options[linkSelect.selectedIndex].text.replace(/^[🎬💡]\s*/, '').trim();
+      // Auto-derive title from linked script/idea or exact pillar name (without format in parentheses)
+      let postTitle = '';
+      if (linkedVal) {
+        postTitle = document.getElementById('postModalTitleHidden')?.value?.trim() || '';
+        if (!postTitle && linkSelect.options[linkSelect.selectedIndex]) {
+          postTitle = stripTrailingFormatSuffix(linkSelect.options[linkSelect.selectedIndex].text.replace(/^[🎬💡]\s*/, '').trim());
+        }
       }
       if (!postTitle) {
-        postTitle = pillarVal ? `${pillarVal} (${formatVal.split('/')[0].trim()})` : formatVal;
+        postTitle = pillarVal || formatVal;
       }
 
       const postObjective = document.getElementById('postModalObjectiveHidden')?.value?.trim() || existingPost?.objective || '';

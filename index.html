@@ -2755,6 +2755,63 @@
       return CLIENT_FORMAT_THEMES.default;
     }
 
+    const CLIENT_OFFICIAL_PILLAR_MAP = {
+      'edukacija': 'Izobraževalne vsebine',
+      'izobraževalne vsebine': 'Izobraževalne vsebine',
+      'izobrazevalne vsebine': 'Izobraževalne vsebine',
+      'izobraževanje': 'Izobraževalne vsebine',
+      'izobrazevanje': 'Izobraževalne vsebine',
+      'zabava': 'Zabavne vsebine',
+      'zabavne vsebine': 'Zabavne vsebine',
+      'navdih': 'Navdihujoče vsebine',
+      'navdihujoče vsebine': 'Navdihujoče vsebine',
+      'navdihujoce vsebine': 'Navdihujoče vsebine',
+      'motivacija': 'Navdihujoče vsebine',
+      'za_kulisami': 'Za kulisami',
+      'za kulisami': 'Za kulisami',
+      'zakulisje': 'Za kulisami',
+      'skupnost': 'Skupnost & socialni dokaz',
+      'skupnost & socialni dokaz': 'Skupnost & socialni dokaz',
+      'skupnost in socialni dokaz': 'Skupnost & socialni dokaz',
+      'socialni dokaz': 'Skupnost & socialni dokaz',
+      'promocija': 'Promocijske vsebine',
+      'promocijske vsebine': 'Promocijske vsebine',
+      'prodaja': 'Promocijske vsebine'
+    };
+
+    function stripClientTrailingFormatSuffix(str) {
+      if (!str || typeof str !== 'string') return '';
+      return str.replace(/\s*\((?:Reels|Video|Vrtiljak|Carousel|Karusel|Fotografija|Grafika|Slika|Zgodba|Story|Tekstovna objava|Članek|Tekst|Daljši video)(?:[^)]*)\)\)?\s*$/i, '').trim();
+    }
+
+    function normalizeClientPillarName(raw) {
+      if (!raw || typeof raw !== 'string') return '';
+      const cleaned = stripClientTrailingFormatSuffix(raw.trim());
+      const lower = cleaned.toLowerCase();
+      if (CLIENT_OFFICIAL_PILLAR_MAP[lower]) return CLIENT_OFFICIAL_PILLAR_MAP[lower];
+      return cleaned;
+    }
+
+    function cleanClientCalendarPostTitle(post) {
+      if (!post) return 'Objava';
+      const rawTitle = (post.title || '').trim();
+      const strippedTitle = stripClientTrailingFormatSuffix(rawTitle);
+      const normPillar = normalizeClientPillarName(post.pillar);
+      const normStrippedTitle = normalizeClientPillarName(strippedTitle);
+      const hasLinkedContent = !!(post.linked_id || post.script_id || post.idea_id);
+
+      if (!rawTitle) {
+        return normPillar || 'Objava';
+      }
+      if (CLIENT_OFFICIAL_PILLAR_MAP[strippedTitle.toLowerCase()] || (normPillar && normStrippedTitle.toLowerCase() === normPillar.toLowerCase())) {
+        return normPillar || normStrippedTitle;
+      }
+      if (!hasLinkedContent && strippedTitle !== rawTitle && normPillar) {
+        return normPillar;
+      }
+      return strippedTitle || rawTitle;
+    }
+
     function getClientStatusBadge(status) {
       switch (status) {
         case 'published':
@@ -2873,11 +2930,12 @@
       if (elDateTime) elDateTime.innerText = `${dateStr} ${timeStr}`;
 
       const elTitle = document.getElementById('clientModalTitle');
-      if (elTitle) elTitle.innerText = post.title || 'Brez naslova';
+      if (elTitle) elTitle.innerText = cleanClientCalendarPostTitle(post) || 'Brez naslova';
 
       const elPillar = document.getElementById('clientModalPillar');
       if (elPillar) {
-        elPillar.innerText = post.pillar ? `🏷️ Vsebinski steber: ${post.pillar}` : '';
+        const normPillar = normalizeClientPillarName(post.pillar);
+        elPillar.innerText = normPillar ? `🏷️ Vsebinski steber: ${normPillar}` : '';
       }
 
       // Hook
@@ -3067,8 +3125,9 @@
               <div class="space-y-1.5 overflow-y-auto max-h-[90px] scrollbar-none flex-1">
                 ${dayPosts.map(p => {
                   const theme = getClientFormatTheme(p.format);
+                  const displayTitle = cleanClientCalendarPostTitle(p);
                   return `
-                    <div onclick="openClientPostDetailModal('${escapeHtml(p.id)}')" title="${escapeHtml(p.title)} (klikni za podrobnosti)" class="text-[10px] p-1.5 rounded-xl border ${theme.bg} cursor-pointer transition space-y-0.5 shadow-2xs">
+                    <div onclick="openClientPostDetailModal('${escapeHtml(p.id)}')" title="${escapeHtml(displayTitle)} (klikni za podrobnosti)" class="text-[10px] p-1.5 rounded-xl border ${theme.bg} cursor-pointer transition space-y-0.5 shadow-2xs">
                       <div class="flex items-center justify-between gap-1 text-[9px]">
                         <span class="font-mono font-bold ${theme.timeColor}">${p.time || '18:00'}</span>
                         <div class="flex items-center gap-1 font-bold ${theme.timeColor}">
@@ -3076,7 +3135,7 @@
                           <span class="truncate">${theme.label.split('/')[0].trim()}</span>
                         </div>
                       </div>
-                      <div class="font-bold truncate leading-tight">${escapeHtml(p.title)}</div>
+                      <div class="font-bold truncate leading-tight">${escapeHtml(displayTitle)}</div>
                     </div>
                   `;
                 }).join('')}
@@ -3104,6 +3163,8 @@
           const dObj = parseYmd(p.date);
           const dayName = daysOfWeekSl[dObj.getDay() === 0 ? 6 : dObj.getDay() - 1];
           const platformsList = p.platforms && p.platforms.length > 0 ? p.platforms : [p.platform || 'Instagram'];
+          const displayTitle = cleanClientCalendarPostTitle(p);
+          const displayPillar = normalizeClientPillarName(p.pillar);
 
           listHtml += `
             <div onclick="openClientPostDetailModal('${escapeHtml(p.id)}')" class="p-4 hover:bg-slate-50 transition cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -3120,10 +3181,10 @@
                     <span class="text-xs font-mono font-bold text-slate-500">${p.time || '18:00'}</span>
                     ${getClientStatusBadge(p.prod_status || p.pub_status)}
                   </div>
-                  <h4 class="text-sm font-bold text-slate-900 truncate">${escapeHtml(p.title)}</h4>
+                  <h4 class="text-sm font-bold text-slate-900 truncate">${escapeHtml(displayTitle)}</h4>
                   <div class="flex items-center gap-2 text-xs text-slate-500">
                     <span>${platformsList.join(', ')}</span>
-                    ${p.pillar ? `<span>•</span><span>${escapeHtml(p.pillar)}</span>` : ''}
+                    ${displayPillar ? `<span>•</span><span>${escapeHtml(displayPillar)}</span>` : ''}
                   </div>
                 </div>
               </div>
