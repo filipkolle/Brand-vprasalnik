@@ -650,6 +650,24 @@
     .cal-chip .cal-chip-title {
       color: #0f172a !important;
     }
+    .cal-chip[draggable="true"] {
+      cursor: grab;
+      user-select: none;
+    }
+    .cal-chip[draggable="true"]:active {
+      cursor: grabbing;
+    }
+    .cal-chip.cal-chip-dragging {
+      opacity: 0.45 !important;
+      transform: scale(0.96);
+      cursor: grabbing !important;
+    }
+    .cal-cell.cal-drop-target-active,
+    .cal-week-col.cal-drop-target-active {
+      background-color: #eef2ff !important;
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25) !important;
+    }
 
     /* ---------- Produkcija (Kanban) ---------- */
     .kanban-col {
@@ -3284,7 +3302,7 @@
         const dayPosts = allPosts.filter(p => p.date === dayStr);
 
         gridHtml += `
-          <div class="cal-cell min-h-[100px] bg-slate-950/80 rounded-xl border ${isToday ? 'border-indigo-500 shadow-md shadow-indigo-950' : 'border-slate-800/80'} p-1.5 flex flex-col justify-between group hover:border-slate-700 transition">
+          <div data-drop-date="${dayStr}" ondragover="handleCalendarDayDragOver(event)" ondragenter="handleCalendarDayDragEnter(event)" ondragleave="handleCalendarDayDragLeave(event)" ondrop="handleCalendarDayDrop(event, '${dayStr}', '')" class="cal-cell min-h-[100px] bg-slate-950/80 rounded-xl border ${isToday ? 'border-indigo-500 shadow-md shadow-indigo-950' : 'border-slate-800/80'} p-1.5 flex flex-col justify-between group hover:border-slate-700 transition">
             <div class="flex items-center justify-between text-[11px] font-bold mb-1">
               <span class="${isToday ? 'w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-400 pl-1'}">${day}</span>
               <button onclick="openAddPostModal(null, '${dayStr}')" title="Dodaj objavo na ta dan" class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-white p-0.5 rounded transition">
@@ -3296,7 +3314,7 @@
               ${dayPosts.map(p => {
                 const theme = getPostFormatTheme(p.format);
                 return `
-                  <div onclick="openEditPostModal('${p.clientId}', '${p.id}')" title="${escapeHtml(p.clientName)}: ${escapeHtml(p.title)} (${theme.label})" class="cal-chip cursor-pointer text-[10px] p-1 rounded-md border ${theme.cardClass} truncate transition flex items-center gap-1">
+                  <div draggable="true" ondragstart="handleCalendarPostDragStart(event, '${p.clientId}', '${p.id}', '${dayStr}')" ondragend="handleCalendarPostDragEnd(event)" onclick="if (!window._justDraggedCalendarPost) openEditPostModal('${p.clientId}', '${p.id}')" title="${escapeHtml(p.clientName)}: ${escapeHtml(p.title)} (${theme.label}) — povleci za premik na drug dan" class="cal-chip cursor-pointer text-[10px] p-1 rounded-md border ${theme.cardClass} truncate transition flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full ${theme.dotClass} shrink-0"></span>
                     <span class="cal-chip-label font-bold ${theme.timeClass} shrink-0">${theme.label.split('/')[0].trim()}</span>
                     ${p.recurrence_id ? `<i data-lucide="repeat" class="w-2.5 h-2.5 ${theme.iconColor} shrink-0"></i>` : ''}
@@ -5854,7 +5872,7 @@
                 const dayPosts = posts.filter(p => p.date === dayStr);
 
                 gridHtml += `
-                  <div onclick="openAddPostModal('${client.id}', '${dayStr}')" class="cal-cell min-h-[135px] bg-slate-950/80 rounded-2xl border ${
+                  <div data-drop-date="${dayStr}" ondragover="handleCalendarDayDragOver(event)" ondragenter="handleCalendarDayDragEnter(event)" ondragleave="handleCalendarDayDragLeave(event)" ondrop="handleCalendarDayDrop(event, '${dayStr}', '${client.id}')" onclick="if (!window._justDraggedCalendarPost) openAddPostModal('${client.id}', '${dayStr}')" class="cal-cell min-h-[135px] bg-slate-950/80 rounded-2xl border ${
                     isToday ? 'border-indigo-500 shadow-lg shadow-indigo-950/50 ring-1 ring-indigo-500/50' : 'border-slate-800/80'
                   } p-2 flex flex-col justify-between group hover:border-indigo-500/50 hover:bg-slate-950 transition cursor-pointer">
                     
@@ -5871,7 +5889,7 @@
                       ${dayPosts.map(p => {
                         const theme = getPostFormatTheme(p.format);
                         return `
-                          <div onclick="event.stopPropagation(); openEditPostModal('${client.id}', '${p.id}')" title="${escapeHtml(p.title)} • ${theme.label}" class="cal-chip text-[10px] p-1.5 rounded-xl border ${theme.cardClass} transition space-y-0.5 shadow-xs">
+                          <div draggable="true" ondragstart="handleCalendarPostDragStart(event, '${client.id}', '${p.id}', '${dayStr}')" ondragend="handleCalendarPostDragEnd(event)" onclick="event.stopPropagation(); if (!window._justDraggedCalendarPost) openEditPostModal('${client.id}', '${p.id}')" title="${escapeHtml(p.title)} • ${theme.label} (povleci na drug dan za premik)" class="cal-chip text-[10px] p-1.5 rounded-xl border ${theme.cardClass} transition space-y-0.5 shadow-xs">
                             <div class="flex items-center justify-between gap-1 text-[9px]">
                               <span class="cal-chip-time font-mono ${theme.timeClass}">${p.time || '18:00'}</span>
                               <div class="flex items-center gap-1 font-bold ${theme.timeClass}">
@@ -5911,9 +5929,9 @@
                     const dayPosts = posts.filter(p => p.date === dayStr);
 
                     return `
-                      <div class="bg-slate-950/90 rounded-2xl border ${
+                      <div data-drop-date="${dayStr}" ondragover="handleCalendarDayDragOver(event)" ondragenter="handleCalendarDayDragEnter(event)" ondragleave="handleCalendarDayDragLeave(event)" ondrop="handleCalendarDayDrop(event, '${dayStr}', '${client.id}')" class="cal-week-col bg-slate-950/90 rounded-2xl border ${
                         isToday ? 'border-indigo-500 shadow-md ring-1 ring-indigo-500/40' : 'border-slate-800'
-                      } p-3 flex flex-col justify-between space-y-3 min-h-[300px]">
+                      } p-3 flex flex-col justify-between space-y-3 min-h-[300px] transition">
                         
                         <!-- Day header -->
                         <div class="flex items-center justify-between pb-2 border-b border-slate-800 text-xs">
@@ -5931,7 +5949,7 @@
                           ${dayPosts.length > 0 ? dayPosts.map(p => {
                             const theme = getPostFormatTheme(p.format);
                             return `
-                              <div onclick="openEditPostModal('${client.id}', '${p.id}')" class="p-2.5 rounded-xl border ${theme.cardClass} cursor-pointer transition space-y-2 text-xs shadow-xs">
+                              <div draggable="true" ondragstart="handleCalendarPostDragStart(event, '${client.id}', '${p.id}', '${dayStr}')" ondragend="handleCalendarPostDragEnd(event)" onclick="if (!window._justDraggedCalendarPost) openEditPostModal('${client.id}', '${p.id}')" class="cal-chip p-2.5 rounded-xl border ${theme.cardClass} cursor-pointer transition space-y-2 text-xs shadow-xs">
                                 <div class="flex items-center justify-between text-[10px]">
                                   <div class="flex items-center gap-1.5">
                                     <span class="font-mono font-bold px-1.5 py-0.5 rounded ${theme.badgeClass}">${p.time || '18:00'}</span>
@@ -10498,6 +10516,131 @@
 
     function closePostModal() {
       document.getElementById('postModal').classList.add('hidden');
+    }
+
+    // -------------------------------------------------------------
+    // CALENDAR DRAG & DROP HANDLERS
+    // -------------------------------------------------------------
+    window.draggedCalendarPost = null;
+    window._justDraggedCalendarPost = false;
+
+    function handleCalendarPostDragStart(event, clientId, postId, sourceDate) {
+      event.stopPropagation();
+      window.draggedCalendarPost = { clientId, postId, sourceDate };
+      window._justDraggedCalendarPost = true;
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', JSON.stringify({ clientId, postId, sourceDate }));
+      }
+      const chipEl = event.currentTarget;
+      if (chipEl) {
+        setTimeout(() => chipEl.classList.add('cal-chip-dragging'), 0);
+      }
+    }
+
+    function handleCalendarPostDragEnd(event) {
+      if (event.currentTarget) {
+        event.currentTarget.classList.remove('cal-chip-dragging');
+      }
+      document.querySelectorAll('.cal-drop-target-active').forEach(el => {
+        el.classList.remove('cal-drop-target-active');
+      });
+      setTimeout(() => {
+        window._justDraggedCalendarPost = false;
+      }, 150);
+    }
+
+    function handleCalendarDayDragOver(event) {
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'move';
+      }
+      const cellEl = event.currentTarget;
+      if (cellEl && !cellEl.classList.contains('cal-drop-target-active')) {
+        cellEl.classList.add('cal-drop-target-active');
+      }
+    }
+
+    function handleCalendarDayDragEnter(event) {
+      event.preventDefault();
+      const cellEl = event.currentTarget;
+      if (cellEl) {
+        cellEl.classList.add('cal-drop-target-active');
+      }
+    }
+
+    function handleCalendarDayDragLeave(event) {
+      const cellEl = event.currentTarget;
+      if (cellEl && !cellEl.contains(event.relatedTarget)) {
+        cellEl.classList.remove('cal-drop-target-active');
+      }
+    }
+
+    async function handleCalendarDayDrop(event, targetDateStr, fallbackClientId = '') {
+      event.preventDefault();
+      event.stopPropagation();
+
+      document.querySelectorAll('.cal-drop-target-active').forEach(el => {
+        el.classList.remove('cal-drop-target-active');
+      });
+
+      let payload = window.draggedCalendarPost;
+      if (!payload && event.dataTransfer) {
+        try {
+          payload = JSON.parse(event.dataTransfer.getData('text/plain'));
+        } catch (err) {
+          payload = null;
+        }
+      }
+      window.draggedCalendarPost = null;
+
+      if (!payload || !payload.postId || !targetDateStr) return;
+      const clientId = payload.clientId || fallbackClientId || currentClientId;
+      const client = clients.find(c => c.id === clientId);
+      if (!client || !client.crm || !Array.isArray(client.crm.content_calendar)) return;
+
+      const postIdx = client.crm.content_calendar.findIndex(p => p.id === payload.postId);
+      if (postIdx < 0) return;
+
+      const post = client.crm.content_calendar[postIdx];
+      const oldDateStr = post.date;
+      if (oldDateStr === targetDateStr) return;
+
+      // Posodobi datum posamezne objave
+      post.date = targetDateStr;
+      post.updated_at = new Date().toISOString();
+
+      // Takoj osveži prikaz koledarja
+      if (activeTopTab === 'calendar') renderGlobalCalendar();
+      if (activeTopTab === 'workspace') renderWorkspace();
+
+      const parts = targetDateStr.split('-');
+      const formattedTargetDate = parts.length === 3
+        ? `${parseInt(parts[2], 10)}. ${parseInt(parts[1], 10)}. ${parts[0]}`
+        : targetDateStr;
+
+      showToast(`Objava »${post.title || 'Objava'}« prestavljena na ${formattedTargetDate}!`);
+
+      if (!supabaseClient) return;
+      try {
+        const answersPayload = {
+          ...client.answers,
+          crm: client.crm
+        };
+        const { error } = await supabaseClient
+          .from('marketing_questionnaires')
+          .update({
+            answers: answersPayload,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', client.id);
+
+        if (error) throw error;
+        client.answers = answersPayload;
+      } catch (err) {
+        console.error('Napaka pri shranjevanju premika objave:', err);
+        showToast('Napaka pri shranjevanju novega datuma objave');
+      }
     }
 
     async function handleSavePost(e) {
