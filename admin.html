@@ -5598,6 +5598,7 @@
       const ideas = client.crm?.ideas || [];
       const activeIdeas = getClientActiveIdeas(client);
       const scripts = client.crm?.scripts || [];
+      const calPromotionItemsList = getClientPromotionItems(client);
       const calLocationsList = normalizeProductionList(client.crm?.production_guidelines?.resources?.locations);
       const assetsLink = (client.crm?.production_guidelines?.resources?.assets_link || client.crm?.resource_links?.drive || '').trim();
       posts.sort((a,b) => (a.date || '2000').localeCompare(b.date || '2000') || (a.time || '').localeCompare(b.time || ''));
@@ -6095,7 +6096,46 @@
                 </div>
               </button>
 
-              <!-- 3. Lokacije za snemanje -->
+              <!-- 3. Predmeti promocije (Kaj promoviramo) -->
+              <div class="p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+                  <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
+                      <i data-lucide="megaphone" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <span>Predmeti promocije</span>
+                  </div>
+                  <span class="text-[10px] text-slate-400 font-semibold px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">
+                    ${calPromotionItemsList.length}
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">
+                  Izdelki, storitve, akcije ali novosti, ki jih je potrebno promovirati:
+                </p>
+                <div class="flex items-center gap-1.5">
+                  <input type="text"
+                    id="calProdPromotionInput-${client.id}"
+                    placeholder="Dodaj predmet promocije..."
+                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); handleAddCalendarPromotionItem('${client.id}'); }"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-600">
+                  <button type="button" onclick="handleAddCalendarPromotionItem('${client.id}')" class="p-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl transition shrink-0" title="Dodaj predmet promocije">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+                <div class="flex flex-wrap gap-1.5 mt-2 min-h-[32px]">
+                  ${calPromotionItemsList.length > 0 ? calPromotionItemsList.map((item, idx) => `
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs shadow-xs group">
+                      <i data-lucide="tag" class="w-3 h-3 text-indigo-400"></i>
+                      <span>${escapeHtml(item)}</span>
+                      <button type="button" onclick="handleRemoveCalendarPromotionItem('${client.id}', ${idx})" class="text-slate-500 hover:text-rose-400 ml-1 p-0.5 transition" title="Odstrani predmet">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                      </button>
+                    </span>
+                  `).join('') : '<span class="text-[11px] text-slate-500 italic">Ni dodanih predmetov promocije (lahko jih vpišete vi ali naročnik na portalu).</span>'}
+                </div>
+              </div>
+
+              <!-- 4. Lokacije za snemanje -->
               <div class="p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800/90 shadow-xl space-y-3">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
                   <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
@@ -6465,6 +6505,73 @@
         showToast(added === 1 ? 'Lokacija za snemanje je shranjena.' : `Dodanih ${added} lokacij za snemanje.`);
       } else {
         showToast('Lokacija je že na seznamu.');
+      }
+    }
+
+    // --- POMOŽNE FUNKCIJE ZA PREDMETE PROMOCIJE ---
+    function getClientPromotionItems(client) {
+      if (!client) return [];
+      const crm = client.crm || {};
+      if (Array.isArray(crm.promotion_items)) {
+        const list = crm.promotion_items.map(x => String(x).trim()).filter(Boolean);
+        if (list.length > 0) return list;
+      }
+      if (typeof crm.promotion_items === 'string' && crm.promotion_items.trim()) {
+        const list = crm.promotion_items.split(/[\n,;]+/).map(s => s.trim().replace(/^([0-9]+[.)]|[-*•])\s*/, '')).filter(Boolean);
+        if (list.length > 0) return list;
+      }
+      if (Array.isArray(client.answers?.promotion_items)) {
+        const list = client.answers.promotion_items.map(x => String(x).trim()).filter(Boolean);
+        if (list.length > 0) return list;
+      }
+      const q16 = client.answers?.q16_products;
+      if (Array.isArray(q16)) {
+        return q16.map(p => (typeof p === 'string' ? p : p?.name || '')).map(s => String(s).trim()).filter(Boolean);
+      }
+      return [];
+    }
+
+    function handleAddCalendarPromotionItem(clientId) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      const inputEl = document.getElementById(`calProdPromotionInput-${clientId}`);
+      const val = inputEl ? inputEl.value.trim() : '';
+      if (!val) return;
+
+      if (!client.crm) client.crm = {};
+      const currentList = getClientPromotionItems(client);
+      const newItems = val.split(/[\n,;]+/).map(s => s.trim().replace(/^([0-9]+[.)]|[-*•])\s*/, '')).filter(Boolean);
+
+      let added = 0;
+      newItems.forEach(item => {
+        if (!currentList.includes(item)) {
+          currentList.push(item);
+          added++;
+        }
+      });
+
+      if (added > 0) {
+        client.crm.promotion_items = currentList;
+        if (inputEl) inputEl.value = '';
+        scheduleAutoSave();
+        renderWorkspaceTabContent();
+        showToast(added === 1 ? 'Predmet promocije je shranjen.' : `Dodanih ${added} predmetov promocije.`);
+      } else {
+        showToast('Predmet promocije je že na seznamu.');
+      }
+    }
+
+    function handleRemoveCalendarPromotionItem(clientId, index) {
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      if (!client.crm) client.crm = {};
+      const currentList = getClientPromotionItems(client);
+      if (index >= 0 && index < currentList.length) {
+        const removed = currentList.splice(index, 1);
+        client.crm.promotion_items = currentList;
+        scheduleAutoSave();
+        renderWorkspaceTabContent();
+        showToast(`Predmet »${removed[0] || ''}« je odstranjen.`);
       }
     }
 
@@ -9317,50 +9424,6 @@
         finalScript = document.getElementById('spFinalScript')?.value?.trim() || '';
       }
 
-      const existingScript = (client.crm.scripts || []).find(s => s.id === existingId);
-
-      const scriptObj = {
-        id: existingId || ('script_' + Date.now()),
-        linked_idea_id: document.getElementById('spLinkedIdeaId')?.value || null,
-        target_month: document.getElementById('spTargetMonth')?.value || null,
-        title: title,
-        format: document.getElementById('spFormat')?.value || 'Reels / Video (9:16)',
-        pillar: document.getElementById('spPillar')?.value || '',
-        core_message: coreMessage,
-        concept: concept,
-        final_script: finalScript,
-        creation_mode: isManual ? 'manual' : 'prompt',
-        structured_scenes: structuredScenes,
-        tech_specs: techSpecs,
-        location: techSpecs?.location || existingScript?.location || '',
-        cast: techSpecs?.cast || existingScript?.cast || '',
-        props: techSpecs?.props || existingScript?.props || '',
-        execution: techSpecs?.execution || existingScript?.execution || '',
-        reference: techSpecs?.reference || existingScript?.reference || '',
-        client_decision: existingScript?.client_decision || null,
-        hook_verbal: '',
-        body_visual: finalScript || concept,
-        updated_at: new Date().toISOString()
-      };
-
-      if (existingId) {
-        const idx = client.crm.scripts.findIndex(s => s.id === existingId);
-        if (idx >= 0) client.crm.scripts[idx] = scriptObj;
-        else client.crm.scripts.unshift(scriptObj);
-      } else {
-        client.crm.scripts.unshift(scriptObj);
-      }
-
-      if (scriptObj.linked_idea_id && client.crm.ideas) {
-        const linkedIdea = client.crm.ideas.find(i => i.id === scriptObj.linked_idea_id);
-        if (linkedIdea) {
-          linkedIdea.status = 'used';
-          linkedIdea.used_at = new Date().toISOString();
-        }
-      }
-
-      await saveCurrentWorkspace(false);
-      showToast('Scenarij je shranjen pod napisane scenarije!');
       openScriptPage(clientId, 'new');
       return scriptObj;
     }
@@ -12170,6 +12233,8 @@ Odgovori se samodejno sproti shranjujejo. Hvala za vaš čas!`;
       const locations = locationsList.join(', ');
       const peopleList = normalizeProductionList(prod.resources?.people);
       const people = peopleList.join(', ');
+      const promoList = getClientPromotionItems(client);
+      const promoItems = promoList.join(', ');
 
       const companyName = client.company_name || 'Naročnik';
       const industry = fields.q1_industry || fields.q1_text || fields.company_description || 'Storitve / Izdelki';
@@ -12204,7 +12269,7 @@ Tvoja naloga je, da na podlagi spodnjih parametrov in avtorjevega koncepta skons
 - **Panoga / Dejavnost:** ${industry}
 - **Ciljna publika:** ${targetAudience}
 - **Ton komunikacije:** ${tone}
-${locations ? `- **Lokacije za snemanje na voljo:** ${locations}\n` : ""}${people ? `- **Nastopajoče osebe za snemanje:** ${people}\n` : ""}
+${locations ? `- **Lokacije za snemanje na voljo:** ${locations}\n` : ""}${people ? `- **Nastopajoče osebe za snemanje:** ${people}\n` : ""}${promoItems ? `- **Predmeti promocije (kaj izpostaviti v objavi):** ${promoItems}\n` : ""}
 
 ---
 

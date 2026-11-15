@@ -1609,7 +1609,55 @@
         </div>
       </div>
 
-      <!-- 2. VSEBINSKI KOLEDAR NAROČNIKA -->
+      <!-- 2. PREDMETI PROMOCIJE (FOKUS ZA OBJAVE) -->
+      <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+              <i data-lucide="megaphone" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-lg font-bold text-slate-900">Predmeti promocije</h3>
+                <span id="clientPromoCountBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  0 predmetov
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Vpišite izdelke, storitve, akcije ali novosti, ki bi jih v prihajajočem obdobju najraje izpostavili in promovirali.
+              </p>
+            </div>
+          </div>
+          <div id="clientPromoSaveStatus" class="text-[11px] font-medium text-emerald-600 flex items-center gap-1.5 shrink-0">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Sinhronizirano z ekipo
+          </div>
+        </div>
+
+        <!-- Vnosno polje za nov predmet promocije -->
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="tag" class="w-4 h-4"></i>
+            </div>
+            <input type="text"
+              id="clientNewPromoInput"
+              placeholder="Vpišite izdelek, storitev ali ponudbo, ki jo želite promovirati... (Enter za potrditev)"
+              onkeydown="if(event.key === 'Enter'){ event.preventDefault(); handleAddClientPromotionItem(); }"
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition">
+          </div>
+          <button type="button" onclick="handleAddClientPromotionItem()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 shrink-0">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Dodaj</span>
+          </button>
+        </div>
+
+        <!-- Seznam predmetov promocije (značke / kartice) -->
+        <div id="clientPromotionItemsList" class="flex flex-wrap gap-2 pt-1 min-h-[40px]">
+          <!-- Generirano dinamično -->
+        </div>
+      </div>
+
+      <!-- 3. VSEBINSKI KOLEDAR NAROČNIKA -->
       <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-6">
         
         <!-- Glava koledarja z navigacijo -->
@@ -2671,6 +2719,142 @@
       lucide.createIcons();
     }
 
+    // --- PREDMETI PROMOCIJE NA DASHBOARDU NAROČNIKA ---
+    function getClientDashboardPromotionItems() {
+      const crm = currentClientData?.answers?.crm || existingCrmAnswers || {};
+      const answers = currentClientData?.answers || {};
+
+      if (Array.isArray(crm.promotion_items)) {
+        const list = crm.promotion_items.map(x => String(x).trim()).filter(Boolean);
+        if (list.length > 0) return list;
+      }
+      if (typeof crm.promotion_items === 'string' && crm.promotion_items.trim()) {
+        const list = crm.promotion_items.split(/[\n,;]+/).map(s => s.trim().replace(/^([0-9]+[.)]|[-*•])\s*/, '')).filter(Boolean);
+        if (list.length > 0) return list;
+      }
+      if (Array.isArray(answers.promotion_items)) {
+        const list = answers.promotion_items.map(x => String(x).trim()).filter(Boolean);
+        if (list.length > 0) return list;
+      }
+      const q16 = answers.q16_products || crm.q16_products;
+      if (Array.isArray(q16)) {
+        return q16.map(p => (typeof p === 'string' ? p : p?.name || '')).map(s => String(s).trim()).filter(Boolean);
+      }
+      return [];
+    }
+
+    function renderClientPromotionItems() {
+      const container = document.getElementById('clientPromotionItemsList');
+      if (!container) return;
+      const items = getClientDashboardPromotionItems();
+
+      const countBadge = document.getElementById('clientPromoCountBadge');
+      if (countBadge) {
+        countBadge.innerText = `${items.length} ${items.length === 1 ? 'predmet' : items.length === 2 ? 'predmeta' : items.length === 3 || items.length === 4 ? 'predmeti' : 'predmetov'}`;
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="w-full py-4 px-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center text-xs text-slate-400">
+            Trenutno še nimate vnesenih predmetov promocije. Vpišite jih zgoraj (npr. nov izdelek, sezonska akcija, posebna ugodnost ali storitev).
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map((item, idx) => `
+        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200/80 text-indigo-950 font-semibold text-xs shadow-2xs group transition hover:border-indigo-300">
+          <i data-lucide="tag" class="w-3.5 h-3.5 text-indigo-500"></i>
+          <span>${escapeHtml(item)}</span>
+          <button type="button" onclick="handleRemoveClientPromotionItem(${idx})" class="text-indigo-400 hover:text-rose-500 transition p-0.5 rounded-md hover:bg-white" title="Odstrani predmet">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </span>
+      `).join('');
+
+      lucide.createIcons({ root: container });
+    }
+
+    async function handleAddClientPromotionItem() {
+      const inputEl = document.getElementById('clientNewPromoInput');
+      const val = inputEl ? inputEl.value.trim() : '';
+      if (!val) return;
+
+      const currentList = getClientDashboardPromotionItems();
+      const newItems = val.split(/[\n,;]+/).map(s => s.trim().replace(/^([0-9]+[.)]|[-*•])\s*/, '')).filter(Boolean);
+
+      let added = 0;
+      newItems.forEach(item => {
+        if (!currentList.includes(item)) {
+          currentList.push(item);
+          added++;
+        }
+      });
+
+      if (added > 0) {
+        inputEl.value = '';
+        await saveClientPromotionItems(currentList);
+        showToast(added === 1 ? 'Predmet promocije je shranjen!' : `Dodanih ${added} predmetov promocije!`);
+      } else {
+        showToast('Ta predmet je že na seznamu.');
+      }
+    }
+
+    async function handleRemoveClientPromotionItem(index) {
+      const currentList = getClientDashboardPromotionItems();
+      if (index >= 0 && index < currentList.length) {
+        const removed = currentList.splice(index, 1);
+        await saveClientPromotionItems(currentList);
+        showToast(`Predmet »${removed[0] || ''}« je odstranjen.`);
+      }
+    }
+
+    async function saveClientPromotionItems(items) {
+      if (!currentClientData) currentClientData = {};
+      if (!currentClientData.answers) currentClientData.answers = {};
+      if (!currentClientData.answers.crm) currentClientData.answers.crm = {};
+
+      currentClientData.answers.crm.promotion_items = items;
+      currentClientData.answers.promotion_items = items;
+      if (existingCrmAnswers) {
+        existingCrmAnswers.promotion_items = items;
+      }
+
+      renderClientPromotionItems();
+
+      const statusEl = document.getElementById('clientPromoSaveStatus');
+      if (statusEl) {
+        statusEl.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin text-amber-500"></i> Shranjujem...`;
+        lucide.createIcons({ root: statusEl });
+      }
+
+      if (!supabaseClient || !currentSubmissionId) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from('marketing_questionnaires')
+          .update({
+            answers: currentClientData.answers,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentSubmissionId);
+
+        if (error) throw error;
+
+        if (statusEl) {
+          statusEl.innerHTML = `<i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500"></i> Sinhronizirano z ekipo`;
+          lucide.createIcons({ root: statusEl });
+        }
+      } catch (err) {
+        console.error('Napaka pri shranjevanju predmetov promocije:', err);
+        if (statusEl) {
+          statusEl.innerHTML = `<i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-500"></i> Napaka pri shranjevanju`;
+          lucide.createIcons({ root: statusEl });
+        }
+        showToast('Napaka pri shranjevanju v bazo');
+      }
+    }
+
     // --- IZRIS NAROČNIŠKEGA DASHBOARDA ---
     function renderClientDashboard() {
       const company = (currentClientData?.company_name || document.getElementById('client_company')?.value || '').trim() || 'Naročnik';
@@ -2693,6 +2877,9 @@
       if (elCount) {
         elCount.innerText = posts.length > 0 ? `${posts.length} načrtovanih` : 'V pripravi';
       }
+
+      // Izris predmetov promocije
+      renderClientPromotionItems();
 
       // Izris koledarja
       renderClientCalendar(posts);
