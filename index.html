@@ -1854,7 +1854,25 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_HrIwwiu-aS7HFegM1zw1bw_9H4fhWaM';
     const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-    let currentSubmissionId = new URLSearchParams(window.location.search).get('id') || null;
+    function slugify(text) {
+      if (!text || typeof text !== 'string') return '';
+      return text
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/ß/g, 'ss')
+        .replace(/&/g, 'in')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .replace(/-+/g, '-');
+    }
+
+    const _initialParams = new URLSearchParams(window.location.search);
+    let currentClientParam = _initialParams.get('client') || _initialParams.get('c') || _initialParams.get('id') || null;
+    let currentSubmissionId = null;
+    let currentClientSlug = null;
     let existingCrmAnswers = null;
     let isInitialLoading = false;
 
@@ -1908,8 +1926,8 @@
       setupInputListeners();
       setupScrollSpy();
 
-      if (currentSubmissionId) {
-        await loadFromSupabase(currentSubmissionId);
+      if (currentClientParam) {
+        await loadFromSupabase(currentClientParam);
       } else {
         initProducts16(['', '', '']);
         updateSaveStatus('ready');
@@ -2320,8 +2338,19 @@
             if (insertError) throw insertError;
             if (insertData && insertData[0]) {
               currentSubmissionId = insertData[0].id;
+              currentClientSlug = insertData[0].answers?.crm?.slug || slugify(payload.company_name);
               const newUrl = new URL(window.location.href);
-              newUrl.searchParams.set('id', currentSubmissionId);
+              newUrl.searchParams.delete('id');
+              newUrl.searchParams.delete('c');
+              newUrl.searchParams.set('client', currentClientSlug);
+              window.history.replaceState({}, '', newUrl.toString());
+            }
+          } else {
+            if (currentClientSlug) {
+              const newUrl = new URL(window.location.href);
+              newUrl.searchParams.delete('id');
+              newUrl.searchParams.delete('c');
+              newUrl.searchParams.set('client', currentClientSlug);
               window.history.replaceState({}, '', newUrl.toString());
             }
           }
@@ -2334,8 +2363,11 @@
           if (error) throw error;
           if (data && data[0]) {
             currentSubmissionId = data[0].id;
+            currentClientSlug = data[0].answers?.crm?.slug || slugify(payload.company_name);
             const newUrl = new URL(window.location.href);
-            newUrl.searchParams.set('id', currentSubmissionId);
+            newUrl.searchParams.delete('id');
+            newUrl.searchParams.delete('c');
+            newUrl.searchParams.set('client', currentClientSlug);
             window.history.replaceState({}, '', newUrl.toString());
           }
         }
@@ -2353,44 +2385,91 @@
       }
     }
 
-    // SUPABASE LOAD LOGIC (Loads by ID in URL)
-    async function loadFromSupabase(id) {
-      if (!supabaseClient) return;
+    // SUPABASE LOAD LOGIC (Loads by Slug or ID in URL)
+    async function loadFromSupabase(identifier) {
+      if (!supabaseClient || !identifier) return;
       isInitialLoading = true;
       updateSaveStatus('loading');
 
       try {
-        const { data, error } = await supabaseClient
-          .from('marketing_questionnaires')
-          .select('*')
-          .eq('id', id)
-          .maybeSingle();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+        let record = null;
 
-        if (error) throw error;
-        if (data && data.answers) {
-          currentClientData = data;
-          if (data.answers.crm) {
-            existingCrmAnswers = data.answers.crm;
+        if (isUuid) {
+          const { data, error } = await supabaseClient
+            .from('marketing_questionnaires')
+            .select('*')
+            .eq('id', identifier)
+            .maybeSingle();
+
+          if (error) console.warn('Napaka pri poizvedbi po UUID:', error);
+          if (data) record = data;
+        }
+
+        if (!record) {
+          // Poišči po bazi glede na slug ali ime naročnika
+          const targetSlug = slugify(identifier);
+          const { data: allRecords, error: listError } = await supabaseClient
+            .from('marketing_questionnaires')
+            .select('*');
+
+          if (listError) throw listError;
+          if (allRecords && allRecords.length > 0) {
+            // 1. Natančno ujemanje sluga, id-ja ali imena podjetja
+            record = allRecords.find(r => {
+              if (r.id === identifier) return true;
+              const rSlug = r.answers?.crm?.slug || r.answers?.slug;
+              if (rSlug && slugify(rSlug) === targetSlug) return true;
+              if (slugify(r.company_name) === targetSlug) return true;
+              return false;
+            });
+
+            // 2. Delno ujemanje (npr. 'bolnar' namesto 'bolnar-d-o-o')
+            if (!record) {
+              record = allRecords.find(r => {
+                const cSlug = slugify(r.company_name).replace(/-d-o-o|-s-p$/, '');
+                return cSlug === targetSlug;
+              });
+            }
           }
-          if (data.answers.submitted) {
+        }
+
+        if (record && record.answers) {
+          currentSubmissionId = record.id;
+          currentClientData = record;
+          currentClientSlug = record.answers?.crm?.slug || slugify(record.company_name) || record.id;
+
+          if (record.answers.crm) {
+            existingCrmAnswers = record.answers.crm;
+          }
+          if (record.answers.submitted) {
             isQuestionnaireSubmitted = true;
-            questionnaireSubmittedAt = data.answers.submitted_at;
+            questionnaireSubmittedAt = record.answers.submitted_at;
           }
-          applyDataToForm(data.answers, data);
+          applyDataToForm(record.answers, record);
           updateSaveStatus('saved');
-          showToast('Odgovori so naloženi iz baze!');
+          showToast(`Odgovori za ${record.company_name || 'naročnika'} so naloženi!`);
+
+          // Posodobi URL tako, da vedno prikazuje čist ?client=ime-podjetja
+          const currentUrl = new URL(window.location.href);
+          currentUrl.searchParams.delete('id');
+          currentUrl.searchParams.delete('c');
+          currentUrl.searchParams.set('client', currentClientSlug);
+          window.history.replaceState({}, '', currentUrl.toString());
 
           // Če je vprašalnik že oddan ali je v URL view=dashboard, samodejno prikažemo dashboard
-          const urlParams = new URLSearchParams(window.location.search);
-          const viewParam = urlParams.get('view');
-          if (viewParam === 'dashboard' || (data.answers.submitted && viewParam !== 'form')) {
+          const viewParam = currentUrl.searchParams.get('view');
+          if (viewParam === 'dashboard' || (record.answers.submitted && viewParam !== 'form')) {
             openClientDashboard();
           }
         } else {
-          console.warn('Vprašalnik s tem ID ne obstaja v bazi:', id);
+          console.warn('Vprašalnik s to oznako ali ID ne obstaja v bazi:', identifier);
           currentSubmissionId = null;
+          currentClientSlug = null;
           const newUrl = new URL(window.location.href);
           newUrl.searchParams.delete('id');
+          newUrl.searchParams.delete('client');
+          newUrl.searchParams.delete('c');
           window.history.replaceState({}, '', newUrl.toString());
           initProducts16(['', '', '']);
           updateSaveStatus('ready');
@@ -2675,7 +2754,13 @@
       // Posodobi URL
       const url = new URL(window.location.href);
       url.searchParams.set('view', 'dashboard');
-      if (currentSubmissionId) url.searchParams.set('id', currentSubmissionId);
+      url.searchParams.delete('id');
+      url.searchParams.delete('c');
+      if (currentClientSlug) {
+        url.searchParams.set('client', currentClientSlug);
+      } else if (currentSubmissionId) {
+        url.searchParams.set('client', currentSubmissionId);
+      }
       window.history.replaceState({}, '', url.toString());
 
       renderClientDashboard();
@@ -2703,7 +2788,13 @@
       // Posodobi URL
       const url = new URL(window.location.href);
       url.searchParams.set('view', 'form');
-      if (currentSubmissionId) url.searchParams.set('id', currentSubmissionId);
+      url.searchParams.delete('id');
+      url.searchParams.delete('c');
+      if (currentClientSlug) {
+        url.searchParams.set('client', currentClientSlug);
+      } else if (currentSubmissionId) {
+        url.searchParams.set('client', currentSubmissionId);
+      }
       window.history.replaceState({}, '', url.toString());
 
       if (targetSklopId) {
